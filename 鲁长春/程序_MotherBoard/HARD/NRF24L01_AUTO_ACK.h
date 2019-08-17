@@ -11,6 +11,10 @@
 
 #include "UHEAD.H"
 
+#define DEBUG_24L01     1       //debug开关 
+#if     DEBUG_24L01 > 0
+#include "stdio.h"
+#endif
 
 //NRF24L01寄存器操作命令
 #define NRF_READ_REG    0x00  //读配置寄存器,低5位为寄存器地址

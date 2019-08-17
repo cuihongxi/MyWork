@@ -125,14 +125,14 @@ INTERRUPT_HANDLER(EXTIE_F_PVD_IRQHandler,5)
   * @param  None
   * @retval None
   */
-//INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
-//{
-//    /* In order to detect unexpected events during development,
-//       it is recommended to set a breakpoint on the following instruction.
-//    */
-//  
-//  
-//}
+INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
+{
+    /* In order to detect unexpected events during development,
+       it is recommended to set a breakpoint on the following instruction.
+    */
+  
+  
+}
 
 /**
   * @brief External IT PORTD /PORTH Interrupt routine.
@@ -176,12 +176,12 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
   * @param  None
   * @retval None
   */
-INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
-{
-    /* In order to detect unexpected events during development,
-       it is recommended to set a breakpoint on the following instruction.
-    */
-}
+//INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
+//{
+//    /* In order to detect unexpected events during development,
+//       it is recommended to set a breakpoint on the following instruction.
+//    */
+//}
 
 /**
   * @brief External IT PIN3 Interrupt routine.

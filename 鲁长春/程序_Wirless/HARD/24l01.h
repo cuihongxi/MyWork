@@ -11,10 +11,6 @@
 
 #include "UHEAD.H"
 
-#define DEBUG_24L01     1       //debug开关 
-#if     DEBUG_24L01 > 0
-#include "stdio.h"
-#endif
 
 //NRF24L01寄存器操作命令
 #define NRF_READ_REG    0x00  //读配置寄存器,低5位为寄存器地址
@@ -63,7 +59,7 @@
 #define NRF_FIFO_STATUS 0x17  //FIFO状态寄存器;bit0,RX FIFO寄存器空标志;bit1,RX FIFO满标志;bit2,3,保留
                               //bit4,TX FIFO空标志;bit5,TX FIFO满标志;bit6,1,循环发送上一数据包.0,不循环;
 	#define FIFO_RX_FULL	1	//接收寄存器满
-
+	#define FIFO_TX_FULL	5	//发射寄存器满
 /********************2019-8-16增加寄存器*********************************/
 #define R_RX_PL_WID  	0x60  	// 查询当前这份数据的有效长度
 
@@ -115,7 +111,7 @@
 
 #define		NRF_GPIO_OUTPUTMODE		GPIO_Mode_Out_PP_Low_Fast
 #define		NRF_GPIO_INPUTMODE		GPIO_Mode_In_PU_No_IT
-
+#define		NRF_GPIO_IRQMODE		GPIO_Mode_In_PU_IT
 
 #define DELAY_10US()            delay_us(10)  
 #define DELAY_130US()           delay_us(130) 
@@ -137,8 +133,8 @@
 #define CSN_OUT_1       GPIO_SET(NRF24L01_CSN_PIN)
 #endif
 
-#define REPEAT_TIME     5      //重发次数
-#define	REPEAT_DELAY	4		//重复间隔，单位250uS
+#define REPEAT_TIME     8   //重发次数
+#define	REPEAT_DELAY	1	//重复间隔，单位250uS
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
 extern u8  ADDRESS2[RX_ADR_WIDTH]; 

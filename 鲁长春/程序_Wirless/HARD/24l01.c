@@ -1,5 +1,6 @@
 
 #include "24l01.h"
+#include "stm8l15x_exti.h"
 
 #ifdef DMA_SPI
 #include "stm8s_spi.h"
@@ -40,17 +41,27 @@ u8 SPI2_ReadWriteByte(unsigned char date)
 
 }
 
+//初始化24L01的IRQ IO口
+void NRF24L01_GPIO_IRQ(void)
+{
+  GPIO_Init(NRF24L01_IRQ_PIN,NRF_GPIO_IRQMODE);      				//,当IRQ为低电平时为中断触发
+  disableInterrupts();								
+//  EXTI_DeInit (); 			
+  EXTI_SetPinSensitivity(EXTI_Pin_4,EXTI_Trigger_Falling);			// 必须关闭中断才能进行中断配置	
+  enableInterrupts();                                               //使能中断
+  
+}
 //初始化24L01的IO口
 void NRF24L01_GPIO_Init(void)
 { 	
   //引脚初始化
     GPIO_Init(NRF24L01_CE_PIN,NRF_GPIO_OUTPUTMODE);       //使能24L01
-    GPIO_Init(NRF24L01_IRQ_PIN,NRF_GPIO_INPUTMODE);      //,当IRQ为低电平时为中断触发
     GPIO_Init(NRF24L01_CSN_PIN,NRF_GPIO_OUTPUTMODE);     //SPI片选取消
     
     GPIO_Init(MOSI_PIN,NRF_GPIO_OUTPUTMODE);    
     GPIO_Init(MISO_PIN,NRF_GPIO_INPUTMODE);
     GPIO_Init(SCLK_PIN,NRF_GPIO_OUTPUTMODE);
+	NRF24L01_GPIO_IRQ();
      
 #ifdef DMA_SPI
     SPI_DeInit(); 
@@ -167,7 +178,7 @@ u8 NRF24L01_Read_Buf(u8 reg,u8 *pBuf,u8 len)
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 len)
 {
 	u8 status,u8_ctr;
-        SCLK_OUT_0 ;
+    SCLK_OUT_0 ;
  	CSN_OUT_0;                              //使能SPI传输
   	status = SPI2_ReadWriteByte(reg);       //发送寄存器值(位置),并读取状态值
   	for(u8_ctr=0; u8_ctr<len; u8_ctr++)SPI2_ReadWriteByte(*pBuf++); //写入数据
@@ -180,33 +191,13 @@ u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 len)
 //返回值:发送完成状况
 u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
 {
-	u8 sta;  
-	u16 time = 0xffff;
+
     SCLK_OUT_0 ;
 	CE_OUT_0;                               //StandBy I模式	
   	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,size);
  	CE_OUT_1;                               //启动发送 置高CE激发数据发送
-    
-       // DELAY_130US();
-	//while(READ_IRQ_IN != 0 && time --);        //等待发送完成
-	while((NRF24L01_Read_Reg(STATUS) & TX_OK) ==0 && time --);//等待发送完成
-	sta=NRF24L01_Read_Reg(STATUS);  			 //读取状态寄存器的值
-	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,sta); //清除TX_DS或MAX_RT中断标志                      
-	if(sta&MAX_TX)//达到最大重发次数
-	{
-		NRF24L01_Write_Reg(FLUSH_TX,0x00);//清除TX FIFO寄存器 
-		return MAX_TX; 
-	}
-	if(sta&TX_OK)//发送完成
-	{
-            CE_OUT_0; 			
-            NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
-            CE_OUT_1;
-            CE_OUT_0;       //待机模式1
-            return TX_OK;
-	}
                               
-	return 0xff;//其他原因发送失败
+	return 0;//其他原因发送失败
 }
 //启动NRF24L01发送一次数据
 //txbuf:待发送数据首地址
@@ -265,7 +256,7 @@ void NRF24L01_TX_Mode(void)
 
         CE_OUT_1;
         DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
-        CE_OUT_0; 
+       // CE_OUT_0; 
 }
 
 //1打开0关闭电源
@@ -297,18 +288,57 @@ void NRF24L01_SetTXHZ(u8 hz)
 //获取接收RX长度
 u8 NRF24L01_GetRXLen(void)
 {
-	return NRF24L01_Write_Reg(R_RX_PL_WID,0XFF);
+    SCLK_OUT_0;    
+   	CSN_OUT_0;                              //使能SPI传输
+  	SPI2_ReadWriteByte(R_RX_PL_WID);        //发送寄存器号 
+  	u8 dat =SPI2_ReadWriteByte(0xff);      //写入寄存器的值
+  	CSN_OUT_1;                              //禁止SPI传输
+	
+	return dat;
 }
 
 //RX ACK 自动回复，设置通道
 void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip)
 {
- 
-	//u16 time = 0xffff;
-    //SCLK_OUT_0 ;
-	//CE_OUT_0;                               //StandBy I模式	
   	 NRF24L01_Write_Buf(W_ACK_PAYLOAD|pip,txbuf,size);
- 	//CE_OUT_1;                               //启动发送 置高CE激发数据发送
+}
+//IRQ 中断服务函数
 
-
+INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
+{
+  	if(READ_IRQ_IN == 0)
+	{
+		u8 sta;		    							      
+		sta=NRF24L01_Read_Reg(STATUS);  //读取状态寄存器的值      
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,sta); //清除TX_DS或MAX_RT中断标志
+		if(sta&RX_OK)//接收到数据
+		{
+		  	
+		    u8 rxbuf[96] = {0};
+			u8 txbuf[2] = {0x30,0x31};
+			u8 len = NRF24L01_GetRXLen();
+			NRF24L01_RX_AtuoACKPip(txbuf,2,BIT_PIP0);
+			debug("len = %d  sta = %x ",len,sta);
+			NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,len);//读取数据				 
+			 if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_RX_FULL))
+					NRF24L01_Write_Reg(FLUSH_RX,0x00);//清除RX FIFO寄存器 
+			debug(" rxDate[0] : %d  ",rxbuf[0]);
+			debug(" rxDate[1] : %d  ",rxbuf[1]);
+			debug(" rxDate[2] : %d\r\n",rxbuf[2]);
+		}
+		if(sta&TX_OK)
+		{
+		    debug(" TX_OK  ");
+		 	if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_TX_FULL))
+			{			
+				NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********		
+			}		
+		}
+		
+		
+		debug("\r\n");
+		
+		
+	}
+   EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }

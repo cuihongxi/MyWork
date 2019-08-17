@@ -201,14 +201,14 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
   * @param  None
   * @retval None
   */
-INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
-{
-    /* In order to detect unexpected events during development,
-       it is recommended to set a breakpoint on the following instruction.
-    */
-    	/* Toggles LEDs */
-  
-}
+//INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
+//{
+//    /* In order to detect unexpected events during development,
+//       it is recommended to set a breakpoint on the following instruction.
+//    */
+//    	/* Toggles LEDs */
+//  
+//}
 
 /**
   * @brief External IT PIN5 Interrupt routine.
