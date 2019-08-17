@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>4194341219</fileChecksum>
+  <fileChecksum>2718970546</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -153,6 +153,10 @@
       <file>$PROJ_DIR$\Debug\Obj\stm8l15x_usart.o</file>
       <file>$PROJ_DIR$\..\HARD\COG12864.H</file>
       <file>$PROJ_DIR$\..\HARD\LCDCUI.H</file>
+      <file>$PROJ_DIR$\..\HARD\NRF24L01_AUTO_ACK.c</file>
+      <file>$PROJ_DIR$\..\HARD\NRF24L01_AUTO_ACK.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\NRF24L01_AUTO_ACK.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\NRF24L01_AUTO_ACK.o</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\HARD\24l01.c</name>
@@ -173,7 +177,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 125 121 132 136 124 80 142 127 130 134 87 140 126 128 129 131 133 135 137 141 108 92 115 77 122 53 120 109 118 93 82 111 116 95 117 30 123 107 143 139 138 90 110</file>
+          <file> 121 131 128 135 142 80 126 129 133 137 87 136 124 125 127 130 132 134 141 108 92 115 140 77 122 53 120 109 118 93 82 111 116 95 117 30 123 107 143 139 138 90 110</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
@@ -475,7 +479,7 @@
       <inputs>
         <tool>
           <name>ILINK</name>
-          <file> 98 33 28 32 71 68 79 69 70 8 72 19 88 20 144 84 96 22</file>
+          <file> 98 33 28 32 71 150 68 79 69 70 8 72 19 88 20 144 84 96 22</file>
         </tool>
       </inputs>
     </file>
@@ -633,11 +637,11 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 136 124 121 80 108 115 125 132 127 130 134 87 143 118 126 128 129 131 133 135 137 139 140 77 122 53 120 109 93 82 111 116 95 117 30 123 107 141 92 142 138 90 110</file>
+          <file> 116 122 121 77 118 123 148 120 82 117 108 90 110 140 53 109 93 111 95 30 107 126 139 80 136 124 125 127 128 129 130 131 132 133 134 135 137 138 87 115 141 92 142 143</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
-          <file> 115 121 77 122 125 53 126 120 127 109 128 118 80 93 129 82 130 111 131 116 132 95 133 117 134 30 135 123 136 140 108 87 90 142 143 92 110 138 141 107 137 124 139</file>
+          <file> 115 121 77 122 125 53 126 120 127 109 128 118 80 93 129 82 130 111 131 116 132 95 133 117 134 30 135 123 136 140 108 87 90 142 143 92 110 138 141 107 137 124 139 148</file>
         </tool>
       </inputs>
     </file>
@@ -773,6 +777,29 @@
         <tool>
           <name>ICCSTM8</name>
           <file> 113 115 121 77 122 125 53 126 120 127 109 128 118 80 93 129 82 130 111 131 116 132 95 133 117 134 30 135 123 136 140 108 87 90 142 143 92 110 138 141 107 137 124 104 146 18 83 78 139 27 145</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\NRF24L01_AUTO_ACK.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 149</file>
+        </tool>
+        <tool>
+          <name>ICCSTM8</name>
+          <file> 150</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 116 121 139 122 108 115 77 118 123 120 82 117 87 143 140 53 109 93 111 95 30 107 126 128 80 136 124 125 127 129 130 131 132 133 134 135 137 141 92 142 148 138 90 110</file>
+        </tool>
+        <tool>
+          <name>ICCSTM8</name>
+          <file> 148 115 121 77 122 125 53 126 120 127 109 128 118 80 93 129 82 130 111 131 116 132 95 133 117 134 30 135 123 136 140 108 87 90 142 143 92 110 138 141 107 137 124 139</file>
         </tool>
       </inputs>
     </file>

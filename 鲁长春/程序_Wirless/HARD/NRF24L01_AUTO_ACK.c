@@ -17,6 +17,7 @@ void NRF24L01_PTXInMainReset(Nrf24l01_PTXStr* ptx)
 	ptx->hastxlen = 0;
 	
 }
+
 //主函数中的发送函数
 void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen)
 {
@@ -36,20 +37,15 @@ void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen)
 				ptx->hastxlen += ptx->txlen;
 			}
 		}		
-	}else NRF24L01_PTXInMainReset(ptx);
+	}
 
 }
-
 
 //达到最大发射次数默认回调函数
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	debug("ERROR! MAX_TX!! ");
-	CE_OUT_0; 
+	debug("ERROR! MAX_TX!! ");			
 	NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
-	
-	CE_OUT_1; 
-	NRF24L01_PTXInMainReset(ptx);
 }
 
 //发射模式自动接收完成回调函数
@@ -63,12 +59,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		debug(" ptx[%d]: %c ",i,ptx->rxbuf[i]);
 	  }
 	  if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_RX_FULL))
-	  {
-		CE_OUT_0; 
-		NRF24L01_Write_Reg(FLUSH_RX,0x00);//清除RX FIFO寄存器
-		CE_OUT_1; 
-	  }
-			 
+			NRF24L01_Write_Reg(FLUSH_RX,0x00);//清除RX FIFO寄存器 
 }
 
 //发射模式自动发射完成回调函数
@@ -146,12 +137,7 @@ void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx)
 		debug("len = %d  \r\n",prx->rxlen);
 		NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据				 
 		 if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_RX_FULL))
-		 {
-		   	CE_OUT_0;
-		 	NRF24L01_Write_Reg(FLUSH_RX,0x00);				// 清除RX FIFO寄存器 
-		   	CE_OUT_1;
-		 }
-				
+				NRF24L01_Write_Reg(FLUSH_RX,0x00);				// 清除RX FIFO寄存器 
 		for(u8 i=0;i<prx->rxlen;i++)
 		  {
 		  	debug(" prx[%d]: %c ",i,prx->rxbuf[i]);

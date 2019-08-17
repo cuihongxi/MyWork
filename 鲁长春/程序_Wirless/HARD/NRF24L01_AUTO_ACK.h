@@ -10,8 +10,6 @@
 #include "24l01.h"
 
 
-
-
 //发射模式结构体
 typedef struct PTXStr{
 	u8 pip;								// 通道号
@@ -51,7 +49,7 @@ typedef struct PRXStr{
  */
 #define		IRQ_EXTI_SET()	do{\
 								disableInterrupts();\
-								EXTI_SetPinSensitivity(EXTI_Pin_2,EXTI_Trigger_Falling);\
+								EXTI_SetPinSensitivity(EXTI_Pin_4,EXTI_Trigger_Falling);\
 								enableInterrupts();\
 							}while(0)
 
@@ -62,13 +60,11 @@ typedef struct PRXStr{
 void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch);	// 初始化发射模式
 void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen); 					// 主函数中的发送函数
 void NRF24L01_PTXInMainReset(Nrf24l01_PTXStr* ptx);									// 复位主函数的发送
-
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 达到最大发射次数默认回调函数
 void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动发射完成回调函数
 void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动接收完成回调函数
 
 /*接收模式*/
-
 void InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch);	// 初始化接收模式
 
 void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx);	// 接收模式自动接收完成回调函数

@@ -3,9 +3,13 @@
 #include "LED_SHOW.H"
 #include "MYCLK.h"
 #include "ADC_CHECK.H"
+#include "NRF24L01_AUTO_ACK.H"
 #include "24l01.h"
 
-u8 dat[3] = {0x1,0x2,3};
+Nrf24l01_PTXStr ptx = {0};
+u8 rxbuf[32] = {0};
+u8 txbuf[] = "12345";
+
 //低功耗时钟和GPIO初始化
 void CLK_GPIO_Init()
 {
@@ -31,7 +35,7 @@ void main()
 {
   	CLK_GPIO_Init();										// 低功耗时钟和GPIO初始化
 	UART_INIT(115200);
-	Init_NRF24L01();
+	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
 	LED_GPIO_Init();   										// 双色LED初始化
 	MX830Motor_GPIOInit();                                 	// 马达IO配置
 	
@@ -39,7 +43,7 @@ void main()
 	GPIO_ADC_Init();
 
 	
-	NRF24L01_TX_Mode();				// 配置为发送模式
+
 	
 	while(1)
 	{
@@ -53,11 +57,15 @@ void main()
 		GPIO_SET(LED1_GREENGPIO);
 		GPIO_RESET(LED2_REDGPIO);
 		
-		NRF24L01_TxPacket(dat,3);  //发送新地址到接收板
-		dat[0] ++;
-		dat[1] ++;
-		dat[2] ++;
+		NRF24L01_PTXInMain(&ptx,txbuf,sizeof(txbuf)); // 主函数中的发送函数
 	}
 }
 
+//IRQ 中断服务函数
+
+INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
+{
+	ptx.IRQCallBack(&ptx);
+   	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
+}
 

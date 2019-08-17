@@ -62,7 +62,6 @@
 	#define FIFO_TX_FULL	5	//发射寄存器满
 /********************2019-8-16增加寄存器*********************************/
 #define R_RX_PL_WID  	0x60  	// 查询当前这份数据的有效长度
-
 #define	DYNPD			0X1C	// 使能动态长度
 	#define	BIT_PIP0	0		// 接收数据通道0 的比特位
 	#define	BIT_PIP1	1		// 接收数据通道1 的比特位
@@ -109,9 +108,11 @@
 #define MISO_PIN                GPIOB,GPIO_Pin_7        //SPI主机输出从机输出端
 #define SCLK_PIN                GPIOB,GPIO_Pin_5        //SPI时钟端 
 
+
+
 #define		NRF_GPIO_OUTPUTMODE		GPIO_Mode_Out_PP_Low_Fast
 #define		NRF_GPIO_INPUTMODE		GPIO_Mode_In_PU_No_IT
-#define		NRF_GPIO_IRQMODE		GPIO_Mode_In_PU_IT
+
 
 #define DELAY_10US()            delay_us(10)  
 #define DELAY_130US()           delay_us(130) 
@@ -133,15 +134,16 @@
 #define CSN_OUT_1       GPIO_SET(NRF24L01_CSN_PIN)
 #endif
 
-#define REPEAT_TIME     8   //重发次数
-#define	REPEAT_DELAY	1	//重复间隔，单位250uS
+#define REPEAT_TIME     5      //重发次数
+#define	REPEAT_DELAY	5		//重复间隔，单位250uS
+
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
 extern u8  ADDRESS2[RX_ADR_WIDTH]; 
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-void Init_NRF24L01(void);                                           //初始化
+void Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
 void NRF24L01_RX_Mode(void);					//配置为接收模式
 void NRF24L01_TX_Mode(void);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区
@@ -160,7 +162,6 @@ void NRF24L01_SetTXHZ(u8 hz);
 /********************2019-8-16增加函数*********************************/
 //获取接收到的长度信息
 u8 NRF24L01_GetRXLen(void);
-
 void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);// RX ACK 自动回复，设置通道
 #endif
 

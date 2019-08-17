@@ -111,7 +111,7 @@
 
 #define		NRF_GPIO_OUTPUTMODE		GPIO_Mode_Out_PP_Low_Fast
 #define		NRF_GPIO_INPUTMODE		GPIO_Mode_In_PU_No_IT
-#define		NRF_GPIO_IRQMODE		GPIO_Mode_In_PU_IT
+
 
 #define DELAY_10US()            delay_us(10)  
 #define DELAY_130US()           delay_us(130) 
@@ -142,7 +142,7 @@ extern u8  ADDRESS2[RX_ADR_WIDTH];
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-void Init_NRF24L01(void);                                           //初始化
+void Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
 void NRF24L01_RX_Mode(void);					//配置为接收模式
 void NRF24L01_TX_Mode(void);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区

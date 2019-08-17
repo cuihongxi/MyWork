@@ -7,7 +7,12 @@
 #include "stm8l15x_clk.h"
 #include "stm8l15x_flash.h"
 #include "24l01.h"
+#include "NRF24L01_AUTO_ACK.H"
 
+
+Nrf24l01_PRXStr prx = {0};
+u8 txbuf[] = "ABCD";
+u8 rxbuf[32] = {0};
 //时钟配置
 void RCC_Config()
 {
@@ -49,15 +54,16 @@ void FreeGPIO_Config()
   GPIO_Init(GPIOA,GPIO_Pin_0,GPIO_Mode_Out_PP_High_Slow);
   
 }
+
+
 void main()
 {    
    
     RCC_Config();
     FreeGPIO_Config();
+		
 	UART_INIT(115200);
-	Init_NRF24L01();
-	
-    NRF24L01_RX_Mode();                         //配置接收模式 
+ 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	// 初始化接收模式	
 	
     while(1)
     {           
@@ -90,4 +96,9 @@ void assert_failed(u8* file,u32 line)
 }
 #endif
               
-             
+//IRQ 中断服务函数
+INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
+{
+   prx.IRQCallBack(&prx);
+   EXTI_ClearITPendingBit (EXTI_IT_Pin4);
+}             
