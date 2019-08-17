@@ -8,8 +8,8 @@
 #include "stm8l15x_flash.h"
 #include "24l01.h"
 
-u8 rxDate[12] = {0};
-
+u8 rxDate[32] = {0};
+u8 len = 0;
 //时钟配置
 void RCC_Config()
 {
@@ -66,18 +66,23 @@ void main()
         //NRF24L01程序
 	  if(READ_IRQ_IN == 0 )
 	  {
-		//NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0X40);
-		//debug("get data \r\n");
-		if(NRF24L01_RxPacket(rxDate)==0)       //接收到信息
+
+		if(NRF24L01_RxPacket(rxDate,&len)==0)       //接收到信息
 		{
-			debug(" rxDate[0] : %c  ",rxDate[0]);
-			debug(" rxDate[1] : %c\r\n",rxDate[1]);
+			debug(" rxDate[0] : %d  ",rxDate[0]);
+			debug(" rxDate[1] : %d  ",rxDate[1]);
+			debug(" rxDate[2] : %d\r\n",rxDate[2]);
 			rxDate[0] = 0;
 			rxDate[1] = 0;
-
+			rxDate[2] = 0;
+//					
+//		if(NRF24L01_RxPacket(rxDate,&len)==0)       //接收到信息
+//		{
+//		  for(u8 i =0;i<len;i++)
+//			debug(" rxDate[%d] : %c  ",i,rxDate[i]);
+//		}	
 		}	  
-	  }else
-		debug("\n****************************************\n");
+	  }
 
     }   
     

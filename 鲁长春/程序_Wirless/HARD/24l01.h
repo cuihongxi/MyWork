@@ -27,15 +27,20 @@
 #define NOP             0xFF  //空操作,可以用来读状态寄存器	 
 //SPI(NRF24L01)寄存器地址
 #define CONFIG          0x00  //配置寄存器地址;bit0:1接收模式,0发射模式;bit1:电选择;bit2:CRC模式;bit3:CRC使能;
-                              //bit4:中断MAX_RT(达到最大重发次数中断)使能;bit5:中断TX_DS使能;bit6:中断RX_DR使能
+                              //bit4:中断MAX_RT(达到最大重发次数中断)为1使能;bit5:中断TX_DS为1使能;bit6:中断RX_DR为1使能
 #define EN_AA           0x01  //使能自动应答功能  bit0~5,对应通道0~5
 #define EN_RXADDR       0x02  //接收地址允许,bit0~5,对应通道0~5
+
 #define SETUP_AW        0x03  //设置地址宽度(所有数据通道):bit1,0:00,3字节;01,4字节;02,5字节;
 #define SETUP_RETR      0x04  //建立自动重发;bit3:0,自动重发计数器;bit7:4,自动重发延时 250*x+86us
 #define RF_CH           0x05  //RF通道,bit6:0,工作通道频率;
 #define RF_SETUP        0x06  //RF寄存器;bit3:传输速率(0:1Mbps,1:2Mbps);bit2:1,发射功率;bit0:低噪声放大器增益
 #define STATUS          0x07  //状态寄存器;bit0:TX FIFO满标志;bit3:1,接收数据通道号(最大:6);bit4,达到最多次重发
                               //bit5:数据发送完成中断;bit6:接收数据中断;
+	#define	STATUS_BIT_IRT_RPTX		4		//bit4:达到最多次重发中断
+	#define	STATUS_BIT_IRT_TXD		5		//bit5:数据发送完成中断
+	#define	STATUS_BIT_IRT_RXD		6		//bit6:接收数据中断
+
 #define MAX_TX  	0x10  //达到最大发送次数中断
 #define TX_OK   	0x20  //TX发送完成中断
 #define RX_OK   	0x40  //接收到数据中断
@@ -57,24 +62,43 @@
 #define RX_PW_P5        0x16  //接收数据通道5有效数据宽度(1~32字节),设置为0则非法
 #define NRF_FIFO_STATUS 0x17  //FIFO状态寄存器;bit0,RX FIFO寄存器空标志;bit1,RX FIFO满标志;bit2,3,保留
                               //bit4,TX FIFO空标志;bit5,TX FIFO满标志;bit6,1,循环发送上一数据包.0,不循环;
+	#define FIFO_RX_FULL	1	//接收寄存器满
 
+/********************2019-8-16增加寄存器*********************************/
+#define R_RX_PL_WID  	0x60  	// 查询当前这份数据的有效长度
+
+#define	DYNPD			0X1C	// 使能动态长度
+	#define	BIT_PIP0	0		// 接收数据通道0 的比特位
+	#define	BIT_PIP1	1		// 接收数据通道1 的比特位
+	#define	BIT_PIP2	2		// 接收数据通道2 的比特位
+	#define	BIT_PIP3	3		// 接收数据通道3 的比特位
+	#define	BIT_PIP4	4		// 接收数据通道4 的比特位
+	#define	BIT_PIP5	5		// 接收数据通道5 的比特位
+#define	FEATURE			0x1d	// 特征寄存器
+	#define	FEATURE_BIT_EN_DPL		2		//使能动态载荷长度
+	#define	FEATURE_BIT_EN_ACK_PAY	1		//使能有效载荷应答
+	#define	FEATURE_BIT_EN_DYN_ACK	0		//使能 W_TX_PAYLOAD_NOACK 命令
+
+#define	W_ACK_PAYLOAD 	0xA8	// 设置自动回复的通道号
 
 //24L01发送接收数据宽度定义
 #define TX_ADR_WIDTH    5   	//5字节的地址宽度
 #define RX_ADR_WIDTH    5   	//5字节的地址宽度
-#define TX_PLOAD_WIDTH  12  	//6字节的用户数据宽度
-#define RX_PLOAD_WIDTH  2  	//6字节的用户数据宽度
+#define TX_PLOAD_WIDTH  32  	//6字节的用户数据宽度
+#define RX_PLOAD_WIDTH  32  	//6字节的用户数据宽度
 
 /********************2019-8-16增加功能*********************************/
 #define USE_NRF_SI24
 
-#ifdef USE_NRF_MINI
+#ifdef  USE_NRF_MINI
 #define RF_SETUP_DAT    0X0F    //设置发射速率为2MHZ，发射功率为最大值0dB
 #endif
 
-#ifdef USE_NRF_SI24
-#define RF_SETUP_DAT    0x26
+#ifdef  USE_NRF_SI24
+#define RF_SETUP_DAT    0x0e	//设置发射速率为2MHZ，发射功率为最大值0dB
 #endif
+
+
 
 /*以下宏定义为了移植方便而定义*/		
 
@@ -83,14 +107,14 @@
 
 //模块版引脚定义
 #define NRF24L01_CE_PIN         GPIOB,GPIO_Pin_3        //RX/TX模式选择端
-#define NRF24L01_IRQ_PIN        GPIOC,GPIO_Pin_2        //可屏蔽中断端
+#define NRF24L01_IRQ_PIN        GPIOC,GPIO_Pin_4        //可屏蔽中断端
 #define NRF24L01_CSN_PIN        GPIOB,GPIO_Pin_4        //SPI片选端
 #define MOSI_PIN                GPIOB,GPIO_Pin_6        //SPI主机输出从机输入端
 #define MISO_PIN                GPIOB,GPIO_Pin_7        //SPI主机输出从机输出端
 #define SCLK_PIN                GPIOB,GPIO_Pin_5        //SPI时钟端 
 
 #define		NRF_GPIO_OUTPUTMODE		GPIO_Mode_Out_PP_Low_Fast
-#define		NRF_GPIO_INPUTMODE		GPIO_Mode_In_FL_No_IT
+#define		NRF_GPIO_INPUTMODE		GPIO_Mode_In_PU_No_IT
 
 
 #define DELAY_10US()            delay_us(10)  
@@ -113,8 +137,8 @@
 #define CSN_OUT_1       GPIO_SET(NRF24L01_CSN_PIN)
 #endif
 
-#define REPEAT_TIME     15      //重发次数
-
+#define REPEAT_TIME     5      //重发次数
+#define	REPEAT_DELAY	4		//重复间隔，单位250uS
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
 extern u8  ADDRESS2[RX_ADR_WIDTH]; 
@@ -126,16 +150,22 @@ void NRF24L01_RX_Mode(void);					//配置为接收模式
 void NRF24L01_TX_Mode(void);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区
 u8 NRF24L01_Read_Buf(u8 reg, u8 *pBuf, u8 u8s);	                //读数据区		  
-u8 NRF24L01_Read_Reg(u8 reg);					//读寄存器
+u8 NRF24L01_Read_Reg(u8 reg);							//读寄存器
 u8 NRF24L01_Write_Reg(u8 reg, u8 value);		        //写寄存器
-u8 NRF24L01_Check(void);					//检查24L01是否存在
-u8 NRF24L01_TxPacket(u8 *txbuf,u8 size);			//发送一个包的数据
-u8 NRF24L01_RxPacket(u8 *rxbuf);				//接收一个包的数据
-void NRF24L01_PWR(u8 state);                                    //1打开0关闭电源
+u8 NRF24L01_Check(void);								//检查24L01是否存在
+u8 NRF24L01_TxPacket(u8 *txbuf,u8 size);				//发送一个包的数据
+u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len);				//接收一个包的数据
+void NRF24L01_PWR(u8 state);                            //1打开0关闭电源
 void FreeNRFGPIO();
 //设置频率
 void NRF24L01_SetRXHZ(u8 hz);
 void NRF24L01_SetTXHZ(u8 hz);
+
+/********************2019-8-16增加函数*********************************/
+//获取接收到的长度信息
+u8 NRF24L01_GetRXLen(void);
+
+void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);// RX ACK 自动回复，设置通道
 #endif
 
 

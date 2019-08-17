@@ -5,7 +5,7 @@
 #include "ADC_CHECK.H"
 #include "24l01.h"
 
-u8 dat[2] = {0x33,0x35};
+u8 dat[3] = {0x1,0x2,3};
 //低功耗时钟和GPIO初始化
 void CLK_GPIO_Init()
 {
@@ -51,8 +51,10 @@ void main()
 		GPIO_SET(LED1_GREENGPIO);
 		GPIO_RESET(LED2_REDGPIO);
 		
-		NRF24L01_TxPacket(dat,2);  //发送新地址到接收板
-		
+		NRF24L01_TxPacket(dat,3);  //发送新地址到接收板
+		dat[0] ++;
+		dat[1] ++;
+		dat[2] ++;
 	}
 }
 
