@@ -7,8 +7,10 @@
 #include "24l01.h"
 
 Nrf24l01_PTXStr ptx = {0};
+
+#define SIZE_TX 3
 u8 rxbuf[32] = {0};
-u8 txbuf[] = "12345";
+u8 txbuf[SIZE_TX] = {0};
 
 //低功耗时钟和GPIO初始化
 void CLK_GPIO_Init()
@@ -41,9 +43,8 @@ void main()
 	
 	GPIO_Init(YSD_GPIO,GPIO_Mode_Out_PP_High_Slow);
 	GPIO_ADC_Init();
-
-	
-
+	for(u8 i=0;i<SIZE_TX;i++)
+	  txbuf[i] = i;
 	
 	while(1)
 	{

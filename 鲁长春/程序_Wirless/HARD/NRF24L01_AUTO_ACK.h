@@ -20,6 +20,7 @@ typedef struct PTXStr{
 	u8 txlen;							// 发送长度
 	u8 rxlen;							// 接收长度
 	u8 hastxlen;						// 已发送长度
+	u8 hasrxlen;						// 已接收的长度
 	u8 flag_sendfinish;					// 发送完成标志
 	void(*IRQCallBack)(struct PTXStr*);	// 回调函数，放在IRQ中断中
 	void(*RXDCallBack)(struct PTXStr*);	// 接收完成回调函数
@@ -36,6 +37,7 @@ typedef struct PRXStr{
 	u8* rxbuf;							// 接收缓存
 	u8 txlen;							// 发送长度
 	u8 rxlen;							// 接收长度
+	u8 hasrxlen;						// 已接收的长度
 	void(*IRQCallBack)(struct PRXStr*);	// 回调函数，放在IRQ中断中
 	void(*RXDCallBack)(struct PRXStr*);	// 接收完成回调函数
 	void(*TXDCallBack)(struct PRXStr*);	// 发送完成回调函数
@@ -60,6 +62,8 @@ typedef struct PRXStr{
 void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch);	// 初始化发射模式
 void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen); 					// 主函数中的发送函数
 void NRF24L01_PTXInMainReset(Nrf24l01_PTXStr* ptx);									// 复位主函数的发送
+
+void Default_IRQCallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射中断回调函数
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 达到最大发射次数默认回调函数
 void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动发射完成回调函数
 void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动接收完成回调函数
@@ -67,9 +71,10 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动接收完成回调函数
 /*接收模式*/
 void InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch);	// 初始化接收模式
 
-void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx);	// 接收模式自动接收完成回调函数
-void TXD_CallBack_PRX(Nrf24l01_PRXStr* prx); 	// 接收模式自动发射完成回调函数
-
+void Default_IRQCallBack_PRX(Nrf24l01_PRXStr* prx); // 默认的接收回调函数
+void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx);		// 接收模式自动接收完成回调函数
+void TXD_CallBack_PRX(Nrf24l01_PRXStr* prx); 		// 接收模式自动发射完成回调函数
+void RXD_ACK_CallBack(Nrf24l01_PRXStr* prx);		// 应答信号回调
 
 
 #endif

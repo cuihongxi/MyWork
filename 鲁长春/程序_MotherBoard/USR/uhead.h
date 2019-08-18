@@ -31,7 +31,7 @@
 	SWAPPER_UART_PA2_PC3();	\
 	CLK_PeripheralClockConfig (CLK_Peripheral_USART1,ENABLE);\
 	USART_Init(USART1,baud, USART_WordLength_8b,USART_StopBits_1,USART_Parity_No,USART_Mode_Tx);\
-	debug("start:\n");\
+	debug("\r\nstart:\r\n");\
 }while(0)
 #else
 #define	UART_INIT(baud)

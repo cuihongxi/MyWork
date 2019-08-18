@@ -123,7 +123,7 @@ u8 NRF24L01_Check(void)
 u8 NRF24L01_Write_Reg(u8 reg,u8 value)
 {
 	u8 status;
-    SCLK_OUT_0;    
+        SCLK_OUT_0;    
    	CSN_OUT_0;                              //使能SPI传输
   	status =SPI2_ReadWriteByte(reg);        //发送寄存器号 
   	SPI2_ReadWriteByte(value);              //写入寄存器的值
@@ -136,7 +136,7 @@ u8 NRF24L01_Write_Reg(u8 reg,u8 value)
 u8 NRF24L01_Read_Reg(u8 reg)
 {
 	u8 reg_val;
-        SCLK_OUT_0;
+    SCLK_OUT_0;
  	CSN_OUT_0;                              //使能SPI传输		
   	SPI2_ReadWriteByte(reg);                //发送寄存器号
   	reg_val=SPI2_ReadWriteByte(0XFF);       //读取寄存器内容
@@ -181,14 +181,6 @@ u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
 {  	
     SCLK_OUT_0 ;
 	CE_OUT_0;                               //StandBy I模式	
-	if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_TX_FULL))	
-	{
-		CE_OUT_0;
-		
-		NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********	
-		CE_OUT_1;
-	}
-			
   	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,size);
  	CE_OUT_1;                               //启动发送 置高CE激发数据发送    
 	return 0;//其他原因发送失败
@@ -200,7 +192,7 @@ u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len)
 {
  
 	u8 sta;		    							      
-	sta=NRF24L01_Read_Reg(STATUS);  //读取状态寄存器的值      
+	sta = NRF24L01_GetStatus();  //读取状态寄存器的值      
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,sta); //清除TX_DS或MAX_RT中断标志
 	if(sta&RX_OK)//接收到数据
 	{
@@ -209,13 +201,6 @@ u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len)
 		NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,RX_PLOAD_WIDTH);//读取数据
 		u8 txbuf[2] = {0x30,0x31};
 		 NRF24L01_RX_AtuoACKPip(txbuf,2,BIT_PIP0);
-		 if(NRF24L01_Read_Reg(NRF_FIFO_STATUS) &(1<<FIFO_RX_FULL))
-		 {
-		 	CE_OUT_0;
-			NRF24L01_Write_Reg(FLUSH_RX,0x00);//清除RX FIFO寄存器 
-			CE_OUT_1;
-		 }
-		
                
 		return 0; 
 	}	   
@@ -226,7 +211,7 @@ u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len)
 //当CE变高后,即进入RX模式,并可以接收数据了		   
 void NRF24L01_RX_Mode(void)
 {  
- 		debug("SLAVE_Mode\r\n");
+ 		debug("RX_Mode\r\n");
         CE_OUT_0; 
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff);	//清除中断标志
         NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
@@ -287,10 +272,10 @@ void NRF24L01_SetTXHZ(u8 hz)
 u8 NRF24L01_GetRXLen(void)
 {
     SCLK_OUT_0;    
-   	CSN_OUT_0;                              //使能SPI传输
-  	SPI2_ReadWriteByte(R_RX_PL_WID);        //发送寄存器号 
-  	u8 dat =SPI2_ReadWriteByte(0xff);      //写入寄存器的值
-  	CSN_OUT_1;                              //禁止SPI传输
+   	CSN_OUT_0;                              // 使能SPI传输
+  	SPI2_ReadWriteByte(R_RX_PL_WID);        // 发送寄存器号 
+  	u8 dat =SPI2_ReadWriteByte(0xff);      	// 写入寄存器的值
+  	CSN_OUT_1;                              // 禁止SPI传输
 	
 	return dat;
 }
@@ -301,3 +286,13 @@ void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip)
 	 NRF24L01_Write_Buf(W_ACK_PAYLOAD|pip,txbuf,size);
 }
 
+// 获取状态status
+u8 NRF24L01_GetStatus(void)
+{
+  	u8 status;
+    SCLK_OUT_0;
+ 	CSN_OUT_0;                              // 使能SPI传输		
+  	status = SPI2_ReadWriteByte(NOP);       // 读取寄存器内容
+  	CSN_OUT_1;                              // 禁止SPI传输
+	return status;
+}

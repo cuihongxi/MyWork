@@ -159,9 +159,14 @@ void NRF24L01_SetRXHZ(u8 hz);
 void NRF24L01_SetTXHZ(u8 hz);
 
 /********************2019-8-16增加函数*********************************/
-//获取接收到的长度信息
-u8 NRF24L01_GetRXLen(void);
-void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);// RX ACK 自动回复，设置通道
+
+u8 NRF24L01_GetRXLen(void);								// 获取接收到的长度信息
+void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);	// RX ACK 自动回复，设置通道
+
+/********************2019-8-18增加函数*********************************/
+
+u8 NRF24L01_GetStatus(void);	// 获取状态status
+
 #endif
 
 

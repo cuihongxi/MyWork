@@ -38,7 +38,7 @@ ShowSource=1
 [Simulator]
 Freq=16000000
 [DebugChecksum]
-Checksum=1928607447
+Checksum=132140562
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -47,6 +47,8 @@ MixedMode=1
 LogEnabled=0
 GraphEnabled=0
 ShowTimeLog=1
+[Breakpoints]
+Count=0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -54,11 +56,10 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Count=0
 [Aliases]
 A0=_ "E:\MyWork\鲁长春\程序_MotherBoard\LIB\src\stm8l15x_clk.c" ""
-Count=1
+A1=_ "E:\MyWork\鲁长春\程序_MotherBoard\LIB\src\stm8l15x_gpio.c" ""
+Count=2
 SuppressDialog=1
 [DebuggerSettings]
 DisableInterruptsWhenStepping=0

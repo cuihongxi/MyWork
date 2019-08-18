@@ -11,8 +11,8 @@
 
 
 Nrf24l01_PRXStr prx = {0};
-u8 txbuf[] = "ABCD";
-u8 rxbuf[32] = {0};
+u8 txbuf[] = {1};
+u8 rxbuf[100] = {0};
 //时钟配置
 void RCC_Config()
 {
@@ -66,8 +66,20 @@ void main()
  	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	// 初始化接收模式	
 	
     while(1)
-    {           
-		delay_ms(2000);
+    {       
+	  delay_ms(2000);
+		if(prx.hasrxlen != 0)
+		{
+		  debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
+			for(u8 i=0;i<prx.hasrxlen;i++)
+			  {
+				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+			  }
+			
+			debug("\r\n##################################\r\n");
+			
+			prx.hasrxlen = 0;
+		}
 		//debug("sta in main = 0x%x\r\n",NRF24L01_Read_Reg(STATUS));
 		//debug("fer in main = 0x%x\r\n",NRF24L01_Read_Reg(NRF_FIFO_STATUS));
     }   
