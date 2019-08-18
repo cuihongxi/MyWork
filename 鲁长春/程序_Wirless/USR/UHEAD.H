@@ -45,9 +45,10 @@
 
 void LSI_delayus(unsigned int  nCount);         //16M 晶振时  延时 1个微妙
 void LSI_delayms(unsigned int  nCount);         //16M 晶振时   延时 1个毫秒
-#define	GPIO_SET(pin)	GPIO_SetBits(pin)
-#define	GPIO_RESET(pin)	GPIO_ResetBits(pin)
 
+#define	GPIO_SET(pin)		GPIO_SetBits(pin)
+#define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
 
+#define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
 #endif
 

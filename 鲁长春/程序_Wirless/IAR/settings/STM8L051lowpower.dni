@@ -38,7 +38,7 @@ ShowSource=1
 [Simulator]
 Freq=16000000
 [DebugChecksum]
-Checksum=706511185
+Checksum=-1322164342
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -46,21 +46,21 @@ MixedMode=1
 [watch_formats]
 Fmt0={W}42:SB_LH	0	2
 Fmt1={W}42:flag_checkFLYS	0	2
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [DataSample]
 LogEnabled=0
 GraphEnabled=0
 ShowTimeLog=1
-[Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\MYFUN\MyCLK.H}.9.1" 0 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\HARD\KEYBOARD.C}.178.9" 0 0 0 0 "" 0 ""
-Count=2
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
+[Breakpoints]
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\MYFUN\MyCLK.H}.9.1" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\HARD\KEYBOARD.C}.164.4" 0 0 0 0 "" 0 ""
+Count=2
 [Aliases]
 A0=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_clk.c" ""
 A1=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_gpio.c" ""

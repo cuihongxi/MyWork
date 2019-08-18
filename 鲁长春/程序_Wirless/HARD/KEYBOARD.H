@@ -9,30 +9,33 @@
 //------------------------------------按键扫描----------------------------	
 
 
-#define KEY_VAL_ALLOFF          1
-#define KEY_VAL_VEG             2
-#define KEY_VAL_BLO             3
-#define KEY_VAL_ALLON           4
-#define KEY_VAL_MOD1            5       //  16/8    
-#define KEY_VAL_MOD2            6       //  14/10    
-#define KEY_VAL_MOD3            7       //  12/12        
-#define KEY_VAL_MOD4            8       //  8/16    
-#define KEY_VAL_TIMER           9
-#define KEY_VAL_ADD             10
-#define KEY_VAL_SUB             11
+#define KEY_VAL_AM				1
+#define KEY_VAL_POW_CA			2
+#define KEY_VAL_Y30 			3
+#define KEY_VAL_I30				4
+#define KEY_VAL_I60				5        
+#define KEY_VAL_I100            6           
+#define KEY_VAL_MOTZ           	7    	//马达左转           
+#define KEY_VAL_MOTY            8       //马达右转
+#define KEY_VAL_DUIMA           9		//对码
 #define KEY_VAL_NULL            0       //没按下
 
 //引脚定义      
-#define         Lie_0                   GPIOB,GPIO_Pin_0
-#define         Lie_1                   GPIOB,GPIO_Pin_1
-#define         Lie_2                   GPIOB,GPIO_Pin_2
-#define         Lie_3                   GPIOB,GPIO_Pin_3
-#define         Heng_0                  GPIOB,GPIO_Pin_4
-#define         Heng_1                  GPIOB,GPIO_Pin_5
-#define         Heng_2                  GPIOB,GPIO_Pin_6
+#define         Lie_0                   GPIOA,GPIO_Pin_3
+#define         Lie_1                   GPIOD,GPIO_Pin_0
+#define         Lie_2                   GPIOA,GPIO_Pin_0
 
+#define         Heng_0                  GPIOC,GPIO_Pin_6
+#define         Heng_1                  GPIOA,GPIO_Pin_2
+#define         Heng_2                  GPIOB,GPIO_Pin_2
 
-#define         GPIO_MODE_OUT           GPIO_Mode_Out_PP_Low_Slow//GPIO_Mode_Out_OD_Low_Slow//GPIO_Mode_Out_PP_Low_Slow
+#define         Z_LED                   GPIOB,GPIO_Pin_1		//感应灯
+#define         T_LED                   GPIOC,GPIO_Pin_5		//感应灯
+
+#define			TOUCH_IO				GPIOC,GPIO_Pin_1		//触摸中断引脚
+#define			GPIO_MODE_TOUCH			GPIO_Mode_In_FL_IT		
+
+#define         GPIO_MODE_OUT           GPIO_Mode_Out_PP_Low_Slow
 #define         GPIO_MODE_IN            GPIO_Mode_In_PU_No_IT
 #define         GPIO_MODE_IT            GPIO_Mode_In_PU_IT
 

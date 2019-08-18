@@ -1,6 +1,6 @@
 /**
 	2019-8-16
-	
+	“£øÿ∆˜≥Ã–Ú
 
 */
 #include "uhead.h"
@@ -8,11 +8,12 @@
 #include "stm8l15x_flash.h"
 #include "24l01.h"
 #include "NRF24L01_AUTO_ACK.H"
-
+#include "keyboard.h"
 
 Nrf24l01_PRXStr prx = {0};
 u8 txbuf[] = {1};
 u8 rxbuf[100] = {0};
+u8 keyval = 0;
 //Êó∂ÈíüÈÖçÁΩÆ
 void RCC_Config()
 {
@@ -43,7 +44,7 @@ void RCC_Config()
     CLK_PeripheralClockConfig(CLK_Peripheral_CSSLSE,DISABLE); 
 }
 
-//Ê≤°ÊúâÁî®Âà∞ÁöÑÂºïËÑöËÆæÁΩÆ‰ΩéÂäüËÄó
+
 void FreeGPIO_Config()
 {
   GPIO_Init(GPIOA,GPIO_Pin_1,GPIO_Mode_Out_PP_High_Slow);
@@ -55,19 +56,79 @@ void FreeGPIO_Config()
   
 }
 
+// ÷∏ æµ∆≥ı ºªØ
+void Init_LedGPIO(void)
+{
+	GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_RESET(Z_LED);
+	GPIO_RESET(T_LED);
+	delay_ms(1000);
+	GPIO_SET(Z_LED);
+	GPIO_SET(T_LED);
+	  
+}
+
+// ¥•√˛IO≥ı ºªØ£¨…œ…˝—ÿ¥•∑¢
+void Init_TOUCHGPIO(void)
+{
+	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
+	disableInterrupts();
+    EXTI_SelectPort(EXTI_Port_B);
+	EXTI_SetPinSensitivity(EXTI_Pin_1,EXTI_Trigger_Rising);   
+    enableInterrupts();                                           // πƒ‹÷–∂œ
+}
 
 void main()
 {    
-   
+
     RCC_Config();
     FreeGPIO_Config();
-		
+	Key_GPIO_Init();
+	Init_TOUCHGPIO();
 	UART_INIT(115200);
- 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	// ÂàùÂßãÂåñÊé•Êî∂Ê®°Âºè	
-	
+ 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);
+	Init_LedGPIO();				
+
     while(1)
-    {       
-	  delay_ms(2000);
+    {    
+		//∞¥º¸ºÏ≤‚
+	  if(flag_exti)
+	  {      
+			Key_ScanLeave();
+	  }
+	   if(keyval != KEY_VAL_NULL)
+	   {
+		 debug("\r\n");
+		 switch(keyval)
+		 {
+			case KEY_VAL_AM:	debug("KEY_VAL_AM");
+		   break;
+			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");
+		   break;
+		   break;
+			case KEY_VAL_Y30:debug("KEY_VAL_Y30");
+		   break;
+			case KEY_VAL_I30:debug("KEY_VAL_I30");
+		   break;
+			case KEY_VAL_I60:debug("KEY_VAL_I60");
+		   break;
+			case KEY_VAL_I100:debug("KEY_VAL_I100");
+		   break;
+			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");
+		   break;
+			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");
+		   break;
+			case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");
+		   break;
+		   
+		 }
+		 keyval = KEY_VAL_NULL;
+			debug("\r\n");
+	   }	  
+	  
+
+
 		if(prx.hasrxlen != 0)
 		{
 		  debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
@@ -107,8 +168,18 @@ void assert_failed(u8* file,u32 line)
   while(1);
 }
 #endif
-              
-//IRQ ‰∏≠Êñ≠ÊúçÂä°ÂáΩÊï∞
+           
+//¥•√˛IO
+INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
+{
+  	if(GPIO_READ(TOUCH_IO) != RESET)	debug("in touch TI \r\n");
+	
+	EXTI_ClearITPendingBit (EXTI_IT_Pin1);  
+       
+}
+
+
+//NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
    prx.IRQCallBack(&prx);
