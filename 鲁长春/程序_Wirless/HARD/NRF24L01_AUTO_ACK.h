@@ -62,6 +62,7 @@ typedef struct PRXStr{
 void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch);	// 初始化发射模式
 void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen); 					// 主函数中的发送函数
 void NRF24L01_PTXInMainReset(Nrf24l01_PTXStr* ptx);									// 复位主函数的发送
+void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size);					// 发射模式，发送短消息
 
 void Default_IRQCallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射中断回调函数
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 达到最大发射次数默认回调函数

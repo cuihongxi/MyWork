@@ -11,11 +11,6 @@
 #define         TIM_LH_SLEEP            10      // LH闭合后，TIM_LH秒进入休眠状态
 #define         TIM_LH_SAFE             90      // LH断开TIM_LH_SAFE时间，反转。单位秒
 
-#ifdef  DEBUG_UART
-#define         TIM_ANSWER              1        
-#else
-#define         TIM_ANSWER              30      // 不响应YS_FL信号的时间，单位分
-#endif
 
 #define         TIM_checkYSFL           1       // YSFL检测时间，单位秒
 #define         TIM_WZ                  5       // WZ闭合后，时间TIM_WZ内不响应YS_FL信号，单位秒
@@ -24,7 +19,7 @@
 #define         TIM_MOTOSTOP1           2       // BH方波异常，马达反转时间，单位秒
 #define         TIM_MOTOSTART0          2       // 马达停止后正转时间，单位秒
 #define         TIM_MOTOSTART1          6       // BH方波异常，马达停转后正转时间，单位秒
-#define         TIM_WakeUp_Low          3       // 3秒唤醒检测电池电压
+#define         TIM_WakeUp_Low          6*3600  // 6小时唤醒检测电池电压
 #define         TIM_WakeUp_High         27      // 27秒唤醒检测电池电压，不能超过27，否则溢出
 #define         TIM_BACK                10      // 马达反转10秒进入重启
 #define         TIM_BH0                 0.5     // BH又出现0.5秒后进入重启

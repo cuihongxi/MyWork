@@ -311,12 +311,12 @@ INTERRUPT_HANDLER(TIM2_CC_USART2_RX_IRQHandler,20)
   * @param  None
   * @retval None
   */
-INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
-{
-    /* In order to detect unexpected events during development,
-       it is recommended to set a breakpoint on the following instruction.
-    */
-}
+//INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
+//{
+//    /* In order to detect unexpected events during development,
+//       it is recommended to set a breakpoint on the following instruction.
+//    */
+//}
 /**
   * @brief Timer3 Capture/Compare /USART3 RX Interrupt routine.
   * @param  None

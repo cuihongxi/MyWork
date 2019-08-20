@@ -9,11 +9,21 @@
 #include "24l01.h"
 #include "NRF24L01_AUTO_ACK.H"
 #include "keyboard.h"
+#include "pwm.h"
 
-Nrf24l01_PRXStr prx = {0};
-u8 txbuf[] = {1};
-u8 rxbuf[100] = {0};
+Nrf24l01_PTXStr ptx = {0};
+
+#define SIZE_TX 3
+u8 rxbuf[32] = {0};
+u8 txbuf[SIZE_TX] = {0};
+
+
 u8 keyval = 0;
+u8 flag_pwm = 0;		//触摸PWM开启标志
+u8 zled_counter = 0;
+u8 pwm = 1;
+u8 pwm_dir = 0;			//0 自减，1自增
+
 //鏃堕挓閰嶇疆
 void RCC_Config()
 {
@@ -44,16 +54,15 @@ void RCC_Config()
     CLK_PeripheralClockConfig(CLK_Peripheral_CSSLSE,DISABLE); 
 }
 
-
 void FreeGPIO_Config()
 {
-  GPIO_Init(GPIOA,GPIO_Pin_1,GPIO_Mode_Out_PP_High_Slow);
-  GPIO_Init(GPIOA,GPIO_Pin_2,GPIO_Mode_Out_PP_High_Slow);
-  GPIO_Init(GPIOA,GPIO_Pin_3,GPIO_Mode_Out_PP_High_Slow);
-  GPIO_Init(GPIOB,GPIO_Pin_7,GPIO_Mode_Out_PP_High_Slow);
-  GPIO_Init(GPIOC,GPIO_Pin_2,GPIO_Mode_Out_PP_High_Slow);
-  GPIO_Init(GPIOA,GPIO_Pin_0,GPIO_Mode_Out_PP_High_Slow);
-  
+//  GPIO_Init(GPIOA,GPIO_Pin_1,GPIO_Mode_Out_PP_High_Slow);
+//  GPIO_Init(GPIOA,GPIO_Pin_2,GPIO_Mode_Out_PP_High_Slow);
+//  GPIO_Init(GPIOA,GPIO_Pin_3,GPIO_Mode_Out_PP_High_Slow);
+//  GPIO_Init(GPIOB,GPIO_Pin_7,GPIO_Mode_Out_PP_High_Slow);
+//  GPIO_Init(GPIOC,GPIO_Pin_2,GPIO_Mode_Out_PP_High_Slow);
+//  GPIO_Init(GPIOA,GPIO_Pin_0,GPIO_Mode_Out_PP_High_Slow);
+//  
 }
 
 // 指示灯初始化
@@ -76,7 +85,19 @@ void Init_TOUCHGPIO(void)
 	disableInterrupts();
     EXTI_SelectPort(EXTI_Port_B);
 	EXTI_SetPinSensitivity(EXTI_Pin_1,EXTI_Trigger_Rising);   
+	GPIO_RESET(TOUCH_IO);
     enableInterrupts();                                           //使能中断
+}
+
+//TIM3初始化
+void TIM3_INIT()
+{
+
+    TIM3_ARRPreloadConfig(ENABLE);
+    TIM3_ITConfig(TIM3_IT_Update, ENABLE);
+    TIM3_ClearITPendingBit(TIM3_IT_Update); 
+    TIM3_Cmd(ENABLE);
+
 }
 
 void main()
@@ -86,12 +107,23 @@ void main()
     FreeGPIO_Config();
 	Key_GPIO_Init();
 	Init_TOUCHGPIO();
-	UART_INIT(115200);
- 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);
-	Init_LedGPIO();				
+	UART_INIT(115200);					
+	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
 
+	Init_LedGPIO();				
+	PWM_Init();			//呼吸灯，PWM初始化
+	TIM3_INIT();		//定时器3,1ms
+	
     while(1)
     {    
+		//没有触摸，关闭呼吸灯
+	  if((GPIO_READ(TOUCH_IO) == RESET) && pwm == 100) 
+	  {
+	  	PWM_Status(PWM_OFF);
+		zled_counter = 0;
+		pwm = 1;
+		flag_pwm = 0;
+	  }
 		//按键检测
 	  if(flag_exti)
 	  {      
@@ -102,7 +134,7 @@ void main()
 		 debug("\r\n");
 		 switch(keyval)
 		 {
-			case KEY_VAL_AM:	debug("KEY_VAL_AM");
+			case KEY_VAL_AM:	NRF_AutoAck_TxPacket(&ptx, u8 *txbuf,u8 size);
 		   break;
 			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");
 		   break;
@@ -126,32 +158,10 @@ void main()
 		 keyval = KEY_VAL_NULL;
 			debug("\r\n");
 	   }	  
-	  
 
 
-		if(prx.hasrxlen != 0)
-		{
-		  debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-			for(u8 i=0;i<prx.hasrxlen;i++)
-			  {
-				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-			  }
-			
-			debug("\r\n##################################\r\n");
-			
-			prx.hasrxlen = 0;
-		}
-		//debug("sta in main = 0x%x\r\n",NRF24L01_Read_Reg(STATUS));
-		//debug("fer in main = 0x%x\r\n",NRF24L01_Read_Reg(NRF_FIFO_STATUS));
     }   
     
-}
-
-//TIM2鏇存柊涓柇,500ms
-INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
-{
-
-    TIM2->SR1 = (uint8_t)(~(uint8_t)TIM2_IT_Update);//TIM2_ClearITPendingBit(TIM2_IT_Update);     
 }
 
 
@@ -165,14 +175,54 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 #ifdef USE_FULL_ASSERT
 void assert_failed(u8* file,u32 line)
 {
+  debug("assert_failed : %s , line:%d\r\n",file,line);
   while(1);
 }
 #endif
-           
+ 
+
+//TIM3更新中断,1ms
+INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
+{      
+ 	//呼吸灯PWM
+  if(flag_pwm )
+  {
+		zled_counter ++;
+		if(zled_counter>15)
+		{
+			zled_counter = 0;
+			if(pwm_dir)
+			{
+				pwm ++;
+				if(pwm>100)
+				{
+					pwm = 100;
+					pwm_dir = 0;
+				}				
+			}
+			else
+			{
+				pwm --;
+				if(pwm == 1) flag_pwm = 0;
+			} 
+			PWM_SetDutyCycle(pwm);
+		}  
+  }
+  
+  TIM3_ClearITPendingBit(TIM3_IT_Update);  
+}
 //触摸IO
 INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 {
-  	if(GPIO_READ(TOUCH_IO) != RESET)	debug("in touch TI \r\n");
+  	if(GPIO_READ(TOUCH_IO) != RESET)	
+	{
+		PWM_Status(PWM_ON);
+		pwm = 1;
+		PWM_SetDutyCycle(pwm);
+		flag_pwm = 1;
+		pwm_dir = 1;
+	//	debug("in touch TI \r\n");
+	}
 	
 	EXTI_ClearITPendingBit (EXTI_IT_Pin1);  
        
@@ -182,6 +232,6 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 //NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
-   prx.IRQCallBack(&prx);
+   ptx.IRQCallBack(&ptx);
    EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }             

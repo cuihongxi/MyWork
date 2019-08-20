@@ -9,7 +9,8 @@ u16     VALVE_YS_ADCval         = (u16)(4095 * (VALVE_YS_D/3.3));   					//”ÍÀÆ¥
 void GPIO_ADC_Init()
 {
     GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
-    GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  
+    GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
+	GPIO_Init(CHARGE_PRO_PIN,GPIO_Mode_In_FL_No_IT); 		//≥‰µÁ±£ª§£¨∏ﬂµÁ∆Ω–Ë“™±£ª§
 }
 
 //∑µªÿœ‡”¶Õ®µ¿ADC÷µ

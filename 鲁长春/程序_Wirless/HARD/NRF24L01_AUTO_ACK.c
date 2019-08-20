@@ -38,8 +38,8 @@ void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen)
 		}		
 	}else
 	{
-	  	ptx->txbuf[0] ++;
-		NRF24L01_PTXInMainReset(ptx);
+	//  	ptx->txbuf[0] ++;
+	//	NRF24L01_PTXInMainReset(ptx);
 		
 	}
 	  
@@ -99,7 +99,6 @@ void Default_IRQCallBack_PTX(Nrf24l01_PTXStr* ptx)
   	if(READ_IRQ_IN == 0)
 	{
 		ptx->status = NRF24L01_GetStatus();  			 		// 读取状态寄存器的值
-//		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,ptx->status); 	// 清除TX_DS或MAX_RT中断标志 
 		if(ptx->status&TX_OK)									// 发送完成
 		{
 			ptx->TXDCallBack(ptx);
@@ -124,9 +123,10 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	ptx->rxlen = rxlen;
 	ptx->flag_sendfinish  = FALSE;
 	ptx->hastxlen = 0;
+	ptx->hasrxlen = 0;
+	
 	ptx->pip = pip;
 	ptx->rf_ch = rf_ch;
-	ptx->hasrxlen = 0;
 	
 	Init_NRF24L01(ptx->pip,ptx->rf_ch);
 	NRF24L01_GPIO_IRQ();
@@ -137,6 +137,18 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	NRF24L01_TX_Mode();				// 配置为发送模式
 
 
+}
+
+//发射模式，发送短消息
+void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
+{
+	ptx->txbuf = txbuf;
+	ptx->txlen = size;
+	ptx->hastxlen = 0;
+	ptx->hasrxlen = 0;
+	ptx->flag_sendfinish  = FALSE;
+	NRF24L01_TxPacket(ptx->txbuf,ptx->txlen);
+	ptx->hastxlen += ptx->txlen;	
 }
 
 /******************************************接收模式***************************************************************/

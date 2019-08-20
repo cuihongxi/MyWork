@@ -139,6 +139,19 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 
 }
 
+//发射模式，发送短消息
+void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
+{
+	ptx->txbuf = txbuf;
+	ptx->txlen = size;
+	ptx->hastxlen = 0;
+	ptx->hasrxlen = 0;
+	ptx->flag_sendfinish  = FALSE;
+	NRF24L01_TxPacket(ptx->txbuf,ptx->txlen);
+	ptx->hastxlen += ptx->txlen;	
+}
+
+
 /******************************************接收模式***************************************************************/
 
 

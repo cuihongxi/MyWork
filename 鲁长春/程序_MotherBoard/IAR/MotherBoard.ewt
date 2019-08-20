@@ -2012,10 +2012,16 @@
   <group>
     <name>main</name>
     <file>
+      <name>$PROJ_DIR$\..\USR\lowpower.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\USR\main.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\USR\stm8l15x_it.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\USR\UHEAD.C</name>
     </file>
   </group>
   <group>
