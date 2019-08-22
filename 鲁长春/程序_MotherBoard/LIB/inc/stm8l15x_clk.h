@@ -430,7 +430,6 @@ void CLK_ClearFlag(void);
 ITStatus CLK_GetITStatus(CLK_IT_TypeDef CLK_IT);
 void CLK_ClearITPendingBit(CLK_IT_TypeDef CLK_IT);
 
-
 #endif /* __STM8L15x_CLK_H */
 
 /**

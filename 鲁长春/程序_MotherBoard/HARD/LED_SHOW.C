@@ -13,11 +13,11 @@ void LED_GREEN_Open(u8 bol)
 {
 	if(bol) 
 	{
-		GPIO_RESET(LED_GREEN);
-		GPIO_SET(LED_RED);
+		GPIO_SET(LED_GREEN);
+	//	GPIO_SET(LED_RED);
 	}else
 	{
-		GPIO_SET(LED_GREEN);
+		GPIO_RESET(LED_GREEN);
 	}
 }
 
@@ -25,10 +25,10 @@ void LED_RED_Open(u8 bol)
 {
 	if(bol) 
 	{
-		GPIO_RESET(LED_RED);
-		GPIO_SET(LED_GREEN);
+		GPIO_SET(LED_RED);
+	//	GPIO_SET(LED_GREEN);
 	}else
 	{
-		GPIO_SET(LED_RED);
+		GPIO_RESET(LED_RED);
 	}
 }

@@ -11,6 +11,8 @@
 #include "stm8l15x.h"
 #include "stm8l15x_gpio.h"
 #include "UDATA.H"
+#include "CUI_MALLOC.H"
+
 
 #define DEBUG_LEVEL 1		//调试接口
 
@@ -53,6 +55,8 @@
 #define	GPIO_SET(pin)	GPIO_SetBits(pin)
 #define	GPIO_RESET(pin)	GPIO_ResetBits(pin)
 
+#define	malloc(a)	CUI_MALLOC(a)
+#define	free(a)		FreeCUI_MALLOC(a)
 
 void LSI_delayus(unsigned int  nCount);   //16M 晶振时  延时 1个微妙
 void LSI_delayms(unsigned int  nCount);
