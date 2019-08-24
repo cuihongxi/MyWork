@@ -78,7 +78,7 @@ void LED_RED_ON(void)
 void LED_RED_OFF(void)
 {
 	LED_RED_Open(0);
-
+debug("1 : LED_RED_Close\r\n");
 }
 
 void LED_GREEN_ON(void)
@@ -89,13 +89,13 @@ void LED_GREEN_ON(void)
 void LED_GREEN_OFF(void)
 {
 	LED_GREEN_Open(0);
-	
+	debug("2 : LED_GREEN_Close\r\n");
 }
 void main()
 {
   	CLK_GPIO_Init();										// 低功耗时钟和GPIO初始化,2MHZ
 	UART_INIT(115200);
-	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
+//	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	LED_GPIO_Init();   										// 双色LED初始化
 	MX830Motor_GPIOInit();                                 	// 马达IO配置	
@@ -103,19 +103,20 @@ void main()
 	LED_RED_Open(flag);	
 	TIM2_INIT();
 	
-	TaskStr* task = OS_CreatTask(&timer2);
-	OS_AddFunction(task,LED_RED_ON,500);
-	OS_AddFunction(task,LED_RED_OFF,500);		
+	TaskLinkStr* tasklink = SingleCycList_Create();
+	TaskStr* task1 = OS_CreatTask(&timer2);
+	OS_AddFunction(task1,LED_RED_ON,500);
+	OS_AddFunction(task1,LED_RED_OFF,500);		
 
 	TaskStr* task2 = OS_CreatTask(&timer2);
 	OS_AddFunction(task2,LED_GREEN_OFF,2000);	
-	OS_AddFunction(task2,LED_GREEN_ON,2000);	
+	OS_AddFunction(task2,LED_GREEN_ON,2000);
 	
-	
+	OS_AddTask(tasklink,task1);	
+	OS_AddTask(tasklink,task2);
 	while(1)
 	{
-		OsSectionFun(task);
-		OsSectionFun(task2);
+		OS_Task_Run(tasklink);
 	}
 	
 	
@@ -188,7 +189,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
 
 	debug("\r\n##################################\r\n");
-   RTC_ClearITPendingBit(RTC_IT_WUT);  
+   	RTC_ClearITPendingBit(RTC_IT_WUT);  
 
 }
 //TIM2更新中断,1ms
@@ -196,4 +197,5 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
 {
 	OS_TimerFunc(&timer2);							// 定时器内函数
   	TIM2_ClearITPendingBit(TIM2_IT_Update); 
+	
 }

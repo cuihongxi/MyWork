@@ -152,6 +152,12 @@ u8* CUI_MALLOCMini(u32 leng_th)
 			return pBuff;
 	}
 }
+
+//内存清零
+void Clear_MM(u8* p,u32 leng_th)
+{
+	for(u32 i=0;i<leng_th;i++)p[i] = 0;
+}
 /************************************************************************************
 *-函数名称	：动态申请内存
 *-参数			：leng_th 申请的内存长度
@@ -167,16 +173,16 @@ void* CUI_MALLOC(u32  leng_th)
 	
 		p = CUI_MALLOCMini(leng_th);
 		Malloc_Log("已经申请小内存,地址：%#X\r\n",(u32)p);
-//		printf("--------------p = %#x\r\n",(u32)p);
-		return (void*)p;
+		Clear_MM(p,leng_th);
+
 	}
 	else
 	{
 		p = MallocGE(leng_th,(u8*)&CUI_MALLOCArray,Malloc_UNIT,Malloc_MAXSIZE,indexMalloc);
 		Malloc_Log("已经申请大内存,地址：%#X\r\n",(u32)p);
-		return (void*)p;
 	}
-	
+	Clear_MM(p,leng_th);
+	return (void*)p;
 }
 
 /************************************************************************************

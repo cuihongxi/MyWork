@@ -17,7 +17,7 @@ int SingleList_Insert(SingleList* list, SingleListNode* node) // O(n)
     return 0;
 }
 
-//返回移除节点的上一个节点，以保证->next相同
+//返回移除节点的上一个节点
 SingleListNode*  SingleList_DeleteNode(SingleList* list, SingleListNode* node) // O(n)
 {
 

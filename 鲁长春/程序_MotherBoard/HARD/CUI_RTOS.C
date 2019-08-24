@@ -4,71 +4,75 @@
 // task：任务 ；time 延时的值
 void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 {
-	task->flag_run = FALSE;					//防止重入
-	task->time = time;						//计时阀值
-	task->counter = 0;						//计时归零
-	SingleList_Insert(task->timer, task);	//添加到定时任务
-
+	task->timerNode.time = time;							//计时阀值
+	task->timerNode.counter = 0;							//计时归零
+//	debug("挂起任务 task ADDR = %lu, tasklink addr = %lu,time = %lu\r\n",(u32)&task->taskNode,(u32)task->timerlink->tasklink,time);
+	SingleList_Insert(task->timerlink, &task->timerNode);					// 添加到定时任务
+	SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);	// 将该任务从任务循环队列中移除
+	
 }
 
 //创建一个任务，绑定定时器
-TaskStr* OS_CreatTask(TimerLinkStr* timer)
+TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
 {
 	TaskStr* task = (TaskStr*)malloc(sizeof(TaskStr));
-
-	task->timer = timer;
-	task->step = 0;
-	task->flag_run = TRUE;
+	task->pthis = 0;
+	task->timerlink = timerlink;
+	task->timerNode.task = task;
 	return task;
 }
 
-void LED_RED_ON(void);
 //添加函数到任务
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 {
-	funLinkStr* funlink = (funLinkStr*)malloc(sizeof(funLinkStr));
-	funlink->osfun = fun;
-	funlink->time = time;
-	SingleList_Insert(&task->funlink, funlink);
+	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
+	funNode->osfun = fun;
+	funNode->time = time;
+	SingleList_Insert(&task->funNode, funNode);
+}
 
+//添加任务到任务队列
+void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task)
+{
+	task->timerNode.tasklink = tasklink;
+	SingleCycList_Insert(tasklink, &task->taskNode);
 }
 
 //运行实例函数
 void OsSectionFun(TaskStr* task)
 {
-	
-	if(task->flag_run == TRUE)
+	if(task->pthis == 0) task->pthis = (funLinkStr*)&task->funNode;
+	SingleList_Iterator((void**)&task->pthis);					//取一个任务
+	if(task->pthis != 0 && task->pthis->osfun !=0)
 	{
-		funLinkStr* phasnext = (funLinkStr*)&task->funlink;
-		SingleList_Iterator((void**)&phasnext);
-		u8 step = task->step;
-		while(step--)  SingleList_Iterator((void**)&phasnext);	// 根据step，跳转到执行函数中
-		if(phasnext != 0)
-		{
-			phasnext->osfun();									// 执行函数
-			CUI_RTOS_Delayms(task,phasnext->time);				// 执行延时
-			return;									//跳出程序
+		task->pthis->osfun();									// 执行函数
+		CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
+		return;													//跳出程序
+	}	
+}
 
-		}
-		task->step = 0;
+//任务队列运行
+void OS_Task_Run(TaskLinkStr* tasklink)
+{
+	while(SingleCycList_Iterator((SingleCycListNode**)&tasklink))
+	{
+		OsSectionFun((TaskStr*)tasklink);
 	}
+	
 }
 
 //定时器内函数
 void OS_TimerFunc(TimerLinkStr* timer)
 {
-	TaskStr* pNext = (TaskStr*)timer;
-	
+	TimerLinkStr* pNext = timer;
 	while(SingleList_Iterator((void**)&pNext))
 	{
 		pNext->counter ++;
-		//debug("pNext->counter = %lu ,pNext->time = %lu\r\n,",pNext->counter,pNext->time);
 		if(pNext->counter == pNext->time)
 		{
-			pNext->step ++;
-			pNext->flag_run = TRUE;
-			SingleList_DeleteNode(timer, pNext);
-			
+			SingleCycList_Insert(pNext->tasklink,&pNext->task->taskNode) ;	// 添加任务到队列	
+			SingleList_DeleteNode(timer, pNext);							// 删除定时
+
 		}
 		
 	}
