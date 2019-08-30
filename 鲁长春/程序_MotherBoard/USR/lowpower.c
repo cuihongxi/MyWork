@@ -3,10 +3,10 @@
 #include "ADC_CHECK.H"
 #include "MX830Motor.h"
 #include "LED_SHOW.H"
+#include "keyboard.h"
 
 void LowPowerGPIO()
 {
-	GPIO_RESET(GPIO_HWKZ);					// 红外控制
 	GPIO_RESET(GPIO_38KHZ_BC1);				// 红外检测返回信号
 	GPIO_RESET(GPIO_38KHZ_BC2);				// 红外检测返回信号
 	GPIO_RESET(MX830Motor_GPIO_FI);			// 马达 IO

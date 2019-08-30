@@ -1958,10 +1958,19 @@
       <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\HARD\BAT.C</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\HARD\CUI_MALLOC.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\CUI_RTOS.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\FL.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\KEYBOARD.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\LED_SHOW.C</name>
@@ -2001,6 +2010,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_i2c.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_pwr.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_rtc.c</name>

@@ -9,11 +9,19 @@
 #define         LED_GREEN          GPIOB,GPIO_Pin_5          //绿灯
 #define         LED_RED            GPIOD,GPIO_Pin_1         //红灯
 
-
+typedef enum{
+	RED,
+	GREEN,
+}LEDType;
 
 
 void LED_GPIO_Init();   //双色LED初始化
 void LED_GREEN_Open(u8 bol);
 void LED_RED_Open(u8 bol);
-
+void LEN_RED_Open();
+void LEN_RED_Close();
+void LEN_GREEN_Open();
+void LEN_GREEN_Close();
+#include "CUI_RTOS.H"
+void OS_LED_Sharp(TaskStr* task,LEDType led,u16 time,u8 count);//os下LED闪烁设定
 #endif

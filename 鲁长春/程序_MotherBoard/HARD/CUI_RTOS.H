@@ -3,7 +3,17 @@
 #include "uhead.h"
 #include "SingleList.h"
 #include "SingleCycList.h"
+/*
+2019Äê8ÔÂ27ÈÕ07:30:34
+Ôö¼ÓÁËÏµÍ³Ê±ÖÓ¸ÅÄî
+Ôö¼ÓÁËÈÎÎñ×´Ì¬ÅĞ¶Ï
+´ıÔö¼Ó¿ÕÏĞÈÎÎñÊ±ÊÍ·ÅÄÚ´æ¹¦ÄÜ
 
+*/
+
+
+#define		MAX_NUMBER		0XFF		//ÈÎÎñµÄ×î´óÑ­»·´ÎÊı£¬µÈÓÚ¾ÍÎŞÏŞÑ­»·
+#define		TYPE_NUMBER		u8			//Êı¾İÀàĞÍ
 //ÈÎÎñÁ´±í
 typedef struct{
 	SingleListNodeStr list;			//Á´±í
@@ -15,29 +25,37 @@ typedef struct _TaskStr 	TaskStr;
 typedef struct{
 	SingleListNodeStr list;			//Á´±í
 	u32 counter;					//¶¨Ê±Æ÷¼ÆÊı£¬ms
-	u32 time;						//¶¨Ê±Ê±¼ä
 	TaskLinkStr* 	tasklink;		//ÈÎÎñÖ´ĞĞÁ´±í	
 	TaskStr*  task;
+	
 }TimerLinkStr;
 
 typedef void(*osfun)(void) ;
 
 typedef struct{
-	SingleListNodeStr list;			//Á´±í
-	void(*osfun)(void);				//ÈÎÎñ
-	u32 time;						//¶¨Ê±Ê±¼ä
+	SingleListNodeStr 	list;			//Á´±í
+	void(*osfun)(void);					//ÈÎÎñ
+	u32 				time;			//¶¨Ê±Ê±¼ä
+	TYPE_NUMBER			number;			// Ñ­»·´ÎÊı	£¬Èç¹ûÎª×î´óÖµ¾ÍÎŞÏŞÑ­»·£¬·ñÔòµ½´ï´ÎÊı¾Í±»ÒÆ³ı	
 }funLinkStr;
+
+typedef enum{
+	Stop,
+	Run,
+	Wait,
+	Suspend,						//¹ÒÆğ£¬µÈ´ı¶¨Ê±Æ÷¼ÆÊ±Íê³É
+}taskState;
 
 //ÈÎÎñ½á¹¹Ìå
 struct _TaskStr{
-	SingleListNodeStr 	taskNode;		//ÈÎÎñÁ´½Ó½Úµã
-	TimerLinkStr	 	timerNode;		//¶¨Ê±Æ÷Á´½Ó½Úµã
-	SingleListNodeStr 	funNode;		//Á´±í,ÓÃÓÚÌí¼Óµ½ÈÎÎñ¶ÓÁĞÖĞ
-	funLinkStr* 		pthis;			//¼ÇÂ¼µ±Ç°Ö´ĞĞµ½µÄº¯Êı
-	
-	TimerLinkStr* 		timerlink;		//¶¨Ê±Æ÷Ö´ĞĞÁ´±í
-		
+	SingleListNodeStr 	taskNode;		// ÈÎÎñÁ´½Ó½Úµã
+	TimerLinkStr	 	timerNode;		// ¶¨Ê±Æ÷Á´½Ó½Úµã
+	SingleListNodeStr 	funNode;		// Á´±í,ÓÃÓÚÌí¼Óµ½ÈÎÎñ¶ÓÁĞÖĞ
+	funLinkStr* 		pthis;			// ¼ÇÂ¼µ±Ç°Ö´ĞĞµ½µÄº¯Êı
+	TimerLinkStr* 		timerlink;		// ¶¨Ê±Æ÷Ö´ĞĞÁ´±í
+	taskState 			state;			// ÈÎÎñ×´Ì¬
 };
+
 
 //ÈÎÎñÁ´±í½Úµã
 typedef struct {
@@ -52,5 +70,9 @@ void OS_AddFunction(TaskStr* task,osfun fun,u32 time);			// Ìí¼Óº¯Êıµ½ÈÎÎñ,ÓĞË³Ğ
 void OsSectionFun(TaskStr* task);								// ÔËĞĞÊµÀıº¯Êı
 
 void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task);			// Ìí¼ÓÈÎÎñµ½ÈÎÎñ¶ÓÁĞ
+void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num);		// Ìí¼ÓÑ­»·º¯Êıµ½ÈÎÎñ
 void OS_Task_Run(TaskLinkStr* tasklink);						// ÈÎÎñ¶ÓÁĞÔËĞĞ
+
+u32 GetSysTime(TimerLinkStr* timerlink);						// »ñÈ¡ÏµÍ³Ê±¼ä
+void OS_DeleteTask(void);										//´ÓÈÎÎñÁĞ±íÉ¾³ıÈÎÎñÓÃ£¬Ê±¼äÓ¦¸ÃÎª0
 #endif

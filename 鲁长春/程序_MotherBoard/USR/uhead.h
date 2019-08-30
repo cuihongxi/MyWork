@@ -1,6 +1,6 @@
 /********************************************************************************
 *Author :       explorersoftware.taobao.com 
-*Time   :       2017-3-30 09:19:37
+*Time   :       2019年8月24日15:44:36
 *Explain:       通用头文件
 *
 ********************************************************************************/
@@ -49,11 +49,13 @@
 #endif
 
 
-#define delay_ms(x)     LSI_delayms(x)
-#define delay_us(x)     LSI_delayus(x)
+#define delay_ms(x)     	LSI_delayms(x/8)
+#define delay_us(x)     	LSI_delayus(x/8)
 
-#define	GPIO_SET(pin)	GPIO_SetBits(pin)
-#define	GPIO_RESET(pin)	GPIO_ResetBits(pin)
+#define	GPIO_SET(pin)		GPIO_SetBits(pin)
+#define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
+#define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
+
 
 #define	malloc(a)	CUI_MALLOC(a)
 #define	free(a)		FreeCUI_MALLOC(a)

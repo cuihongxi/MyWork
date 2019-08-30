@@ -6,14 +6,25 @@
 *Explain:       所有需要修改的参数在这里修改
 *
 ********************************************************************************/
-//#define DEBUG_UART
+#define			VALVE_BAT_GREEN			8.4		// ＞8.4V时绿灯常亮。
+#define			VALVE_BAT_SHARP3		7.4		// ＞7.4V绿灯闪亮3次；＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
+#define         VALVE_BAT_Motor         7.2     // 电池马达关窗阀值，低于该值动作
+#define         VALVE_BAT_NoBACK        4.9    	// 不再响应反转信号
 
-#define         TIM_LH_SLEEP            10      // LH闭合后，TIM_LH秒进入休眠状态
-#define         TIM_LH_SAFE             90      // LH断开TIM_LH_SAFE时间，反转。单位秒
+#define			TIM_MOTOR_Z				1000	// 马达到达BC1,或BC2时继续向前的时间，单位ms
+#define			TIM_MOTOR_F				1500	// 马达到达BC1,或BC2时反向的时间，单位ms
+#define         VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
+#define         TIM__YS_D              	4     	// s，雨水传感器的滤波间隔
+#define         TIM__FL_D              	4     	// s，FL传感器的滤波间隔
+#define         VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
+#define         MOTOR_F_SAFE            60      // 正转保护，单位秒
+#define			TIM_SLEEP				5000	// ms,休眠倒计时时间
+#define			TIM_KEY					600		// ms，连击间隔
+#define         TIM_CHECKEYS          	2000    // ms,YS检测时间
+#define         BH_SAFE                 5000    // ms, BH方波检测，单位秒
+#define         TIM_BH0                 4000    // ms, BH反向运动时间
+#define         TIM_30                  30*1000*60 // 30分钟不响应
 
-
-#define         TIM_checkYSFL           1       // YSFL检测时间，单位秒
-#define         TIM_WZ                  5       // WZ闭合后，时间TIM_WZ内不响应YS_FL信号，单位秒
 #define         TIM_BAT                 5       // 检测BAT电压周期，单位秒
 #define         TIM_MOTOSTOP0           1.5     // 马达正常停转时间，单位秒
 #define         TIM_MOTOSTOP1           2       // BH方波异常，马达反转时间，单位秒
@@ -22,18 +33,11 @@
 #define         TIM_WakeUp_Low          6*3600  // 6小时唤醒检测电池电压
 #define         TIM_WakeUp_High         27      // 27秒唤醒检测电池电压，不能超过27，否则溢出
 #define         TIM_BACK                10      // 马达反转10秒进入重启
-#define         TIM_BH0                 0.5     // BH又出现0.5秒后进入重启
 
-#define         MOTOR_F_SAFE            50      // 正转保护，单位秒   
-#define         BH_SAFE                 5       // BH方波检测，单位秒
 
-#define         VALVE_BAT               7.2     // 电池7.2V阀值，低于该值动作
-#define         VALVE_BAT_Motor         6.8     // 电池马达6.8V阀值，低于该值动作
-//#define         VALVE_YS                332.0   // YS阀值电阻，K欧,根据需要修改
-#define         VALVE_YS_D              2     // V，雨水传感器的感应电压阀值
+   
 
-#define         VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
-#define         VALVE_USB               150     // USB充电口检测
+
 
 
 

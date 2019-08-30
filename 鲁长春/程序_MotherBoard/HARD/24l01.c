@@ -243,10 +243,11 @@ void NRF24L01_TX_Mode(void)
 //1打开0关闭电源
 void NRF24L01_PWR(u8 state)
 {
+	CE_OUT_0; 
     u8 config = NRF24L01_Read_Reg(CONFIG);
     if(state) NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
     else NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
-
+	CE_OUT_1;
 }
 
 //设置接收频率
