@@ -57,23 +57,5 @@ void LEN_GREEN_Close()
 	GPIO_RESET(LED_GREEN);
 }
 
-//osœ¬LED…¡À∏…Ë∂®
-void OS_LED_Sharp(TaskStr* task,LEDType led,u16 time,u8 count)
-{
-	if(led == GREEN)
-		while(count--)
-		{
-			OS_AddFunction(task,LEN_GREEN_Open,time);	
-			OS_AddFunction(task,LEN_GREEN_Close,time);	
-		}
-	if(led == RED)
-		while(count--)
-		{
-			OS_AddFunction(task,LEN_RED_Open,time);	
-			OS_AddFunction(task,LEN_RED_Close,time);	
-		}
-		
-	
-}
 
 

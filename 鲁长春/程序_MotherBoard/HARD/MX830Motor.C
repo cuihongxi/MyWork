@@ -18,6 +18,9 @@ extern	keyStr key_Y;
 extern	u32 dm_counter;					// 开机检测DM，计数器
 extern	u8 	flag_30 ;
 extern u32 	counter_BH	;		// BH计数
+extern u8 	flag_no30;
+extern u32 threshold_30 ;
+extern TimerLinkStr timer2;
 
 /**************************************
 *@brief
@@ -122,68 +125,84 @@ void BH_Motor1()
 	counter_BH = 0;
 }
 
+void OpenWindow()
+{
+	Motor_Y();
+}
+
+void ShutDownWindow()
+{
+	Motor_Z();
+}
+
+//
+bool MotorProtect()
+{
+	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET);
+}
 
 //马达运动
 void MotorControl()
 {
 	//充电状态禁止转动，超过转动时限，禁止转动
-	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30)
+	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30 == 0)
 	{
 		motorStruct.command = STOP;	//正反转保护时间判断
 		motorStruct.flag_BC1 = 0;
 		motorStruct.flag_BC2 = 0;
-	}else if(counter_BH > BH_SAFE && flag_30 == 0)
-	{
-		flag_30 = 1;
-		//按马达当前转向，反向旋转4S，再继续原来转向
-		OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-		OS_AddFunction(taskMotor,BH_Motor1,TIM_BH0);				// 反向旋转4S
-		OS_AddFunction(taskMotor,BH_Motor1,10);						//恢复原来的转向
-		
-	}else if(counter_BH > BH_SAFE && flag_30 == 1)					//再次出现无方波
-	{
-		motorStruct.command = STOP;	//正反转保护时间判断
-		//30分钟不响应YS信号
-		flag_no30 = 1;
-		flag_30 = 0;
-		counter_BH = 0;
 	}
 	else
 	//所有情况下马达正转至38BC1高电平，延时1秒（可调）后反转1.5秒（可调）停转；\
 	反转至38BC2高电平，延时1秒正转1.5秒停转。
 	if((taskMotor->state == Wait || taskMotor->state == Stop))
 	{
+		if(counter_BH > BH_SAFE && flag_30 == 0)
+		{
+			flag_30 = 1;
+			counter_BH = 0;
+			//按马达当前转向，反向旋转4S，再继续原来转向
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
+			OS_AddJudegeFunction(taskMotor,BH_Motor1,TIM_BH0,MotorProtect);				// 反向旋转4S
+			OS_AddJudegeFunction(taskMotor,BH_Motor1,10,MotorProtect);						//恢复原来的转向
+			
+		}else if(counter_BH > BH_SAFE && flag_30 == 1)					//再次出现无方波
+		{
+			motorStruct.command = STOP;	//正反转保护时间判断
+			//30分钟不响应YS信号
+			flag_no30 = 1;
+			threshold_30 = GetSysTime(&timer2) + TIM_30;
+			flag_30 = 0;
+			counter_BH = 0;
+		}else
 		if(motorStruct.flag_BC1||motorStruct.flag_BC2)
 		{
 			motorStruct.flag_BC = 1;
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
 			if(motorStruct.flag_BC1)
 			{
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-				OS_AddFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z);		// 正转1秒
-				OS_AddFunction(taskMotor,MotorBACK_BC1,TIM_MOTOR_F);		// 反转1.5秒
+				OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorProtect);		// 正转1秒
+				OS_AddJudegeFunction(taskMotor,MotorBACK_BC1,TIM_MOTOR_F,MotorProtect);		// 反转1.5秒
 				OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
 				motorStruct.flag_BC1 = 0;	
 			}
 			if(motorStruct.flag_BC2)
 			{
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-				OS_AddFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z);		// 正转1秒
-				OS_AddFunction(taskMotor,MotorBACK_BC2,TIM_MOTOR_F);		// 反转1.5秒
+				OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorProtect);		// 正转1秒
+				OS_AddJudegeFunction(taskMotor,MotorBACK_BC2,TIM_MOTOR_F,MotorProtect);		// 反转1.5秒
 				OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
 				motorStruct.flag_BC2 = 0;			
-			}		
-		}
+			}
+			//OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
+		}else
 		
 			//YSFL达到阀值，关窗
 		if(flag_YS_SHUT)
 		{
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-			OS_AddFunction(taskMotor,Motor_Z,4);							// 执行关窗
+			OS_AddJudegeFunction(taskMotor,ShutDownWindow,4,MotorProtect);							// 执行关窗
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 			flag_YS_SHUT = 0;
-		}
+		}else
 		
 		//按键<Z
 		if(flag_KEY_Z)
@@ -194,19 +213,19 @@ void MotorControl()
 			{
 				case off:OS_AddFunction(taskMotor,MotorSTOP,4);				// 执行关窗
 				break;
-				case on:OS_AddFunction(taskMotor,Motor_Z,4);				// 执行关窗
+				case on:OS_AddJudegeFunction(taskMotor,Motor_Z,4,MotorProtect);				// 执行<z
 				break;
 				case two:
-					OS_AddFunction(taskMotor,Motor_Z,dm_counter/3);			// 执行关窗
+					OS_AddJudegeFunction(taskMotor,Motor_Z,dm_counter/3,MotorProtect);			// 执行<z
 					OS_AddFunction(taskMotor,MotorSTOP,4);
 				break;
 				case three:
-					OS_AddFunction(taskMotor,Motor_Z,dm_counter*2/3);		// 执行关窗
+					OS_AddJudegeFunction(taskMotor,Motor_Z,dm_counter*2/3,MotorProtect);		// 执行<z
 					OS_AddFunction(taskMotor,MotorSTOP,4);
 				break;
 			}
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
-		}
+		}else
 
 		//按键>Y
 		if(flag_KEY_Y)
@@ -217,14 +236,14 @@ void MotorControl()
 			{
 				case off:OS_AddFunction(taskMotor,MotorSTOP,4);				// 执行关窗
 				break;
-				case on:OS_AddFunction(taskMotor,Motor_Y,4);				// 执行关窗
+				case on:OS_AddJudegeFunction(taskMotor,Motor_Y,4,MotorProtect);				// 执行>Y
 				break;
 				case two:
-					OS_AddFunction(taskMotor,Motor_Y,dm_counter/3);			// 执行关窗
+					OS_AddJudegeFunction(taskMotor,Motor_Y,dm_counter/3,MotorProtect);			// 执行>Y
 					OS_AddFunction(taskMotor,MotorSTOP,4);
 				break;
 				case three:
-					OS_AddFunction(taskMotor,Motor_Y,dm_counter*2/3);		// 执行关窗
+					OS_AddJudegeFunction(taskMotor,Motor_Y,dm_counter*2/3,MotorProtect);		// 执行>Y
 					OS_AddFunction(taskMotor,MotorSTOP,4);
 				break;
 			}

@@ -42,7 +42,7 @@ u8* MallocGE(u32  leng_th,u8* mallocArray,u32 malloc_unit,u32 malloc_maxsize,u8*
                               array = &(mallocArray[(i*8+j)*malloc_unit]);      // 保存指针
                               m = i;
                               n = j;
-															Malloc_Log("第一次找到位置********* m=%d,n=%d********\r\n",m,n); 
+							Malloc_Log("第一次找到位置********* m=%d,n=%d********\r\n",m,n); 
                         }
                         length_counter ++;
                         if(length_counter == length)                    // 找到足够的内存

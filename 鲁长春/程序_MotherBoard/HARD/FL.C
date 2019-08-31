@@ -1,7 +1,7 @@
 #include "FL.H"
 #include "lowpower.h"
 u8 	flag_30 = 0;
-u8 	flag_no30 = 0;		//	30分钟不响应YSFL
+u8 		flag_no30 = 0;		//	30分钟不响应YSFL
 u32 	fl_speed_width	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u32 	counter_BH	= 0;	//BH计数
 

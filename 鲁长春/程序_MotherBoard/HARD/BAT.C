@@ -3,59 +3,79 @@
 #include "ADC_CHECK.H"
 #include "LED_SHOW.H"
 
-extern TaskLinkStr* tasklink;			// 任务列表
-float BATdat = 0;						// 电池电量
-TaskStr* taskBatControl;		// 电池电量检测任务
-u8 flag_checkBat = 1;			// 每次唤醒。检测BAT电量一次
+extern	BATStr bat;						// 电池管理
+u8 state = 0;
+
+bool BatState()
+{
+//	if(state != bat.state)
+//	{
+//		debug("state = %d,bat.state = %d\r\n",state , bat.state);
+//		return TRUE;
+//	}else 
+//		return FALSE;
+	return (bool)(state != bat.state);
+}
 
 //电源管理
-void BatControl()
+void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 {
-	if(flag_checkBat && (taskBatControl->state == Wait || taskBatControl->state == Stop))
+	if(bat->flag)
 	{
-		flag_checkBat = 0;
-		BATdat = BatteryGetAD(Get_ADC_Dat(Battery_Channel));
-		OS_AddFunction(taskBatControl,OS_DeleteTask,0);						// 移除任务
-		if(BATdat > VALVE_BAT_GREEN)
-		{
-			debug("BATdat ＞ 8.4V时绿灯常亮\r\n");
-			LED_GREEN_Open(1);												// ＞8.4V时绿灯常亮。
-		}		
-		else if(BATdat > VALVE_BAT_SHARP3)									// ＞7.4V绿灯闪亮3次
-		{
-			debug("BATdat ＞ 7.4V绿灯闪亮3次\r\n");
-			OS_LED_Sharp(taskBatControl,GREEN,200,3);
-			OS_AddFunction(taskBatControl,OS_DeleteTask,0);		
-			OS_AddTask(tasklink,taskBatControl);							// 添加电池电量检测任务
-
-		}else if(BATdat > VALVE_BAT_Motor) 									//＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
-		{
-			debug("BATdat ＜ 7.4V红灯闪亮3次\r\n");
-			OS_LED_Sharp(taskBatControl,RED,200,3);
-			OS_AddFunction(taskBatControl,OS_DeleteTask,0);
-			OS_AddFunction(taskBatControl,LEN_RED_Open,200);	
-			OS_AddFunction(taskBatControl,LEN_RED_Close,3000);	
-			OS_AddTask(tasklink,taskBatControl);							// 添加电池电量检测任务
-		}else if(BATdat > VALVE_BAT_NoBACK)									// ＜7.2V马达无条件正转至38BC1高电平\
-																			红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警。
-		{
-			debug("BATdat ＜ 7.2V 红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警\r\n");
-			OS_AddFunction(taskBatControl,LEN_RED_Open,200);	
-			OS_AddFunction(taskBatControl,LEN_RED_Close,800);				
-			OS_AddCycleFunction(taskBatControl,30);							//重复30次
-			OS_AddFunction(taskBatControl,LEN_RED_Open,200);	
-			OS_AddFunction(taskBatControl,LEN_RED_Close,5000);					
-			OS_AddTask(tasklink,taskBatControl);							// 添加电池电量检测任务	
-		}else													//当电压＜6.9V时系统不再响应反转信号，红色LED每秒1次闪亮报警30秒。
-		{
-			debug("BATdat ＜6.9V 红色LED每秒1次闪亮报警30秒\r\n");			
-			OS_AddFunction(taskBatControl,LEN_RED_Open,200);	
-			OS_AddFunction(taskBatControl,LEN_RED_Close,800);				
-			OS_AddCycleFunction(taskBatControl,30);
-			OS_AddTask(tasklink,taskBatControl);							// 添加电池电量检测任务
-		}
+		bat->flag = 0;
+		bat->val = BatteryGetAD(Get_ADC_Dat(Battery_Channel));
+		bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT;	// 计算检测间隔
+		if(bat->val > VALVE_BAT_GREEN)			state = BAT_STATE_GREEN;									
+		else if(bat->val > VALVE_BAT_SHARP3)	state = BAT_STATE_GREENSHARP3;
+		else if(bat->val > VALVE_BAT_Motor) 	state = BAT_STATE_REDSHARP3;								
+		else if(bat->val > VALVE_BAT_NoBACK)	state = BAT_STATE_38BC1;							
+		else									state = BAT_STATE_NoBACK;	
 	}
-
+	if((bat->state != state) && (taskBatControl->state == Wait || taskBatControl->state == Stop))
+	{
+		bat->state = state;
+		OS_AddFunction(taskBatControl,OS_DeleteTask,0);						// 移除任务
+		if(state == BAT_STATE_GREEN)
+		{
+			debug("bat->val ＞ 8.4V时绿灯常亮\r\n");												
+			OS_AddFunction(taskBatControl,LEN_GREEN_Open,4);			// ＞8.4V时绿灯常亮。
+			OS_AddFunction(taskBatControl,OS_DeleteTask,0);	
+		}		
+		else if(state == BAT_STATE_GREENSHARP3)							// ＞7.4V绿灯闪亮3次
+		{
+			debug("bat->val ＞ 7.4V绿灯闪亮3次\r\n");
+			OS_AddFunction(taskBatControl,LEN_GREEN_Open,200);	
+			OS_AddFunction(taskBatControl,LEN_GREEN_Close,200);				
+			OS_AddCycleFunction(taskBatControl,3);						//重复3次	
+	
+		}else if(state == BAT_STATE_REDSHARP3) 	//＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
+		{
+			debug("bat->val ＜ 7.4V红灯闪亮3次,后转为每3秒闪亮一次红灯欠压指示\r\n");
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,200,BatState);
+			OS_AddCycleFunction(taskBatControl,3);						//重复3次
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,3000,BatState);
+			
+		}else if(state == BAT_STATE_38BC1)	// ＜7.2V马达无条件正转至38BC1高电平\
+												红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警。
+		{
+			debug("bat->val ＜ 7.2V 红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警\r\n");
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
+			OS_AddCycleFunction(taskBatControl,30);							// 重复30次
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,5000,BatState);					
+		}else								// 当电压＜6.9V时系统不再响应反转信号，\
+												红色LED每秒1次闪亮报警30秒。
+		{
+			debug("bat->val ＜6.9V 红色LED每秒1次闪亮报警30秒\r\n");			
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
+			OS_AddCycleFunction(taskBatControl,30);
+		}
+		OS_AddTask(tasklink,taskBatControl);// 添加电池电量检测任务
+	}
 }
 
 void ReSetLedCheck()

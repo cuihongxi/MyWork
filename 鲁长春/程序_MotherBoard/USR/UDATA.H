@@ -21,11 +21,13 @@
 #define			TIM_SLEEP				5000	// ms,休眠倒计时时间
 #define			TIM_KEY					600		// ms，连击间隔
 #define         TIM_CHECKEYS          	2000    // ms,YS检测时间
-#define         BH_SAFE                 5000    // ms, BH方波检测，单位秒
+#define         BH_SAFE                 5000    // ms, BH方波检测
 #define         TIM_BH0                 4000    // ms, BH反向运动时间
-#define         TIM_30                  30*1000*60 // 30分钟不响应
+#define         TIM_30                  60000*30// 30分钟不响应
+#define         TIM_BAT                 5000    // ms ,检测BAT电压周期
 
-#define         TIM_BAT                 5       // 检测BAT电压周期，单位秒
+
+
 #define         TIM_MOTOSTOP0           1.5     // 马达正常停转时间，单位秒
 #define         TIM_MOTOSTOP1           2       // BH方波异常，马达反转时间，单位秒
 #define         TIM_MOTOSTART0          2       // 马达停止后正转时间，单位秒

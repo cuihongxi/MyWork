@@ -22,6 +22,5 @@ void LEN_RED_Open();
 void LEN_RED_Close();
 void LEN_GREEN_Open();
 void LEN_GREEN_Close();
-#include "CUI_RTOS.H"
-void OS_LED_Sharp(TaskStr* task,LEDType led,u16 time,u8 count);//osœ¬LED…¡À∏…Ë∂®
+
 #endif

@@ -23,14 +23,20 @@ u8 flag_DM = 0;					// 开机检测DM，启动定时器标志
 u32 dm_counter = 0;				// 开机检测DM，计数器
 
 TimerLinkStr timer2 = {0};		// 任务的定时器
-TaskLinkStr* tasklink;			// 任务列表
+TaskLinkStr* tasklink = {0};			// 任务列表
 
 u16 sleeptime = TIM_SLEEP;		// 睡眠倒计时
-extern float BATdat;
+
 u8 flag_KEY_Z = 0;				//传递给马达函数，让他根据val做出动作
 u8 flag_KEY_Y = 0;
 
 extern u32 	counter_BH	;		// BH计数
+
+extern u8 	flag_no30;
+u32 threshold_30 = 0;			//30分钟无动作阀值
+
+BATStr bat = {0};						// 电池结构体
+TaskStr* taskBatControl;
 
 //唤醒数据初始化
 void Wake_InitDat()
@@ -103,22 +109,17 @@ void main()
 	UART_INIT(115200);
 //	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
 //	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	
 	LED_RED_Open(0);	
-//	TIM2_INIT();
-	Make_SysSleep();
-	Key_GPIO_Init();		//触摸按键初始化
-	
+	Make_SysSleep();								// 系统进入休眠状态
+	Key_GPIO_Init();								// 触摸按键初始化
 	tasklink = SingleCycList_Create();
+	
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务	
 	TaskStr* taskYS = OS_CreatTask(&timer2);		// 创建YS测量任务 ，每2秒检测一次
-	
-//检测一次电池电压
-//	BATdat = BatteryGetAD(Get_ADC_Dat(Battery_Channel));
-//	debug("BATdat = %f\r\n",BATdat);
-//上电检测DM电平，来判断马达的最大行程时间
-		
+
+
+	//上电检测DM电平，来判断马达的最大行程时间		
 	if(GPIO_READ(GPIO_DM) == RESET)
 	{
 		//马达反转到限位
@@ -133,9 +134,13 @@ void main()
 		debug("dm_counter = %lu\r\n",dm_counter);
 	}
 	FL_GPIO_Init();
+	
+	//检测一次电池电压
+	bat.flag= 1;
+	BatControl(&bat,tasklink,taskBatControl);
+	
 	while(1)
 	{
-		//debug("\r\n while \r\n");
       if(flag_wake)
 	  {
 //			//按键松手检测
@@ -194,7 +199,8 @@ void main()
 				}
 				
 				//电源管理
-				BatControl();
+				BatControl(&bat,tasklink,taskBatControl);
+				
 				//马达运动
 				MotorControl();
 				//检测限位
@@ -236,26 +242,21 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 	flag_wake = 1;
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
+
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
-	u16 static ti = 0;
-	ti ++;
-	if(ti>1000)
-	{
-		ti = 0;
-		debug("ti>10000\r\n");
-		flag_wake = 1;
-	}
-		// 对码计时
-	if(flag_DM)	dm_counter ++;
 	
+	u32 systime = OS_TimerFunc(&timer2);						// 定时器内函数
+	if(flag_DM)	dm_counter ++;									// 对码计时
+	
+	//电池电量检测
+	if(systime >= bat.threshold) bat.flag = 1;
 	// 马达运行计时
 	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)	
 	{
 		motorStruct.counter ++;
 		counter_BH ++;
-		
 	}
 	
 	//YS
@@ -265,17 +266,8 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		if(counter_YS > TIM__YS_D*1000)	flag_YS_SHUT = 1;
 	}
 	//30
-	if(flag_no30)
-	{
-		counter_30 ++;
-		if(counter_30 > TIM_30) 
-		{
-			flag_no30 = 0;
-			counter_30 = 0;
-		}
-	}
-	
-	OS_TimerFunc(&timer2);							// 定时器内函数
+	if(flag_no30 && (systime > threshold_30)) flag_no30 = 0;	
+
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 
 }
@@ -304,3 +296,9 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
   	TIM2_ClearITPendingBit(TIM2_IT_Update); 
 	
 }
+
+
+
+
+
+

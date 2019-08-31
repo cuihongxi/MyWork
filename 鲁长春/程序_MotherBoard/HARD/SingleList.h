@@ -23,5 +23,6 @@ SingleListNode* SingleList_DeleteNode(SingleList* list, SingleListNode* node);
 
 SingleListNode* SingleList_Iterator(SingleListNode** node);//迭代器,如果有下一个则返回下一个指针，否则返回 0
 
+SingleListNode* SingleList_IteratorFree(SingleListNode** node);//释放内存迭代器
 
 #endif

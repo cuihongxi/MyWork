@@ -1,6 +1,6 @@
 
 #include "SingleList.h"
-
+#include "CUI_MALLOC.H"
 int SingleList_Insert(SingleList* list, SingleListNode* node) // O(n)
 { 
     int i = 0;
@@ -40,3 +40,19 @@ SingleListNode* SingleList_Iterator(SingleListNode** node)
 	*node = ((SingleListNodeStr*)*node)->next;
 	return ((SingleListNodeStr*)*node);
 }
+
+//ÊÍ·ÅÄÚ´æµü´úÆ÷
+SingleListNode* SingleList_IteratorFree(SingleListNode** node)
+{
+	if(*node != 0)
+	{
+		SingleListNode* that = *node;
+		*node = ((SingleListNodeStr*)*node)->next;
+
+		free(that);	
+		
+		//debug("free ok\r\n");
+	}
+	return ((SingleListNodeStr*)*node);
+}
+

@@ -5,6 +5,36 @@ u32 GetSysTime(TimerLinkStr* timerlink)
 {
 	return timerlink->counter;
 }
+
+//删除当前任务的节点之前所有任务，包括该任务
+void Free_taskBefore(TaskStr* task)
+{
+	funLinkStr* that = (funLinkStr*)&task->funNode;
+	if(SingleList_Iterator((void**)&that) !=0 && task->pthis != that)
+	{
+		funLinkStr* pthat = that;
+		SingleList_DeleteNode(&task->funNode,that); 					// 删除节点
+		while(SingleList_Iterator((void**)&that) && task->pthis != that)
+		{	
+			SingleList_DeleteNode(&task->funNode,that); 					// 删除节点
+			SingleList_Insert(&(task->timerNode.tasklink->ramlink),pthat);		// 添加到内存释放空间
+			pthat = that;
+		}
+		SingleList_Insert(&(task->timerNode.tasklink->ramlink),pthat);		// 添加到内存释放空间
+	}
+
+	if(SingleList_Iterator((void**)&task->pthis))
+	{
+		task->state = Wait;
+	}else 
+	{
+		task->state = Stop;
+		SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
+	}
+	SingleList_DeleteNode(&task->funNode,that); 					// 删除节点
+	SingleList_Insert(&(task->timerNode.tasklink->ramlink),that);		// 添加到内存释放空间
+}
+
 //系统延时函数
 // task：任务 ；time 延时的值
 void CUI_RTOS_Delayms(TaskStr* task,u32 time)
@@ -14,32 +44,14 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		if(time)
 		{
 			task->state = Suspend;
-			task->timerNode.counter = GetSysTime(task->timerlink) + time;						//计时阀值
-			SingleList_Insert(task->timerlink, &task->timerNode);							// 添加到定时任务
-			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);			// 将该任务从任务循环队列中移除
+			task->timerNode.counter = GetSysTime(task->timerlink) + time;			//计时阀值
+			SingleList_Insert(task->timerlink, &task->timerNode);					// 添加到定时任务
+			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);	// 将该任务从任务循环队列中移除
 		}		
 		else	//释放该任务的动态函数空间
 		{
-			funLinkStr* that = (funLinkStr*)&task->funNode;
-			while(SingleList_Iterator((void**)&that) && task->pthis != that)
-			{
-				free(that);										// 释放空间
-				SingleList_DeleteNode(&task->funNode,that); 	// 删除节点
-			}
-			if(SingleList_Iterator((void**)&task->pthis))
-			{
-				task->state = Wait;
-		//		debug("还有任务\r\n");
-			}else 
-			{
-				task->state = Stop;
-				SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);			// 将该任务从任务循环队列中移除
-			}
-			free(that);										// 释放空间
-			SingleList_DeleteNode(&task->funNode,that); 	// 删除节点
+			Free_taskBefore(task);
 			task->pthis = 0;
-		//	debug("free ok\r\n");
-			
 		}	
 	}else
 	{
@@ -47,40 +59,11 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		{
 			task->pthis->number --;
 			task->state = Wait;
-			
 		}else
-		{
-			funLinkStr* that = (funLinkStr*)&task->funNode;
-			while(SingleList_Iterator((void**)&that) && task->pthis != that)
-			{
-				free(that);										// 释放空间
-				SingleList_DeleteNode(&task->funNode,that); 	// 删除节点
-			}
-			if(SingleList_Iterator((void**)&task->pthis))
-			{
-				task->state = Wait;
-			//	debug("还有任务\r\n");
-			}else 
-			{
-				task->state = Stop;
-				SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);			// 将该任务从任务循环队列中移除
-			}
-			free(that);										// 释放空间
-			SingleList_DeleteNode(&task->funNode,that); 	// 删除节点
-		//	debug("free ok\r\n");
-		}
+			Free_taskBefore(task);
 		task->pthis = 0;
-		
 	}
-
-	
-
-
-	
 }
-
-
-
 
 //创建一个任务，绑定定时器
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
@@ -100,16 +83,33 @@ void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 	funNode->osfun = fun;
 	funNode->time = time;
 	funNode->number = MAX_NUMBER;
+	funNode->type = general;
 	SingleList_Insert(&task->funNode, funNode);
 }
 
 //添加循环函数到任务
+//将前面的函数执行num次之后，再将其删除，并继续往下执行
 void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 {
 	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
 	funNode->osfun = OS_DeleteTask;
 	funNode->time = 0;
 	funNode->number = num;
+	funNode->type = general;
+	SingleList_Insert(&task->funNode, funNode);
+}
+
+//添加条件判断函数到任务
+//定时器中判断条件函数如果为真则计时结束，跳转任务
+void OS_AddJudegeFunction(TaskStr* task,osfun fun,u32 time,jugefun funJuge)
+{
+	judgeFunStr* funNode = (judgeFunStr*)malloc(sizeof(judgeFunStr));
+	funNode->funLink.osfun = fun;
+	funNode->funLink.time = time;
+	funNode->funLink.number = MAX_NUMBER;
+	funNode->funLink.type = judge;
+	funNode->jugefun = funJuge;
+	funNode->result = (bool)FALSE;
 	SingleList_Insert(&task->funNode, funNode);
 }
 
@@ -118,50 +118,79 @@ void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task)
 {
 	task->timerNode.tasklink = tasklink;
 	task->state = Wait;
-	SingleCycList_Insert(tasklink, &task->taskNode);
-	
+	SingleCycList_Insert(&tasklink->tasklink, &task->taskNode);
 }
 
 //运行实例函数
 void OsSectionFun(TaskStr* task)
 {
 	if(task->pthis == 0) task->pthis = (funLinkStr*)&task->funNode;
-	SingleList_Iterator((void**)&task->pthis);					//取一个任务
-	if(task->pthis != 0 && task->pthis->osfun !=0)
+	if(task->pthis->type == judge && (((judgeFunStr*)(task->pthis))->result == TRUE))	//条件判断为真，删除该任务所有函数
 	{
-		task->pthis->osfun();									// 执行函数
-		CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
-		return;													//跳出程序
-	}	
+		Free_taskBefore(task);	
+	}
+		SingleList_Iterator((void**)&task->pthis);					// 取一个任务
+		
+		if(task->pthis != 0 && task->pthis->osfun !=0)
+		{
+			task->pthis->osfun();									// 执行函数
+			CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
+			return;													// 跳出程序
+		}		
 }
 
 //任务队列运行
 void OS_Task_Run(TaskLinkStr* tasklink)
 {
-	while(SingleCycList_Iterator((SingleCycListNode**)&tasklink))
+	SingleCycListNode* ptask = &tasklink->tasklink;
+	while(SingleCycList_Iterator((SingleCycListNode**)&ptask))
 	{
-		((TaskStr*)tasklink)->state = Run;
-		OsSectionFun((TaskStr*)tasklink);
+		((TaskStr*)ptask)->state = Run;
+		OsSectionFun((TaskStr*)ptask);
 	}
+	//释放内存
+	ptask = &tasklink->ramlink;
+	if(SingleList_Iterator((SingleListNode**)&ptask))
+	{
+		SingleList_DeleteNode(&tasklink->ramlink, ptask);
+		while(SingleList_IteratorFree((SingleListNode**)&ptask))
+		{
+			SingleList_DeleteNode(&tasklink->ramlink, ptask);
+		}
+	}
+		
 	
 }
 
 
 //定时器内函数
-void OS_TimerFunc(TimerLinkStr* timer)
+//返回计时器值
+u32 OS_TimerFunc(TimerLinkStr* timer)
 {
 	TimerLinkStr* pNext = timer;
 	timer->counter ++;
 	while(SingleList_Iterator((void**)&pNext))
 	{
+
 		if(pNext->counter == timer->counter)
 		{
-			OS_AddTask(pNext->tasklink,pNext->task) ;			// 添加任务到队列	
-			SingleList_DeleteNode(timer, pNext);							// 删除定时
+			OS_AddTask(pNext->tasklink,pNext->task) ;				// 添加任务到队列	
+			SingleList_DeleteNode(timer, pNext);					// 删除定时
 
+		}else
+		{
+			if(pNext->task->pthis->type == judge)					// 如果指向条件判断函数，则函数为真时跳转
+			{
+				if((((judgeFunStr*)(pNext->task->pthis))->jugefun()) != 0) 
+				{
+					((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
+					OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
+					SingleList_DeleteNode(timer, pNext);			// 删除定时
+				}
+			}
 		}
-		
 	}
+	return timer->counter;
 }
 
 //从任务列表删除任务用，时间应该为0
