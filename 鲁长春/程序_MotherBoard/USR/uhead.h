@@ -28,7 +28,7 @@
 #if  DEBUG_LEVEL > 0
 #include "stm8l15x_usart.h"
 #include "stdio.h"
-#define  debug(...) 	printf(__VA_ARGS__);
+#define  debug(...) 		printf(__VA_ARGS__);
 #define	UART_INIT(baud)	do{\
 	SWAPPER_UART_PA2_PC3();	\
 	CLK_PeripheralClockConfig (CLK_Peripheral_USART1,ENABLE);\

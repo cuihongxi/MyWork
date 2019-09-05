@@ -45,9 +45,13 @@ typedef struct{
 extern  u8      flag_exti;
 extern  u8 		key_val;
 
+extern  keyStr key_AM ;
+
 void Key_GPIO_Init();
 void Key_ScanLeave();                   //À… ÷≥Ã–Ú
 void Y30_function();
+
+
 #endif
 
 

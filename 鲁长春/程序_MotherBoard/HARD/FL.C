@@ -1,9 +1,11 @@
 #include "FL.H"
 #include "lowpower.h"
-u8 	flag_30 = 0;
+
+u8 		flag_30 = 0;
 u8 		flag_no30 = 0;		//	30分钟不响应YSFL
 u32 	fl_speed_width	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u32 	counter_BH	= 0;	//BH计数
+u8		flag_FLreasion = 0;	// FL的原因关窗
 
 extern	TimerLinkStr 	timer2 ;					// 任务的定时器
 extern	u8 				flag_YS_SHUT ;
@@ -36,12 +38,18 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
 					timer = counter;
 				}else
 				{
-					if((counter - timer)>(TIM__FL_D*1000)) flag_YS_SHUT = 1;	//滤波时间到，关窗
+					if((counter - timer)>(TIM__FL_D*1000))
+					{
+						flag_YS_SHUT = 1;			// 滤波时间到，关窗
+//						if(key_AM.val == on)
+//							flag_FLreasion = 1;		// FL的原因关窗
+					}	
 				}
 				
 			}else
 			{
 				flag = 0;
+
 			}
 			
 			counter_FL = counter + fl_speed_width;

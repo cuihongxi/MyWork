@@ -14,8 +14,10 @@
 */
 
 
-#define		MAX_NUMBER		0XFF		//任务的最大循环次数，等于就无限循环
-#define		TYPE_NUMBER		u8			//数据类型
+#define		MAX_NUMBER		0XFF		// 任务的最大循环次数，等于就无限循环
+#define		TYPE_NUMBER		u8			// 数据类型
+#define		IRQ_PERIOD		1			// ms
+
 //任务链表
 typedef struct{
 	SingleListNodeStr tasklink;				// 任务链表
@@ -40,6 +42,7 @@ typedef enum{
 	judge,								// 判断类型
 }typefun;
 
+// 通用函数结构体
 typedef struct{
 	SingleListNodeStr 	list;			// 链表
 	void(*osfun)(void);					// 任务
@@ -49,6 +52,7 @@ typedef struct{
 	
 }funLinkStr;
 
+// 判断型函数结构体
 typedef bool(*jugefun)(void);
 typedef struct{
 	funLinkStr funLink;
@@ -56,6 +60,8 @@ typedef struct{
 	bool result;						//判断函数的结果，为真时，则删除所有任务中的函数
 }judgeFunStr;
 
+
+// 任务运行状态
 typedef enum{
 	Stop,
 	Run,
@@ -75,14 +81,7 @@ struct _TaskStr{
 
 };
 
-
-//任务链表节点
-typedef struct {
-	SingleListNodeStr taskNode;					//任务链接节点
-	void(*fun)(TaskStr* task);					//任务
-}TaskLinkStrNode;
-
-
+/*函数*/
 u32 OS_TimerFunc(TimerLinkStr* timer);							// 定时器内函数
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink);					// 创建一个任务，绑定定时器
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time);			// 添加函数到任务,有顺序

@@ -3,7 +3,7 @@
 //获取系统时间
 u32 GetSysTime(TimerLinkStr* timerlink)
 {
-	return timerlink->counter;
+	return timerlink->counter * IRQ_PERIOD;
 }
 
 //删除当前任务的节点之前所有任务，包括该任务
@@ -44,7 +44,7 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		if(time)
 		{
 			task->state = Suspend;
-			task->timerNode.counter = GetSysTime(task->timerlink) + time;			//计时阀值
+			task->timerNode.counter = GetSysTime(task->timerlink) + time;			// 计时阀值
 			SingleList_Insert(task->timerlink, &task->timerNode);					// 添加到定时任务
 			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);	// 将该任务从任务循环队列中移除
 		}		
@@ -94,7 +94,7 @@ void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
 	funNode->osfun = OS_DeleteTask;
 	funNode->time = 0;
-	funNode->number = num;
+	funNode->number = num - 1;			// 因为前面已经执行一遍了
 	funNode->type = general;
 	SingleList_Insert(&task->funNode, funNode);
 }
@@ -172,7 +172,7 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 	while(SingleList_Iterator((void**)&pNext))
 	{
 
-		if(pNext->counter == timer->counter)
+		if(pNext->counter <= GetSysTime(timer))
 		{
 			OS_AddTask(pNext->tasklink,pNext->task) ;				// 添加任务到队列	
 			SingleList_DeleteNode(timer, pNext);					// 删除定时
@@ -190,7 +190,7 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 			}
 		}
 	}
-	return timer->counter;
+	return GetSysTime(timer);
 }
 
 //从任务列表删除任务用，时间应该为0

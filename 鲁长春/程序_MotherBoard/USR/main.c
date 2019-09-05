@@ -1,49 +1,31 @@
-#include "uhead.h"
-#include "MX830Motor.h"
-#include "LED_SHOW.H"
-#include "MYCLK.h"
-//#include "stm8l15x_clk.h"
-#include "ADC_CHECK.H"
-#include "NRF24L01_AUTO_ACK.H"
-#include "24l01.h"
-#include "lowpower.h"
-#include "stm8l15x_rtc.h"
-#include "stm8l15x_tim2.h"
-#include "CUI_RTOS.H"
-#include "keyboard.h"
-#include "BAT.H"
-#include "FL.H"
 
-Nrf24l01_PRXStr prx = {0};		// NRF接收结构体
-u8 txbuf[] = {1};				// nrf发送缓存
-u8 rxbuf[10] = {0};				// nrf接收缓存
+#include "main.h"
 
-u8 flag_wake = 1;				// 唤醒标志
-u8 flag_DM = 0;					// 开机检测DM，启动定时器标志
-u32 dm_counter = 0;				// 开机检测DM，计数器
-
-TimerLinkStr timer2 = {0};		// 任务的定时器
-TaskLinkStr* tasklink = {0};			// 任务列表
-
-u16 sleeptime = TIM_SLEEP;		// 睡眠倒计时
-
-u8 flag_KEY_Z = 0;				//传递给马达函数，让他根据val做出动作
-u8 flag_KEY_Y = 0;
-
-extern u32 	counter_BH	;		// BH计数
-
-extern u8 	flag_no30;
-u32 threshold_30 = 0;			//30分钟无动作阀值
-
-BATStr bat = {0};						// 电池结构体
-TaskStr* taskBatControl;
-
+Nrf24l01_PRXStr 	prx = {0};		// NRF接收结构体
+u8 					txbuf[] = {1};				// nrf发送缓存
+u8 					rxbuf[10] = {0};				// nrf接收缓存
+u8 					flag_wake = 1;				// 唤醒标志
+u8 					flag_DM = 0;					// 开机检测DM，启动定时器标志
+u32 				dm_counter = 0;				// 开机检测DM，计数器
+TimerLinkStr 		timer2 = {0};				// 任务的定时器
+TaskLinkStr* 		tasklink = {0};				// 任务列表
+u16 				sleeptime = TIM_SLEEP;		// 睡眠倒计时
+u8 					flag_KEY_Z = 0;				// 传递给马达函数，让他根据val做出动作
+u8 					flag_KEY_Y = 0;
+u32 				threshold_30 = 0;			// 30分钟无动作阀值
+BATStr 				bat = {0};					// 电池结构体
+TaskStr* 			taskBatControl = {0};	
+TaskStr* 			taskLED = {0};
+u32 				YS_isno_counter = 0;
+extern u32 			counter_BH	;				// BH计数
+extern u8 			flag_no30;
+extern keyStr key_AM;
+extern u8						flag_YS_isno;
 //唤醒数据初始化
-void Wake_InitDat()
-{
-	flag_checkBat = 1;			//每次唤醒。检测BAT电量一次
-	
-}
+//void Wake_InitDat()
+//{
+//	flag_checkBat = 1;			//每次唤醒。检测BAT电量一次
+//}
 //低时钟和GPIO初始化
 void CLK_GPIO_Init()
 {
@@ -60,18 +42,18 @@ void CLK_GPIO_Init()
 
 
 //TIM2初始化
-void TIM2_INIT()
-{
-    enableInterrupts();                                                 //使能全局中断
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM2,ENABLE);              //打开时钟
-    TIM2_DeInit();
-    TIM2_TimeBaseInit(TIM2_Prescaler_1,TIM2_CounterMode_Up,2000);         //1ms 
-    TIM2_ARRPreloadConfig(ENABLE);
-    TIM2_ITConfig(TIM2_IT_Update, ENABLE);
-    TIM2_ClearITPendingBit(TIM2_IT_Update); 
-    TIM2_Cmd(ENABLE);
-
-}
+//void TIM2_INIT()
+//{
+//    enableInterrupts();                                                 //使能全局中断
+//    CLK_PeripheralClockConfig(CLK_Peripheral_TIM2,ENABLE);              //打开时钟
+//    TIM2_DeInit();
+//    TIM2_TimeBaseInit(TIM2_Prescaler_1,TIM2_CounterMode_Up,2000);         //1ms 
+//    TIM2_ARRPreloadConfig(ENABLE);
+//    TIM2_ITConfig(TIM2_IT_Update, ENABLE);
+//    TIM2_ClearITPendingBit(TIM2_IT_Update); 
+//    TIM2_Cmd(ENABLE);
+//
+//}
 
 //让系统休眠
 void Make_SysSleep()
@@ -97,7 +79,6 @@ void Make_SysSleep()
 //让系统唤醒
 void MakeSysWakeUp()
 {
-
 	//TIM2_Cmd(ENABLE);
 	sleeptime = TIM_SLEEP;
 	debug(" WakeUp \r\n");
@@ -112,10 +93,12 @@ void main()
 	LED_RED_Open(0);	
 	Make_SysSleep();								// 系统进入休眠状态
 	Key_GPIO_Init();								// 触摸按键初始化
-	tasklink = SingleCycList_Create();
-	
+
+	FlashData_Init();
+	tasklink = SingleCycList_Create();				//创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务	
+	taskLED = OS_CreatTask(&timer2);				// 创建LED显示任务
 	TaskStr* taskYS = OS_CreatTask(&timer2);		// 创建YS测量任务 ，每2秒检测一次
 
 
@@ -125,12 +108,15 @@ void main()
 		//马达反转到限位
 		motorStruct.command = FORWARD;
 		MX830Motor_StateDir(&motorStruct);
-		while(GPIO_READ(GPIO_38KHZ_BC1) != RESET);	//等待GPIO_38KHZ_BC1出现低电平
-		flag_DM = 1;
+		while(GPIO_READ(GPIO_38KHZ_BC1) != RESET);	// 等待GPIO_38KHZ_BC1出现低电平
+		dm_counter = GetSysTime(&timer2);
+	//	flag_DM = 1;
 		motorStruct.command = BACK;
 		MX830Motor_StateDir(&motorStruct);
-		while(GPIO_READ(GPIO_38KHZ_BC2) != RESET);	//等待GPIO_38KHZ_BC2出现低电平
-		flag_DM = 0;
+		while(GPIO_READ(GPIO_38KHZ_BC2) != RESET);	// 等待GPIO_38KHZ_BC2出现低电平
+		dm_counter = GetSysTime(&timer2) - dm_counter;
+		FLASH_ProgramByte(ADDR_DM,dm_counter);		// 写入FLASH
+	//	flag_DM = 0;
 		debug("dm_counter = %lu\r\n",dm_counter);
 	}
 	FL_GPIO_Init();
@@ -186,11 +172,25 @@ void main()
 				{
 					switch(key_val)
 					{
-							case KEY_VAL_DER_Z:flag_KEY_Z = 1;
+							case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
 						break;
-							case KEY_VAL_DER_Y:flag_KEY_Y = 1;
+							case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
 						break;
-							case KEY_VAL_AM:
+							case KEY_VAL_AM: 	
+							OS_AddFunction(taskLED,OS_DeleteTask,0);			// 移除任务
+							key_AM.val = (keyEnum)!key_AM.val;
+							if(key_AM.val == off)	// 对应的LED指示点亮0.5秒后熄灭
+							{
+								FLASH_ProgramByte(ADDR_AM_VAL,0);
+								OS_AddFunction(taskLED,LEN_GREEN_Open,TIM_AM_OFF);
+								OS_AddFunction(taskLED,LEN_GREEN_Close,4);
+							}else					// 对应的LED指示点亮30秒后熄灭
+							{
+								FLASH_ProgramByte(ADDR_AM_VAL,1);
+								OS_AddFunction(taskLED,LEN_GREEN_Open,TIM_AM_ON);
+								OS_AddFunction(taskLED,LEN_GREEN_Close,4);	
+							}
+							OS_AddTask(tasklink,taskLED);						// 添加LED任务	
 						break;
 							case KEY_VAL_Y30: //Y30_function();
 						break;
@@ -248,28 +248,34 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
 	
 	u32 systime = OS_TimerFunc(&timer2);						// 定时器内函数
-	if(flag_DM)	dm_counter ++;									// 对码计时
+	//if(flag_DM)	dm_counter ++;									// 对码计时
 	
 	//电池电量检测
 	if(systime >= bat.threshold) bat.flag = 1;
 	// 马达运行计时
 	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)	
 	{
-		motorStruct.counter ++;
-		counter_BH ++;
+		motorStruct.counter += IRQ_PERIOD;
+		counter_BH += IRQ_PERIOD;
 	}
 	
 	//YS
 	if(flag_YS)
 	{
-		counter_YS++;
+		counter_YS += IRQ_PERIOD;
 		if(counter_YS > TIM__YS_D*1000)	flag_YS_SHUT = 1;
 	}
 	//30
 	if(flag_no30 && (systime > threshold_30)) flag_no30 = 0;	
 
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
-
+	
+	//无YS计时开窗
+	if(flag_YS_isno) 
+	{
+		YS_isno_counter += IRQ_PERIOD;
+		if(YS_isno_counter > TIM_OPEN)flag_
+	}
 }
 //TIM2更新中断,1ms
 INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)

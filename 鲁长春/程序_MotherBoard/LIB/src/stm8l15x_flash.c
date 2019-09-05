@@ -369,6 +369,18 @@ uint8_t FLASH_ReadByte(uint32_t Address)
   /* Read byte */
   return(*(PointerAttr uint8_t *) (MemoryAddressCast)Address);
 }
+
+uint32_t FLASH_ReadWord(uint32_t Address)
+{
+ 	uint32_t Data = 0;
+  	*((uint8_t*)(&Data)) = *(PointerAttr uint8_t *) (MemoryAddressCast)Address;
+	*((uint8_t*)(&Data) + 1) = *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 1);
+	*((uint8_t*)(&Data) + 2) = *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 2) ;
+	*((uint8_t*)(&Data) + 3) = *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 3);
+	return Data;
+}
+
+
 /**
   * @}
   */

@@ -2,7 +2,9 @@
 *Author :       explorersoftware.taobao.com 
 *Time   :       2017-3-30 09:19:37
 *Explain:       马达驱动函数
-*
+*		BC1为关窗限位，BC2为开窗限位
+*		向前关窗，向后开窗
+*		Z方向关窗，右方向开窗
 ********************************************************************************/
 
 #ifndef __MX830Motor_H
@@ -32,6 +34,8 @@ typedef struct
 	u8 			flag_BC1 ;				// BC1关窗标志
 	u8 			flag_BC2 ;				// BC2开窗标志
 }Motor_Struct;
+
+
 
 
 extern  Motor_Struct    motorStruct;                            //马达状态结构体

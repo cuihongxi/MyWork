@@ -61,7 +61,12 @@ void YS_Function()
 	YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 	GPIO_RESET(YSD_GPIO);
 	if(YSdat > VALVE_YS_D)	//超过报警阀值
+	{
 		flag_YS = 1;
+		if(key_AM.val == on)
+			YS_isno_counter = 0;	//清空计数
+	}
+		
 	else 
 	{
 		flag_YS = 0;

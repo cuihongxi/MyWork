@@ -4,24 +4,28 @@
 #include "lowpower.h"
 #include "keyboard.h"
 #include "FL.H"
+#include "stmflash.h"
 
-Motor_Struct    motorStruct = {0};      // 马达状态结构体
-TaskStr* 		taskMotor;				// 马达运动任务
+Motor_Struct    		motorStruct = {0};      // 马达状态结构体
+TaskStr* 				taskMotor;				// 马达运动任务
+u32 					shut_time = 0;
+u8						flag_motorIO = 0;		// 马达引脚调换标志
+u8						flag_YS_isno = 0;		// YS无检测
 
 
-extern	u8 flag_YS_SHUT;
-extern	TaskLinkStr* tasklink;			// 任务列表
-extern	u8 flag_KEY_Z ;					// 传递给马达函数，让他根据val做出动作
-extern	u8 flag_KEY_Y ;
-extern	keyStr key_Z ;
-extern	keyStr key_Y;
-extern	u32 dm_counter;					// 开机检测DM，计数器
-extern	u8 	flag_30 ;
-extern u32 	counter_BH	;		// BH计数
-extern u8 	flag_no30;
-extern u32 threshold_30 ;
-extern TimerLinkStr timer2;
-
+extern	u8 				flag_YS_SHUT;
+extern	TaskLinkStr* 	tasklink;				// 任务列表
+extern	u8 				flag_KEY_Z ;			// 传递给马达函数，让他根据val做出动作
+extern	u8 				flag_KEY_Y ;
+extern	keyStr 			key_Z ;
+extern	keyStr 			key_Y;
+extern	u32 			dm_counter;				// 开机检测DM，计数器
+extern	u8 				flag_30 ;
+extern 	u32 			counter_BH	;			// BH计数
+extern 	u8 				flag_no30;
+extern 	u32 			threshold_30 ;
+extern 	TimerLinkStr 	timer2;
+extern 	u8				flag_FLreasion;
 /**************************************
 *@brief
 *@note 
@@ -35,6 +39,32 @@ void MX830Motor_GPIOInit()
     GPIO_Init(MX830Motor_GPIO_BI,MX830Motor_GPIOMode);
 }
  
+void Motor_Forward()
+{
+	if(flag_motorIO)
+	{
+		GPIO_SetBits(MX830Motor_GPIO_FI);
+		GPIO_ResetBits(MX830Motor_GPIO_BI);
+	}else
+	{
+		GPIO_SetBits(MX830Motor_GPIO_BI);
+		GPIO_ResetBits(MX830Motor_GPIO_FI);		
+	}
+}
+
+void Motor_Back()
+{					
+
+	if(flag_motorIO)
+	{
+		GPIO_SetBits(MX830Motor_GPIO_BI);
+		GPIO_ResetBits(MX830Motor_GPIO_FI);
+	}else
+	{
+		GPIO_SetBits(MX830Motor_GPIO_FI);
+		GPIO_ResetBits(MX830Motor_GPIO_BI);	
+	}					
+}
 /**************************************
 *@brief
 *@note 
@@ -56,16 +86,14 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 		switch(motorStruct->dir)
 		{
 			case FORWARD    :     
-			debug("dir = FORWARD\r\n");           
-			  GPIO_SetBits(MX830Motor_GPIO_FI);
-			  GPIO_ResetBits(MX830Motor_GPIO_BI);
-				BH_CheckStart();
+					debug("dir = FORWARD\r\n");           
+					Motor_Forward();
+			  		BH_CheckStart();
 			  break;
 			case BACK       :        
 			debug("dir = BACK\r\n"); 
-					GPIO_ResetBits(MX830Motor_GPIO_FI);
-					GPIO_SetBits(MX830Motor_GPIO_BI);
-
+					Motor_Back();
+					BH_CheckStart();
 			  break;
 			case STOP       :  
 			  {       
@@ -138,7 +166,7 @@ void ShutDownWindow()
 //
 bool MotorProtect()
 {
-	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET);
+	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE);
 }
 
 //马达运动
@@ -156,16 +184,17 @@ void MotorControl()
 	反转至38BC2高电平，延时1秒正转1.5秒停转。
 	if((taskMotor->state == Wait || taskMotor->state == Stop))
 	{
-		if(counter_BH > BH_SAFE && flag_30 == 0)
+		if(counter_BH > BH_SAFE && flag_30 == 0)							// 方波超时保护
 		{
 			flag_30 = 1;
 			counter_BH = 0;
 			//按马达当前转向，反向旋转4S，再继续原来转向
-			OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-			OS_AddJudegeFunction(taskMotor,BH_Motor1,TIM_BH0,MotorProtect);				// 反向旋转4S
-			OS_AddJudegeFunction(taskMotor,BH_Motor1,10,MotorProtect);						//恢复原来的转向
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+			OS_AddJudegeFunction(taskMotor,BH_Motor1,TIM_BH0,MotorProtect);	// 反向旋转4S
+			OS_AddJudegeFunction(taskMotor,BH_Motor1,10,MotorProtect);		//恢复原来的转向
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 			
-		}else if(counter_BH > BH_SAFE && flag_30 == 1)					//再次出现无方波
+		}else if(counter_BH > BH_SAFE && flag_30 == 1)						//再次出现无方波
 		{
 			motorStruct.command = STOP;	//正反转保护时间判断
 			//30分钟不响应YS信号
@@ -174,34 +203,45 @@ void MotorControl()
 			flag_30 = 0;
 			counter_BH = 0;
 		}else
-		if(motorStruct.flag_BC1||motorStruct.flag_BC2)
+		if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0)
 		{
 			motorStruct.flag_BC = 1;
-			OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-			if(motorStruct.flag_BC1)
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);				// 移除任务
+			if(motorStruct.flag_BC1)								// 关窗限位
 			{
-				OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorProtect);		// 正转1秒
+				OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorProtect);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorBACK_BC1,TIM_MOTOR_F,MotorProtect);		// 反转1.5秒
-				OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
+				OS_AddFunction(taskMotor,MotorSTOP,4);				// 停止
 				motorStruct.flag_BC1 = 0;	
+				if(shut_time != 0)			//计算关窗用的时间
+				{
+					shut_time = GetSysTime(&timer2) - shut_time;
+					FLASH_ProgramWord(ADDR_shut_time,shut_time);	// FLASH保存本次关窗的时间
+					shut_time = 0;
+					//没有FLYS时，启动定时器计时，延时打开窗
+					flag_YS_isno = 1;
+						
+				}
 			}
 			if(motorStruct.flag_BC2)
 			{
-				OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorProtect);		// 正转1秒
+				OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorProtect);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorBACK_BC2,TIM_MOTOR_F,MotorProtect);		// 反转1.5秒
-				OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
+				OS_AddFunction(taskMotor,MotorSTOP,4);				// 停止
 				motorStruct.flag_BC2 = 0;			
 			}
-			//OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);				// 移除任务
 		}else
 		
-			//YSFL达到阀值，关窗
+		//YSFL达到阀值，关窗
 		if(flag_YS_SHUT)
 		{
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-			OS_AddJudegeFunction(taskMotor,ShutDownWindow,4,MotorProtect);							// 执行关窗
+			OS_AddJudegeFunction(taskMotor,ShutDownWindow,4,MotorProtect);	// 执行关窗
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 			flag_YS_SHUT = 0;
+			if(key_AM.val == on)
+				shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间
 		}else
 		
 		//按键<Z
@@ -264,6 +304,7 @@ void CheckBC1BC2()
 	funLinkStr* pthis =  (funLinkStr*)&taskMotor->funNode;
 	if(SingleList_Iterator((void**)&pthis) == 0)					//没有任务
 		motorStruct.flag_BC = 0;
+
 }
 
 

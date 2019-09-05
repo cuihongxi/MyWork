@@ -308,6 +308,7 @@ void FLASH_ProgramByte(uint32_t Address, uint8_t Data);
 void FLASH_EraseByte(uint32_t Address);
 void FLASH_ProgramWord(uint32_t Address, uint32_t Data);
 uint8_t FLASH_ReadByte(uint32_t Address);
+uint32_t FLASH_ReadWord(uint32_t Address);
 
 /* Option Bytes Programming functions *****************************************/
 uint16_t FLASH_GetBootSize(void);
