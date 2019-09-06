@@ -63,5 +63,10 @@
 void LSI_delayus(unsigned int  nCount);   //16M 晶振时  延时 1个微妙
 void LSI_delayms(unsigned int  nCount);
 
-
+//定时判断数据类型
+typedef struct{
+	u8 start;			//启动定时
+	u8 switchon;		//定时到，开关打开
+	u32 counter;		//计数
+}JugeCStr;
 #endif

@@ -29,11 +29,11 @@ typedef enum
 	YS_Channel 			= ADC_Channel_4,
 }hardChannel;
 
-extern u8 flag_YS ;					// YS信号超警戒,启动计时器，超过4S，触发flag_YS_SHUT = 1
-extern u8 flag_YS_SHUT ;			
-extern u16 counter_YS ;				//YS信号产生后计时
 
-
+extern JugeCStr 	jugeYS ;				//YS信号产生后计时
+extern JugeCStr 	jugeYS_No;
+extern JugeCStr 	YS_30;
+extern u32			ys_timer30;
 
 //函数
 

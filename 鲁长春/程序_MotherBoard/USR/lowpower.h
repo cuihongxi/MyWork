@@ -17,7 +17,7 @@
 
 #define		GPIO_38KHZ_BC1		GPIOB,GPIO_Pin_7		// 红外检测返回信号，低电平有效
 #define		GPIO_38KHZ_BC2		GPIOD,GPIO_Pin_4		// 红外检测返回信号，低电平有效	 
-#define		GPIO_DM				GPIOD,GPIO_Pin_7		// 对码键
+
 #define		GPIO_BAT_CON		GPIOA,GPIO_Pin_0		// 电池电量检测控制
 
 	 

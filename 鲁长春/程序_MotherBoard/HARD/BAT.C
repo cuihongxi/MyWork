@@ -24,7 +24,8 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	{
 		bat->flag = 0;
 		bat->val = BatteryGetAD(Get_ADC_Dat(Battery_Channel));
-		bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT;	// ¼ÆËã¼ì²â¼ä¸ô
+		if(bat->val >=VALVE_BAT_CHECK) bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// ¼ÆËã¼ì²â¼ä¸ô
+		else bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKL;
 		if(bat->val > VALVE_BAT_GREEN)			state = BAT_STATE_GREEN;									
 		else if(bat->val > VALVE_BAT_SHARP3)	state = BAT_STATE_GREENSHARP3;
 		else if(bat->val > VALVE_BAT_Motor) 	state = BAT_STATE_REDSHARP3;								

@@ -16,11 +16,16 @@ u32 				threshold_30 = 0;			// 30分钟无动作阀值
 BATStr 				bat = {0};					// 电池结构体
 TaskStr* 			taskBatControl = {0};	
 TaskStr* 			taskLED = {0};
-u32 				YS_isno_counter = 0;
+TaskStr*			taskLEDYS30 = {0};
+TaskStr* 			taskYS		= {0};			// YS测量任务
 extern u32 			counter_BH	;				// BH计数
 extern u8 			flag_no30;
-extern keyStr key_AM;
-extern u8						flag_YS_isno;
+extern keyStr 		key_AM;
+extern keyStr 		key_Y30;
+extern u8			flag_YS_isno;
+extern keyStr 		key_DM;
+extern u8			flag_motorIO;
+
 //唤醒数据初始化
 //void Wake_InitDat()
 //{
@@ -91,16 +96,13 @@ void main()
 //	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
 //	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	LED_RED_Open(0);	
-	Make_SysSleep();								// 系统进入休眠状态
-	Key_GPIO_Init();								// 触摸按键初始化
-
 	FlashData_Init();
 	tasklink = SingleCycList_Create();				//创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务	
 	taskLED = OS_CreatTask(&timer2);				// 创建LED显示任务
-	TaskStr* taskYS = OS_CreatTask(&timer2);		// 创建YS测量任务 ，每2秒检测一次
-
+	taskLEDYS30 =  OS_CreatTask(&timer2);			// 创建LEDYS30显示任务
+	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
 
 	//上电检测DM电平，来判断马达的最大行程时间		
 	if(GPIO_READ(GPIO_DM) == RESET)
@@ -119,8 +121,10 @@ void main()
 	//	flag_DM = 0;
 		debug("dm_counter = %lu\r\n",dm_counter);
 	}
-	FL_GPIO_Init();
 	
+	Make_SysSleep();								// 系统进入休眠状态
+	Key_GPIO_Init();								// 触摸按键初始化
+	FL_GPIO_Init();
 	//检测一次电池电压
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
@@ -166,20 +170,20 @@ void main()
             halt();
 			if(flag_wake == 0)
 			{
-				if(flag_exti)	Key_ScanLeave();                   //松手程序
+				
 				//按键处理函数
 				if(key_val)
 				{
 					switch(key_val)
 					{
-							case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
-						break;
-							case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
-						break;
-							case KEY_VAL_AM: 	
+						case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
+							break;
+						case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
+							break;
+						case KEY_VAL_AM: 	
 							OS_AddFunction(taskLED,OS_DeleteTask,0);			// 移除任务
 							key_AM.val = (keyEnum)!key_AM.val;
-							if(key_AM.val == off)	// 对应的LED指示点亮0.5秒后熄灭
+							if(key_AM.val == off)							// 对应的LED指示点亮0.5秒后熄灭
 							{
 								FLASH_ProgramByte(ADDR_AM_VAL,0);
 								OS_AddFunction(taskLED,LEN_GREEN_Open,TIM_AM_OFF);
@@ -191,12 +195,37 @@ void main()
 								OS_AddFunction(taskLED,LEN_GREEN_Close,4);	
 							}
 							OS_AddTask(tasklink,taskLED);						// 添加LED任务	
-						break;
-							case KEY_VAL_Y30: //Y30_function();
-						break;
+							break;
+						case KEY_VAL_Y30:
+							OS_AddFunction(taskLEDYS30,OS_DeleteTask,0);			// 移除任务
+							if(jugeYS.start || jugeYS.switchon)	//有YS
+							{
+								switch(key_Y30.val)
+								{
+									case 1: ys_timer30 = TIM_30; 		YS_30.start = 1;	break;
+									case 2: ys_timer30 = TIM_30 * 2; 	YS_30.start = 1;	break;
+									case 3: ys_timer30 = TIM_30 * 6; 	YS_30.start = 1;	break;
+								}
+								OS_AddFunction(taskLED,LEN_RED_Open,TIM_Y30_ON);
+								OS_AddFunction(taskLED,LEN_RED_Close,4);								
+							}else
+							{
+								OS_AddFunction(taskLED,LEN_RED_Open,TIM_Y30_OFF);
+								OS_AddFunction(taskLED,LEN_RED_Close,4);
+							}
+							OS_AddTask(tasklink,taskLEDYS30);						// 添加LED任务	
+							break;
+						case KEY_VAL_DM:								
+							if(key_DM.val == 6)	//对话马达转向
+							{
+									flag_motorIO = ~flag_motorIO;
+									FLASH_ProgramByte(ADDR_motorIO,flag_motorIO);
+							}
 					}
 					key_val = KEY_VAL_NULL;
 				}
+				
+				if(flag_exti)	Key_ScanLeave();                   					//松手程序
 				
 				//电源管理
 				BatControl(&bat,tasklink,taskBatControl);
@@ -257,13 +286,18 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	{
 		motorStruct.counter += IRQ_PERIOD;
 		counter_BH += IRQ_PERIOD;
+		
 	}
 	
 	//YS
-	if(flag_YS)
+	if(jugeYS.start)
 	{
-		counter_YS += IRQ_PERIOD;
-		if(counter_YS > TIM__YS_D*1000)	flag_YS_SHUT = 1;
+		jugeYS.counter += IRQ_PERIOD;
+		if(jugeYS.counter > TIM__YS_D)
+		{
+			jugeYS.switchon = 1;
+			jugeYS.start = 0;
+		}	
 	}
 	//30
 	if(flag_no30 && (systime > threshold_30)) flag_no30 = 0;	
@@ -271,11 +305,26 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 	
 	//无YS计时开窗
-	if(flag_YS_isno) 
+	if(jugeYS_No.start) 
 	{
-		YS_isno_counter += IRQ_PERIOD;
-		if(YS_isno_counter > TIM_OPEN)flag_
+		jugeYS_No.counter += IRQ_PERIOD;
+		if(jugeYS_No.counter > TIM_OPEN)
+		{
+			jugeYS_No.start = 0;
+			jugeYS_No.switchon = 1;
+		}
 	}
+	//YS 30分钟不响应
+	if(YS_30.start)
+	{
+		YS_30.counter += IRQ_PERIOD;
+		if(YS_30.counter > ys_timer30)
+		{
+			YS_30.start = 0;
+			YS_30.counter = 0;
+		}
+	}
+	
 }
 //TIM2更新中断,1ms
 INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)

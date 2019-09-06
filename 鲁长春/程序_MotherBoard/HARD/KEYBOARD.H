@@ -11,15 +11,17 @@
 #define KEY_VAL_DER_Z			1
 #define KEY_VAL_DER_Y			2
 #define KEY_VAL_AM				4
-#define KEY_VAL_Y30            	8      
+#define KEY_VAL_Y30            	8 
+#define KEY_VAL_DM            	0X10
+
 #define KEY_VAL_NULL            0       //没按下
 
 //引脚定义      
-#define		GPIO_DER_Z			GPIOB,GPIO_Pin_0 		// <z 触摸板，应该进行上升沿中断检测
-#define		GPIO_DER_Y			GPIOB,GPIO_Pin_1		// >Y触摸板，应该进行上升沿中断检测
-#define		GPIO_AM				GPIOB,GPIO_Pin_2 		// AM 触摸板，应该进行上升沿中断检测
-#define		GPIO_Y30			GPIOB,GPIO_Pin_3 		// Y30 触摸板，应该进行上升沿中断检测
-
+#define		GPIO_DER_Z			GPIOB,GPIO_Pin_0 		// <z 触摸板
+#define		GPIO_DER_Y			GPIOB,GPIO_Pin_1		// >Y触摸板
+#define		GPIO_AM				GPIOB,GPIO_Pin_2 		// AM 触摸板
+#define		GPIO_Y30			GPIOB,GPIO_Pin_3 		// Y30 触摸板
+#define		GPIO_DM				GPIOD,GPIO_Pin_7		// 对码键
 
 #define     KEY_GPIOMODE        GPIO_Mode_In_PU_IT		
 

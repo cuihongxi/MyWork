@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "FL.H"
 #include "stmflash.h"
+#include "BAT.H"
 
 Motor_Struct    		motorStruct = {0};      // 马达状态结构体
 TaskStr* 				taskMotor;				// 马达运动任务
@@ -12,8 +13,6 @@ u32 					shut_time = 0;
 u8						flag_motorIO = 0;		// 马达引脚调换标志
 u8						flag_YS_isno = 0;		// YS无检测
 
-
-extern	u8 				flag_YS_SHUT;
 extern	TaskLinkStr* 	tasklink;				// 任务列表
 extern	u8 				flag_KEY_Z ;			// 传递给马达函数，让他根据val做出动作
 extern	u8 				flag_KEY_Y ;
@@ -26,6 +25,8 @@ extern 	u8 				flag_no30;
 extern 	u32 			threshold_30 ;
 extern 	TimerLinkStr 	timer2;
 extern 	u8				flag_FLreasion;
+extern 	u8 				flag_FL_SHUT;
+extern	BATStr 			bat;					// 电池管理
 /**************************************
 *@brief
 *@note 
@@ -172,8 +173,8 @@ bool MotorProtect()
 //马达运动
 void MotorControl()
 {
-	//充电状态禁止转动，超过转动时限，禁止转动
-	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30 == 0)
+	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动
+	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30 == 1 || bat.state == BAT_STATE_NoBACK)
 	{
 		motorStruct.command = STOP;	//正反转保护时间判断
 		motorStruct.flag_BC1 = 0;
@@ -186,7 +187,7 @@ void MotorControl()
 	{
 		if(counter_BH > BH_SAFE && flag_30 == 0)							// 方波超时保护
 		{
-			flag_30 = 1;
+			flag_30 = 1;													//如果出现BH，则会在中断中清零
 			counter_BH = 0;
 			//按马达当前转向，反向旋转4S，再继续原来转向
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
@@ -234,16 +235,32 @@ void MotorControl()
 		}else
 		
 		//YSFL达到阀值，关窗
-		if(flag_YS_SHUT)
+		if(jugeYS.switchon)
 		{
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 			OS_AddJudegeFunction(taskMotor,ShutDownWindow,4,MotorProtect);	// 执行关窗
 			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
-			flag_YS_SHUT = 0;
+			jugeYS.switchon = 0;
 			if(key_AM.val == on)
 				shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间
 		}else
-		
+		if(flag_FL_SHUT)//FL达到阀值，关窗
+		{
+			flag_FL_SHUT = 0;
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+			OS_AddJudegeFunction(taskMotor,ShutDownWindow,4,MotorProtect);	// 执行关窗
+			OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
+//			if(key_AM.val == on)
+//				shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间			
+		}else
+			if(jugeYS_No.switchon)											//无YS开窗
+			{
+				jugeYS_No.switchon = 0;
+				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+				OS_AddJudegeFunction(taskMotor,OpenWindow,FLASH_ReadWord(ADDR_shut_time),MotorProtect);	// 执行开窗
+				OS_AddJudegeFunction(taskMotor,MotorSTOP,4,MotorProtect);		// 停止
+				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
+			}
 		//按键<Z
 		if(flag_KEY_Z)
 		{

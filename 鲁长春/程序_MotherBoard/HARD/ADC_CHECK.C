@@ -1,13 +1,14 @@
 #include "ADC_CHECK.H"
 #include "lowpower.h"
+#include "keyboard.h"
 
-u8 flag_YS = 0;					// YS信号超警戒,启动计时器，超过4S，触发flag_YS_SHUT = 1
-u8 flag_YS_SHUT = 0;			
-u16 counter_YS = 0;				//YS信号产生后计时
-float YSdat = 0;				// ys-u
-TaskStr* taskYS	;				// YS测量任务
-u8 YS_30_flag = 0;				// YS供电标志位，当按下按键30分钟不响应YS信号
-
+JugeCStr 	jugeYS_No 	= {0};			// 无雨水，AM打开时计时开窗
+JugeCStr 	jugeYS 		= {0};			// YS信号超警戒,启动计时器，超过4S，触发	
+float 		YSdat 		= 0;			// ys-u
+extern		TaskStr* 	taskYS		;	// YS测量任务
+				
+JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
+u32			ys_timer30 	= 0;			//YS不响应计时
 extern TaskLinkStr* tasklink;			// 任务列表
 
 //根据AD值计算电池端电压
@@ -54,23 +55,39 @@ uint16_t Get_ADC_Dat(hardChannel hard_channel)
     
 }
 
+void YS_Check_Start()
+{
+
+}
+
+void YS_Check_Stop()
+{
+
+}
+
+
 //YS检测任务
 void YS_Function()
 {
 	GPIO_SET(YSD_GPIO);
 	YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 	GPIO_RESET(YSD_GPIO);
-	if(YSdat > VALVE_YS_D)	//超过报警阀值
+	if(YSdat > VALVE_YS_D )	//超过报警阀值
 	{
-		flag_YS = 1;
-		if(key_AM.val == on)
-			YS_isno_counter = 0;	//清空计数
+		if(jugeYS.switchon == 0 && GPIO_READ(GPIO_38KHZ_BC1) != RESET)jugeYS.start = 1;	//开着窗
+		if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET)						//关着窗
+		{
+			jugeYS_No.counter = 0;	//清空计数
+			jugeYS_No.start = 0;	
+		}
+			
 	}
-		
 	else 
 	{
-		flag_YS = 0;
-		counter_YS = 0;
+		jugeYS.start = 0;
+		jugeYS.counter = 0;
+		if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET && jugeYS_No.switchon == 0)//关着窗
+			jugeYS_No.start = 1;	//开始无YS计时。超过阀值，自动开窗
 	}
 	debug("YSdat = %f\r\n",YSdat);
 }
@@ -81,7 +98,7 @@ void YS_Control()
 	static u8 flag_1	= 0;				
 	if(taskYS->state == Wait || taskYS->state == Stop)
 	{
-		if((GPIO_READ(GPIO_38KHZ_BC1) == RESET || YS_30_flag) && flag_0 == 0) 	//不检测YS
+		if(((GPIO_READ(GPIO_38KHZ_BC1) == RESET && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
 		{
 			flag_0 = 1;
 			flag_1 = 0;
@@ -89,12 +106,13 @@ void YS_Control()
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
 			OS_AddTask(tasklink,taskYS);							// 删除检测任务			
 		}
-		if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && YS_30_flag == 0 && flag_0)
+		if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && YS_30.start == 0 && flag_0)
 		{
 			flag_0 = 0;
 		}
 		
-		if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && YS_30_flag == 0 && flag_1 == 0)	//开着窗并且没有30分钟限制
+		if((GPIO_READ(GPIO_38KHZ_BC1) != RESET ||(GPIO_READ(GPIO_38KHZ_BC1) == RESET && key_AM.val == on))\
+			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 			flag_1= 1;
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
