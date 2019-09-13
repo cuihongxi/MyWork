@@ -1393,7 +1393,8 @@ RST_TypeDef;
   * @{
   */
 
-#define RST_CR_RESET_VALUE    ((uint8_t)0x00) /*!< Reset pin configuration register  1 reset value */
+
+#define RST_CR_RESET_VALUE    ((uint8_t)0X00) /*!< Reset pin configuration register  1 reset value */
 #define RST_SR_RESET_VALUE    ((uint8_t)0x01) /*!< Reset status register 2 reset value */
 
 /**

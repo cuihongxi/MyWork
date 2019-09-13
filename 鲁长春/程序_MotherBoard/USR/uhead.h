@@ -30,13 +30,14 @@
 #include "stdio.h"
 #define  debug(...) 		printf(__VA_ARGS__);
 #define	UART_INIT(baud)	do{\
+	RST->CR = 0xD0;\
 	SWAPPER_UART_PA2_PC3();	\
 	CLK_PeripheralClockConfig (CLK_Peripheral_USART1,ENABLE);\
 	USART_Init(USART1,baud, USART_WordLength_8b,USART_StopBits_1,USART_Parity_No,USART_Mode_Tx);\
 	debug("\r\nstart:\r\n");\
 }while(0)
 #else
-#define	UART_INIT(baud)
+#define	UART_INIT(baud) RST->CR = 0x00;
 #define debug(...)   
 #endif
 
@@ -69,4 +70,8 @@ typedef struct{
 	u8 switchon;		//定时到，开关打开
 	u32 counter;		//计数
 }JugeCStr;
+
+
 #endif
+
+//	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());

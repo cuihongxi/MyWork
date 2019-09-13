@@ -167,6 +167,11 @@ void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);	// RX ACK ×Ô¶¯»Ø¸´£¬ÉèÖÃÍ
 
 u8 NRF24L01_GetStatus(void);	// »ñÈ¡×´Ì¬status
 
+/********************2019Äê9ÔÂ8ÈÕÔö¼Óº¯Êı*********************************/
+
+void CreatNewAddr(u8* ChipID,u8* newAddr);				// ÓÃIDºÅÉú²úĞÂµÄÊÕ·¢µØÖ·
+void Get_ChipID(u8 *ChipID);
+
 #endif
 
 

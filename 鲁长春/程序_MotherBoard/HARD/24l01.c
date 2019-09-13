@@ -10,9 +10,47 @@ u8  ADDRESS1[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
 u8  ADDRESS2[RX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; 
 u8* address = ADDRESS1;
 
-#if     DEBUG_24L01 > 0
-u8 arraybuf[5] = {0};
-#endif
+//用ID号生产新的收发地址
+void CreatNewAddr(u8* ChipID,u8* newAddr)
+{
+      u8 dat[5] = {0};
+      dat[0] = ChipID[0]^ChipID[5];
+      dat[1] = ChipID[1]^ChipID[11];
+      dat[2] = ChipID[2]^ChipID[10];
+      dat[3] = ChipID[3]^ChipID[9]^ChipID[6];
+      dat[4] = ChipID[4]^ChipID[8]^ChipID[7];
+      newAddr[0] ^= dat[0];
+      newAddr[1] ^= dat[1];
+      newAddr[2] ^= dat[2];
+      newAddr[3] ^= dat[3];
+      newAddr[4] ^= dat[4];
+}
+
+/*******************************************************************************
+****函数名称:
+****函数功能:获取芯片ID函数
+****版本:V1.0
+****日期:14-2-2014
+****入口参数:无
+****出口参数:无
+****说明:96位唯一ID
+********************************************************************************/
+void Get_ChipID(u8 *ChipID)
+{
+	ChipID[0] = *(__IO u8 *)(0X4926); 
+	ChipID[1] = *(__IO u8 *)(0X4927); 
+	ChipID[2] = *(__IO u8 *)(0X4928);
+    ChipID[3] = *(__IO u8 *)(0X4929);
+	ChipID[4] = *(__IO u8 *)(0X492A); 
+	ChipID[5] = *(__IO u8 *)(0X492B); 
+	ChipID[6] = *(__IO u8 *)(0X492C);
+	ChipID[7] = *(__IO u8 *)(0X492D); 
+	ChipID[8] = *(__IO u8 *)(0X492E); 
+	ChipID[9] = *(__IO u8 *)(0X492F);
+	ChipID[10] = *(__IO u8 *)(0X4930); 
+	ChipID[11] = *(__IO u8 *)(0X4931); 
+}
+
 /*****************SPI时序函数******************************************/
 u8 SPI2_ReadWriteByte(unsigned char date)
 {

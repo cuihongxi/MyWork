@@ -13,7 +13,14 @@
 #include "uhead.h"
 #include "CUI_RTOS.H"
 #define  MX830Motor_GPIO_FI     GPIOC,GPIO_Pin_2
+
+#if 	DEBUG_LEVEL > 0 
+#define  MX830Motor_GPIO_BI     GPIOA,GPIO_Pin_1
+#else
 #define  MX830Motor_GPIO_BI     GPIOC,GPIO_Pin_3
+#endif
+
+
 #define  MX830Motor_GPIOMode    GPIO_Mode_Out_PP_Low_Slow
 
 typedef enum

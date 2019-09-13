@@ -14,7 +14,9 @@
 #include "CUI_RTOS.H"
 #include "stm8l15x_adc.h"
 
-#define         Battery_GPIO            GPIOA,GPIO_Pin_5                
+#define         Battery_GPIO            GPIOA,GPIO_Pin_5  
+#define         BatControl_GPIO         GPIOC,GPIO_Pin_1  //控制端
+
 #define         YS_GPIO                 GPIOC,GPIO_Pin_4                
 #define         YSD_GPIO                GPIOA,GPIO_Pin_4 	//给YS传感器供电
 

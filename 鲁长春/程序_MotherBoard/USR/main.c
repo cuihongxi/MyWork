@@ -38,6 +38,7 @@ void CLK_GPIO_Init()
 	GPIO_Init(GPIO_DM,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
+	
 	LED_GPIO_Init();   										// 双色LED初始化
 	MX830Motor_GPIOInit();                                 	// 马达IO配置	
 	GPIO_ADC_Init();
@@ -90,16 +91,17 @@ void MakeSysWakeUp()
 }
 void main()
 {
-  	CLK_GPIO_Init();										// 低功耗时钟和GPIO初始化,2MHZ
-	delay_ms(500);											//等待系统稳定
+
+  	CLK_GPIO_Init();								// 低功耗时钟和GPIO初始化,2MHZ
+	delay_ms(500);									// 等待系统稳定
 	UART_INIT(115200);
-//	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
+
 //	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	LED_RED_Open(0);	
+	LED_RED_Open(0);
 	FlashData_Init();
-	tasklink = SingleCycList_Create();				//创建一个任务循环链表
+	tasklink = SingleCycList_Create();				// 创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
-	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务	
+	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
 	taskLED = OS_CreatTask(&timer2);				// 创建LED显示任务
 	taskLEDYS30 =  OS_CreatTask(&timer2);			// 创建LEDYS30显示任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
@@ -112,56 +114,25 @@ void main()
 		MX830Motor_StateDir(&motorStruct);
 		while(GPIO_READ(GPIO_38KHZ_BC1) != RESET);	// 等待GPIO_38KHZ_BC1出现低电平
 		dm_counter = GetSysTime(&timer2);
-	//	flag_DM = 1;
 		motorStruct.command = BACK;
 		MX830Motor_StateDir(&motorStruct);
 		while(GPIO_READ(GPIO_38KHZ_BC2) != RESET);	// 等待GPIO_38KHZ_BC2出现低电平
 		dm_counter = GetSysTime(&timer2) - dm_counter;
 		FLASH_ProgramByte(ADDR_DM,dm_counter);		// 写入FLASH
-	//	flag_DM = 0;
 		debug("dm_counter = %lu\r\n",dm_counter);
 	}
 	
 	Make_SysSleep();								// 系统进入休眠状态
-	Key_GPIO_Init();								// 触摸按键初始化
-	FL_GPIO_Init();
+//	Key_GPIO_Init();								// 触摸按键初始化
+//	FL_GPIO_Init();
 	//检测一次电池电压
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
-	
+	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 	while(1)
 	{
       if(flag_wake)
-	  {
-//			//按键松手检测
-//			if(flag_exti)	Key_ScanLeave();                   //松手程序
-//			//按键处理函数
-//			if(key_val)
-//			{
-//				switch(key_val)
-//				{
-//						case KEY_VAL_DER_Z:
-//					break;
-//						case KEY_VAL_DER_Y:
-//					break;
-//						case KEY_VAL_AM:
-//					break;
-//						case KEY_VAL_Y30: Y30_function();
-//					break;
-//				}
-//				key_val = KEY_VAL_NULL;
-//			}
-//			
-//			//电源管理
-//			BatControl();
-//			//马达运动
-// 			MotorControl();
-//			//检测限位
-//			CheckBC1BC2();
-//			//YS—D，供电控制
-//			YS_Control();	
-//		//	debug("\r\nwake \r\n");	
-//			OS_Task_Run(tasklink);	  
+	  { 
 	  }
 	  else	//休眠函数
 	  {
@@ -170,7 +141,7 @@ void main()
             halt();
 			if(flag_wake == 0)
 			{
-				
+/*				
 				//按键处理函数
 				if(key_val)
 				{
@@ -226,7 +197,7 @@ void main()
 				}
 				
 				if(flag_exti)	Key_ScanLeave();                   					//松手程序
-				
+*/				
 				//电源管理
 				BatControl(&bat,tasklink,taskBatControl);
 				
@@ -295,8 +266,10 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		jugeYS.counter += IRQ_PERIOD;
 		if(jugeYS.counter > TIM__YS_D)
 		{
+			debug("jugeYS.switchon = 1 \r\n");
 			jugeYS.switchon = 1;
 			jugeYS.start = 0;
+			jugeYS.counter = 0;
 		}	
 	}
 	//30

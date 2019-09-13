@@ -8,22 +8,26 @@ u8 state = 0;
 
 bool BatState()
 {
-//	if(state != bat.state)
-//	{
-//		debug("state = %d,bat.state = %d\r\n",state , bat.state);
-//		return TRUE;
-//	}else 
-//		return FALSE;
 	return (bool)(state != bat.state);
 }
 
+uint16_t Get_BAT_ADC_Dat(hardChannel hard_channel)
+{
+	uint16_t dat = 0;
+	GPIO_RESET(BatControl_GPIO);
+	dat = Get_ADC_Dat( hard_channel);
+	GPIO_SET(BatControl_GPIO);
+	return dat;
+}
 //电源管理
 void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 {
 	if(bat->flag)
 	{
 		bat->flag = 0;
-		bat->val = BatteryGetAD(Get_ADC_Dat(Battery_Channel));
+		bat->val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
+		
+		//debug("bat = %d.%d\r\n",(u8)bat->val,(u8)(bat->val*10)-(u8)bat->val*10);
 		if(bat->val >=VALVE_BAT_CHECK) bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// 计算检测间隔
 		else bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKL;
 		if(bat->val > VALVE_BAT_GREEN)			state = BAT_STATE_GREEN;									
