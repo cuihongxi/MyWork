@@ -139,6 +139,14 @@ void OsSectionFun(TaskStr* task)
 		}		
 }
 
+//判断任务是否为空，是返回真，否则返回假
+bool OsJudge_TaskIsNull(TaskStr* task)
+{
+	funLinkStr* pthis =  (funLinkStr*)&task->funNode;
+	if(SingleList_Iterator((void**)&pthis) == 0)					//没有任务
+		return (bool)TRUE;
+	else return (bool)FALSE;
+}
 //任务队列运行
 void OS_Task_Run(TaskLinkStr* tasklink)
 {
@@ -168,7 +176,7 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 u32 OS_TimerFunc(TimerLinkStr* timer)
 {
 	TimerLinkStr* pNext = timer;
-	timer->counter ++;
+	timer->counter += IRQ_PERIOD;
 	while(SingleList_Iterator((void**)&pNext))
 	{
 
@@ -186,6 +194,7 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 					((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
 					OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
 					SingleList_DeleteNode(timer, pNext);			// 删除定时
+					
 				}
 			}
 		}

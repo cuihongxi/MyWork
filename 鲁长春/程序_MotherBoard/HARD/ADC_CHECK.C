@@ -10,8 +10,8 @@ extern		TaskStr* 	taskYS		;	// YS测量任务
 				
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
 u32			ys_timer30 	= 0;			//YS不响应计时
-extern TaskLinkStr* tasklink;			// 任务列表
-
+extern 		TaskLinkStr* 			tasklink;			// 任务列表
+extern 		WindowState				windowstate;
 
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
@@ -68,15 +68,16 @@ void YS_Function()
 	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
 	{
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
+		
 		GPIO_RESET(YSD_GPIO);
 		if(YSdat > VALVE_YS_D )	//超过报警阀值
 		{
-			if(jugeYS.switchon == 0 && GPIO_READ(GPIO_38KHZ_BC1) != RESET)
+			if(jugeYS.switchon == 0 && windowstate != to_BC1)
 			{
 				debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
 				jugeYS.start = 1;	//开着窗
 			}
-			if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET)						//关着窗
+			if(key_AM.val == on && windowstate == to_BC1)						//关着窗
 			{
 				jugeYS_No.counter = 0;	//清空计数
 				jugeYS_No.start = 0;
@@ -101,21 +102,23 @@ void YS_Control()
 	static u8 flag_1	= 0;				
 	if(taskYS->state == Wait || taskYS->state == Stop)
 	{
-		if(((GPIO_READ(GPIO_38KHZ_BC1) == RESET && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
+		//debug("key_AM.val = %d flag_0 = %d GPIO_READ(GPIO_38KHZ_BC1) = %d\r\n",key_AM.val,flag_0,GPIO_READ(GPIO_38KHZ_BC1));
+		if(((windowstate == to_BC1  && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
 		{
+			debug("remove YS check \r\n");
 			flag_0 = 1;
 			flag_1 = 0;
 			GPIO_RESET(YSD_GPIO);									//关闭YS电源		
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
 			OS_AddTask(tasklink,taskYS);							// 删除检测任务	
-			debug("remove YS check \r\n");
-		}
-		if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && YS_30.start == 0 && flag_0)
+			
+		}else
+		if(windowstate != to_BC1 && YS_30.start == 0 && flag_0)
 		{
 			flag_0 = 0;
-		}
+		}else
 		
-		if((GPIO_READ(GPIO_38KHZ_BC1) != RESET ||(GPIO_READ(GPIO_38KHZ_BC1) == RESET && key_AM.val == on))\
+		if((windowstate != to_BC1 ||(windowstate == to_BC1 && key_AM.val == on))\
 			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 			flag_1= 1;

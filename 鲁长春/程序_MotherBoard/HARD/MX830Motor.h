@@ -35,18 +35,29 @@ typedef enum
 typedef struct
 {
     u32  		counter;        		// 标记马达运行计时
+	u32			hasrun ;				// 记录马达目前的位置，关窗位置为0，开窗BC2为 dm_counter
+	u32			opentime ;				// 记录马达完整开窗时间
+	u32			closetime ;				// 记录马达完整关窗时间
     State_Dir   dir;          			// 马达方向
 	State_Dir   command;				// 指令
 	u8 			flag_BC;				// BC到位检测标志
 	u8 			flag_BC1 ;				// BC1关窗标志
 	u8 			flag_BC2 ;				// BC2开窗标志
+//	u8			led_bc1;				// 用来计算完整开窗时间
+//	u8			led_bc2;				// 用来计算完整开窗时间
 }Motor_Struct;
 
-
+typedef enum{
+	open,
+	to_BC1,
+	to_BC2,
+}WindowState;
 
 
 extern  Motor_Struct    motorStruct;                            //马达状态结构体
 extern 	TaskStr* taskMotor;										// 马达运动任务
+extern 	WindowState				windowstate;
+
 
 void MX830Motor_GPIOInit(void);                                 //马达IO配置
 void MX830Motor_StateDir(Motor_Struct* motorStruct);            //马达控制函数
@@ -57,7 +68,7 @@ void CheckBC1BC2();			// BC1,BC2
 
 void Motor_STOP();
 void Motor_Z();
-
+void CheckWindowState();
 
 
 

@@ -57,7 +57,6 @@
 #define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
 #define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
 
-
 #define	malloc(a)	CUI_MALLOC(a)
 #define	free(a)		FreeCUI_MALLOC(a)
 

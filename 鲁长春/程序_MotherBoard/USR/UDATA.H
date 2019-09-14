@@ -28,9 +28,9 @@
 #define         TIM_BH0                 4000    // ms, BH反向运动时间
 #define         TIM_30                  60000*30// 30分钟不响应
 #define         TIM_BAT                 5000    // ms ,检测BAT电压周期
-#define			TIM_AM_ON				30000	// ms,AM有效时对应的LED指示点亮时间
+#define			TIM_AM_ON				3000	// ms,AM有效时对应的LED指示点亮时间
 #define			TIM_AM_OFF				500		// ms,AM无效时对应的LED指示点亮时间
-#define			TIM_Y30_ON				30000	// ms,Y30有效时对应的LED指示点亮时间
+#define			TIM_Y30_ON				3000	// ms,Y30有效时对应的LED指示点亮时间
 #define			TIM_Y30_OFF				500		// ms,Y30无效时对应的LED指示点亮时间
 #define			TIM_OPEN				60000*5 // 无YS计时开窗
 #define			TIM_Y30_DELAY			3000	// ms,Y30长按3S取消功能

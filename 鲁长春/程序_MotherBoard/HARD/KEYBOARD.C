@@ -20,7 +20,8 @@ extern	JugeCStr 		YS_30 ;
 
 // 松手程序
 void Key_ScanLeave()
-{    					
+{    	
+	
 	if(Y30_Risingtime != 0 && GPIO_READ(GPIO_Y30))
 	{
 		if((GetSysTime(&timer2) - Y30_Risingtime) > TIM_Y30_DELAY)
@@ -44,10 +45,11 @@ void Key_ScanLeave()
 		DM_Risingtime = 0;
 	}
 	
-    if((GPIO_READ(GPIO_DER_Z)&GPIO_READ(GPIO_DER_Y)&GPIO_READ(GPIO_AM)&GPIO_READ(GPIO_Y30)))
-    {       
-	  	debug("key null\r\n");
+    if(GPIO_READ(GPIO_DER_Z)&&GPIO_READ(GPIO_DER_Y)&&GPIO_READ(GPIO_AM)&&GPIO_READ(GPIO_Y30)&&GPIO_READ(GPIO_DM))
+    {
+	  	debug("-----key null-------\r\n");
         flag_exti = 0;
+		key_val = KEY_VAL_NULL;
     }
 }
 
@@ -78,7 +80,7 @@ void Key_GPIO_Init()
       EXTI_SetPortSensitivity(EXTI_Port_B,EXTI_Trigger_Falling);				// 设置端口敏感性
 	  EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
 	  //使能中断
-      enableInterrupts();                                                 // 使能中断
+      enableInterrupts();                                                 		// 使能中断
 }
 
 
@@ -87,7 +89,7 @@ void Key_GPIO_Init()
 //按键扫描
 u32 ScanKey(keyStr* key)
 {
-	LSI_delayms(2);
+	//LSI_delayms(2);
 	u32 time = 0;
 	if(GPIO_ReadInputDataBit(key->GPIOx,key->GPIO_Pin) == RESET)
 	{
@@ -118,7 +120,7 @@ u32 ScanKey(keyStr* key)
 }
 INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 {
-	debug("in key ti\r\n");
+	debug("in key ti,flag_exti = %d\r\n",flag_exti);
     if(key_val == KEY_VAL_NULL)
     {
 		if(GPIO_READ(GPIO_DER_Z) == RESET)

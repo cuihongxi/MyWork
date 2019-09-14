@@ -6,7 +6,6 @@
 #include "MX830Motor.h"
 #include "LED_SHOW.H"
 #include "MYCLK.h"
-//#include "stm8l15x_clk.h"
 #include "ADC_CHECK.H"
 #include "NRF24L01_AUTO_ACK.H"
 #include "24l01.h"
@@ -19,6 +18,7 @@
 #include "FL.H"
 #include "stmflash.h"
 
+#define		GPIO_BEEP			GPIOA,GPIO_Pin_0		// ·äÃùÆ÷
 
 
 

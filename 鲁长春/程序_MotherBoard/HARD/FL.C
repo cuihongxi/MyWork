@@ -10,9 +10,6 @@ u8		flag_FL_SHUT = 0;
 
 extern	TimerLinkStr 	timer2 ;					// 任务的定时器
 
-
-
-
 void FL_GPIO_Init()
 {
 	GPIO_Init(GPIO_FLU,GPIO_Mode_In_PU_IT);  
@@ -21,16 +18,49 @@ void FL_GPIO_Init()
     enableInterrupts();                                                 // 使能中断
 }
 
-void FL_CheckStartO()
+void FL_CheckStart()
 {
 	GPIO_Init(GPIO_FLU,GPIO_Mode_In_PU_IT);  
 }
 
 void FL_CheckStop()
 {
-	GPIO_Init(GPIO_FLU,GPIO_Mode_In_PU_No_IT);  
+	GPIO_Init(GPIO_FLU,GPIO_Mode_Out_PP_Low_Slow);  
 	
 }
+
+
+
+/******************************BH检测***********************************/
+
+void BH_CheckStart()
+{
+	GPIO_Init(GPIO_BH,GPIO_Mode_In_PU_IT);
+}
+
+void BH_CheckStop()
+{
+	GPIO_Init(GPIO_BH,GPIO_Mode_Out_PP_Low_Slow);
+	counter_BH = 0;
+}
+
+void BH_Check()
+{
+	if(GPIO_READ(GPIO_BH) == RESET)
+	{
+		debug("counter_BH = 0\r\n");
+		counter_BH = 0;
+		if(flag_30 == 1 )flag_30 = 0;	// 恢复故障
+	}
+}
+
+
+//INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
+//{
+//	
+//	EXTI_ClearITPendingBit (EXTI_IT_Pin0);
+//}
+
 
 INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
 {
@@ -50,14 +80,13 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
 				{
 					flag = 1;			//启动滤波计时
 					timer = counter;
+					debug("FL:启动滤波计时\r\n");
 				}else
 				{
 					if((counter - timer)>TIM__FL_D)
 					{
 						flag_FL_SHUT = 1;			// 滤波时间到，关窗
-				
-//						if(key_AM.val == on)
-//							flag_FLreasion = 1;		// FL的原因关窗
+						FL_CheckStop();
 					}	
 				}
 				
@@ -70,37 +99,8 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
 			counter_FL = counter + fl_speed_width;
 		}
 	}
-	debug("EXTI6_IRQHandler\r\n");
+/******************************BH检测***********************************/	
+	BH_Check();
+	//debug("EXTI6_IRQHandler\r\n");
     EXTI_ClearITPendingBit (EXTI_IT_Pin6);
 }
-
-
-/******************************BH检测***********************************/
-
-void BH_CheckStart()
-{
-	GPIO_Init(GPIO_BH,GPIO_Mode_In_PU_IT);
-	disableInterrupts();
-	EXTI_SetPinSensitivity(EXTI_Pin_0,EXTI_Trigger_Falling);
-    enableInterrupts();  
-	
-}
-
-void BH_CheckStop()
-{
-	GPIO_Init(GPIO_BH,GPIO_Mode_In_PU_No_IT);
-	counter_BH = 0;
-}
-
-INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
-{
-	if(GPIO_READ(GPIO_BH) == RESET)
-	{
-		counter_BH = 0;
-	}
-	if(flag_30 == 1 )flag_30 = 0;	// 恢复故障
-	debug("EXTI0_IRQHandler\r\n");
-	EXTI_ClearITPendingBit (EXTI_IT_Pin0);
-}
-
-

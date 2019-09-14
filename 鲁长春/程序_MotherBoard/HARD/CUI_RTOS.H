@@ -90,9 +90,10 @@ void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task);			// 添加任务到任务队列
 void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num);		// 添加循环函数到任务
 void OS_Task_Run(TaskLinkStr* tasklink);						// 任务队列运行
 u32 GetSysTime(TimerLinkStr* timerlink);						// 获取系统时间
-void OS_DeleteTask(void);										//从任务列表删除任务用，时间应该为0
+void OS_DeleteTask(void);										// 从任务列表删除任务用，时间应该为0
 void OS_AddJudegeFunction(TaskStr* task,osfun fun,u32 time,jugefun funJuge);// 添加条件判断函数到任务\
 																定时器中判断条件函数如果为真则计时结束，跳转任务
 
+bool OsJudge_TaskIsNull(TaskStr* task);							// 判断任务是否为空，是返回真，否则返回假
 
 #endif
