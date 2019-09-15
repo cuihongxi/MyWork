@@ -5,7 +5,6 @@ Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
 u8 					txbuf[] 	= {1};				// nrf发送缓存
 u8 					rxbuf[10] 	= {0};				// nrf接收缓存
 u8 					flag_wake 	= 1;				// 唤醒标志
-u8 					flag_DM 	= 0;				// 开机检测DM，启动定时器标志
 u32 				dm_counter 	= 0;				// 开机检测DM，计数器
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
 TaskLinkStr* 		tasklink 	= {0};				// 任务列表
@@ -15,14 +14,14 @@ u8 					flag_KEY_Y 	= 0;
 u32 				threshold_30 	= 0;			// 30分钟无动作阀值
 BATStr 				bat = {0};						// 电池结构体
 TaskStr* 			taskBatControl 	= {0};	
-TaskStr* 			taskLED = {0};
-TaskStr*			taskLEDYS30 	= {0};
 TaskStr* 			taskYS			= {0};			// YS测量任务
-TaskStr* 			taskBEEP		= {0};			// 蜂鸣器任务
-u8 					signal_AMJudge 	= 0;			//AM按键信号量
-u8					key_AM_state = 0;
-u8 					signal_Y30Judge 	= 0;		//Y30按键信号量
 
+
+JugeCStr 			beep = {0};
+JugeCStr 			LEDAM_juge = {0};
+JugeCStr 			LEDY30_juge = {0};
+u16					amtime = 0;
+u16					y30time = 0;
 
 extern u32 			counter_BH	;				// BH计数
 extern u8 			flag_no30;
@@ -99,27 +98,22 @@ void MakeSysWakeUp()
 	debug(" WakeUp \r\n");
 }
 
-bool key_AM_Juge()
-{
-	bool i = (bool)signal_AMJudge;
-	if(signal_AMJudge) signal_AMJudge = 0;
-	return i;
-}
-
-bool key_Y30_Juge()
-{
-	bool i = (bool)signal_Y30Judge;
-	if(signal_Y30Judge) signal_Y30Judge = 0;
-	return i;
-}
-
 void BeepStart()
 {
+	#if BEEP_SW > 0
 	GPIO_SET(GPIO_BEEP);
+	#else
+	GPIO_RESET(GPIO_BEEP);
+	#endif
+	
 }
 void BeepStop()
 {
+	#if BEEP_SW > 0
 	GPIO_RESET(GPIO_BEEP);
+	#else
+	GPIO_SET(GPIO_BEEP);
+	#endif
 }
 void main()
 {
@@ -128,16 +122,16 @@ void main()
 	delay_ms(500);									// 等待系统稳定
 	UART_INIT(115200);
 
-//	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	LED_RED_Open(0);
+	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+	
+	LEN_RED_Close();
+	LEN_GREEN_Close();
 	FlashData_Init();
 	tasklink = SingleCycList_Create();				// 创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
-	taskLED = OS_CreatTask(&timer2);				// 创建LED显示任务
-	taskLEDYS30 =  OS_CreatTask(&timer2);			// 创建LEDYS30显示任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
-	taskBEEP = OS_CreatTask(&timer2);				// 创建beep任务
+
 	Make_SysSleep();								// 系统进入休眠状态
 	FL_GPIO_Init();
 	 enableInterrupts();                                                 		// 使能中断
@@ -157,7 +151,7 @@ void main()
 		MX830Motor_StateDir(&motorStruct);
 		while(GPIO_READ(GPIO_38KHZ_BC2) != RESET);	// 等待GPIO_38KHZ_BC2出现低电平
 		dm_counter = GetSysTime(&timer2) - dm_counter;
-		FLASH_ProgramByte(ADDR_DM,dm_counter);		// 写入FLASH
+		FLASH_ProgramWord(ADDR_DM,dm_counter);		// 写入FLASH
 		debug("dm_counter =0x%x%x\r\n",(u16)(dm_counter>>16),(u16)(dm_counter));
 	}
 	
@@ -186,32 +180,15 @@ void main()
 						case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
 							break;
 						case KEY_VAL_AM: 	
-							if(OsJudge_TaskIsNull(taskLED)) signal_AMJudge = 0;
-							else signal_AMJudge = 1;
-							OS_AddFunction(taskLED,OS_DeleteTask,0);			// 移除任务
-							key_AM_state = !key_AM_state;
-							if(key_AM_state == 0)							// 对应的LED指示点亮0.5秒后熄灭
-							{
-								OS_AddFunction(taskLED,LEN_GREEN_Close,40);
-								OS_AddJudegeFunction(taskLED,LEN_GREEN_Open,TIM_AM_OFF,key_AM_Juge);
-								OS_AddFunction(taskLED,LEN_GREEN_Close,4);
-								OS_AddFunction(taskLED,OS_DeleteTask,0);			// 移除任务
-							}else											// 对应的LED指示点亮30秒后熄灭
-							{
-								
-								OS_AddFunction(taskLED,LEN_GREEN_Close,40);
-								OS_AddJudegeFunction(taskLED,LEN_GREEN_Open,TIM_AM_ON,key_AM_Juge);
-								OS_AddFunction(taskLED,LEN_GREEN_Close,4);	
-								OS_AddFunction(taskLED,OS_DeleteTask,0);			// 移除任务
-							}
-
-							OS_AddTask(tasklink,taskLED);							// 添加LED任务	
+							if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
+							else					amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
+							LEN_GREEN_Open();
+							LEDAM_juge.start = 1;
+							LEDAM_juge.counter = 0;
 							break;
 						case KEY_VAL_Y30:
-							if(OsJudge_TaskIsNull(taskLEDYS30)) signal_Y30Judge = 0;
-							else signal_Y30Judge = 1;
-							OS_AddFunction(taskLEDYS30,OS_DeleteTask,0);			// 移除任务
-							if(1)//if(jugeYS.start || jugeYS.switchon)	//有YS
+
+							if(jugeYS.start || jugeYS.switchon)	//有YS
 							{
 								switch(key_Y30.val)
 								{
@@ -219,20 +196,13 @@ void main()
 									case 2: ys_timer30 = TIM_30 * 2; 	YS_30.start = 1;	break;
 									case 3: ys_timer30 = TIM_30 * 6; 	YS_30.start = 1;	break;
 								}
-								key_Y30.val = off;
+								YS_30.start = 1;
 								YS_30.counter = 0;
-								OS_AddFunction(taskLEDYS30,LEN_RED_Close,40);
-								OS_AddJudegeFunction(taskLEDYS30,LEN_RED_Open,TIM_Y30_ON,key_Y30_Juge);
-								OS_AddFunction(taskLEDYS30,LEN_RED_Close,4);	
-								OS_AddFunction(taskLEDYS30,OS_DeleteTask,0);			// 移除任务
-							}else
-							{
-								OS_AddFunction(taskLEDYS30,LEN_RED_Close,40);
-								OS_AddJudegeFunction(taskLEDYS30,LEN_RED_Open,TIM_Y30_OFF,key_Y30_Juge);
-								OS_AddFunction(taskLEDYS30,LEN_RED_Close,4);
-								OS_AddFunction(taskLEDYS30,OS_DeleteTask,0);			// 移除任务
-							}
-							OS_AddTask(tasklink,taskLEDYS30);						// 添加LED任务	
+								y30time = TIM_Y30_ON;
+							}else y30time = TIM_Y30_OFF;
+							LEN_RED_Open();
+							LEDY30_juge.start = 1;
+							LEDY30_juge.counter = 0;
 							break;
 						case KEY_VAL_DM:								
 							if(key_DM.val == six)	//对话马达转向
@@ -243,10 +213,10 @@ void main()
 									debug("马达对换引脚\r\n");
 							}
 					}
-					OS_AddFunction(taskBEEP,BeepStart,200);
-					OS_AddFunction(taskBEEP,BeepStop,4);
-					OS_AddFunction(taskBEEP,OS_DeleteTask,0);			// 移除任务		
-					OS_AddTask(tasklink,taskBEEP);
+					
+					beep.start = 1;
+					BeepStart();	
+					
 					key_val = KEY_VAL_NULL;
 				}
 				
@@ -254,12 +224,12 @@ void main()
 				
 				//电源管理
 				BatControl(&bat,tasklink,taskBatControl);
-				//马达运动
-				MotorControl();
-				//检测限位
-				CheckBC1BC2();
-				//YS—D，供电控制
-				YS_Control();	
+//				//马达运动
+//				MotorControl();
+//				//检测限位
+//				CheckBC1BC2();
+//				//YS—D，供电控制
+//				YS_Control();	
 				OS_Task_Run(tasklink);
 			}else
 				MakeSysWakeUp();
@@ -291,6 +261,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) prx.IRQCallBack(&prx);
 	flag_wake = 1;
+	debug("*");
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
 
@@ -299,7 +270,6 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
 	
 	u32 systime = OS_TimerFunc(&timer2);						// 定时器内函数
-	//if(flag_DM)	dm_counter ++;									// 对码计时
 	
 	//电池电量检测
 	if(systime >= bat.threshold) bat.flag = 1;
@@ -315,43 +285,23 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	}
 	
 	//YS
-	if(jugeYS.start)
-	{
-		jugeYS.counter += IRQ_PERIOD;
-		if(jugeYS.counter > TIM__YS_D)
-		{
-			debug("jugeYS.switchon = 1 \r\n");
-			jugeYS.switchon = 1;
-			jugeYS.start = 0;
-			jugeYS.counter = 0;
-		}	
-	}
+	Juge_counter(&jugeYS,TIM__YS_D);
 	//30
 	if(flag_no30 && (systime > threshold_30)) flag_no30 = 0;	
 
 	//无YS计时开窗
-	if(jugeYS_No.start) 
-	{
-		jugeYS_No.counter += IRQ_PERIOD;
-		if(jugeYS_No.counter > TIM_OPEN)
-		{
-			jugeYS_No.start = 0;
-			jugeYS_No.switchon = 1;
-		}
-	}
+	Juge_counter(&jugeYS_No,TIM_OPEN);
 	//YS 30分钟不响应
-	if(YS_30.start)
-	{
-		YS_30.counter += IRQ_PERIOD;
-		if(YS_30.counter > ys_timer30)
-		{
-			YS_30.start = 0;
-			YS_30.counter = 0;
-		}
-	}
+	Juge_counter(&YS_30,ys_timer30);
+	//BEEP
+	if(Juge_counter(&beep,130)) BeepStop();
+	//LEDAM
+	if(Juge_counter(&LEDAM_juge,amtime)) LEN_GREEN_Close();	
+	//LEDY30
+	if(Juge_counter(&LEDY30_juge,y30time)) LEN_RED_Close();	
 	
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
-	
+
 }
 //TIM2更新中断,1ms
 INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)

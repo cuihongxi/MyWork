@@ -118,7 +118,7 @@ void YS_Control()
 			flag_0 = 0;
 		}else
 		
-		if((windowstate != to_BC1 ||(windowstate == to_BC1 && key_AM.val == on))\
+		if((windowstate != to_BC1 ||(windowstate == to_BC1 && key_AM.val != off))\
 			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 			flag_1= 1;

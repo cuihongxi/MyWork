@@ -18,7 +18,7 @@
 #include "FL.H"
 #include "stmflash.h"
 
-#define		GPIO_BEEP			GPIOA,GPIO_Pin_0		// ·äÃùÆ÷
+
 
 
 

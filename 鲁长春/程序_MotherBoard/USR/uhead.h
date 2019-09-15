@@ -41,6 +41,13 @@
 #define debug(...)   
 #endif
 
+#define BEEP_SW 1
+#if BEEP_SW > 0
+#define		GPIO_BEEP			GPIOA,GPIO_Pin_0		// 蜂鸣器
+#else
+#define		GPIO_BEEP			GPIOC,GPIO_Pin_0		// 蜂鸣器
+#endif
+
 #ifndef 	TRUE
 #define		TRUE	1
 #endif
@@ -60,15 +67,21 @@
 #define	malloc(a)	CUI_MALLOC(a)
 #define	free(a)		FreeCUI_MALLOC(a)
 
-void LSI_delayus(unsigned int  nCount);   //16M 晶振时  延时 1个微妙
-void LSI_delayms(unsigned int  nCount);
-
 //定时判断数据类型
 typedef struct{
 	u8 start;			//启动定时
 	u8 switchon;		//定时到，开关打开
 	u32 counter;		//计数
 }JugeCStr;
+
+
+/*公用函数*/
+
+void LSI_delayus(unsigned int  nCount);   //16M 晶振时  延时 1个微妙
+void LSI_delayms(unsigned int  nCount);
+bool Juge_counter(JugeCStr* juge, u32 swdat);
+
+
 
 
 #endif

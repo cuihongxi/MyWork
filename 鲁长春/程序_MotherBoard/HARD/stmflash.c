@@ -19,7 +19,7 @@ void FlashData_Init()
 	dm_counter = FLASH_ReadWord(ADDR_DM);	
 //	key_AM.val = (keyEnum)FLASH_ReadByte(ADDR_AM_VAL);
 	flag_motorIO = FLASH_ReadByte(ADDR_motorIO);
-
+	debug("FLASH dm_counter =0x%x%x\r\n",(u16)(dm_counter>>16),(u16)(dm_counter));
 }
 
 

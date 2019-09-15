@@ -335,6 +335,7 @@ void MotorControl()
 					case on:OS_AddJudegeFunction(taskMotor,Motor_Y,4,MotorProtect);				// 执行>Y
 					break;
 					case two:// 开1/3
+					debug("motorStruct.hasrun =0x%x%x\r\n",(u16)(motorStruct.hasrun>>16),(u16)(motorStruct.hasrun));
 						if(motorStruct.hasrun > dm_counter/3)
 							OS_AddJudegeFunction(taskMotor,Motor_Z,motorStruct.hasrun - dm_counter/3,MotorProtect);// 执行>Y
 						else OS_AddJudegeFunction(taskMotor,Motor_Y,dm_counter/3 - motorStruct.hasrun,MotorProtect);	
@@ -349,9 +350,7 @@ void MotorControl()
 				}
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-			}
-			
-			
+			}	
 		}		
 	}
 	MX830Motor_StateDir(&motorStruct);	 								// 马达根据命令运动

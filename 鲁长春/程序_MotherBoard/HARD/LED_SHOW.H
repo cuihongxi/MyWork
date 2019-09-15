@@ -16,8 +16,8 @@ typedef enum{
 
 
 void LED_GPIO_Init();   //Ë«É«LED³õÊ¼»¯
-void LED_GREEN_Open(u8 bol);
-void LED_RED_Open(u8 bol);
+//void LED_GREEN_Open(u8 bol);
+//void LED_RED_Open(u8 bol);
 void LEN_RED_Open();
 void LEN_RED_Close();
 void LEN_GREEN_Open();
