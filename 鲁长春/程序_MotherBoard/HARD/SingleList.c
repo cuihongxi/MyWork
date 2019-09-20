@@ -39,7 +39,7 @@ SingleListNode*  SingleList_DeleteNode(SingleList* list, SingleListNode* node) /
 //如果有下一个则返回下一个指针，否则返回 0
 SingleListNode* SingleList_Iterator(SingleListNode** node)
 {
-	*node = ((SingleListNodeStr*)*node)->next;
+	if(*node) *node = ((SingleListNodeStr*)*node)->next;
 	return ((SingleListNodeStr*)*node);
 }
 

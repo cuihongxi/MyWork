@@ -78,9 +78,7 @@ SingleCycListNode*  SingleCycList_DeleteNode(SingleCycList* list, SingleCycListN
 //如果有下一个则返回下一个指针，否则返回 0
 SingleCycListNode* SingleCycList_Iterator(SingleCycListNode** node)
 {	
-//	debug("*node 1== %lu\r\n",(u32)*node);
-	if(*node != 0)	*node = ((SingleCycListNodeStr*)*node)->next;
-//	debug("*node 2==  %lu\r\n",(u32)*node);
+	if(*node)	*node = ((SingleCycListNodeStr*)*node)->next;
 	return (SingleCycListNode*)*node;
 }
 

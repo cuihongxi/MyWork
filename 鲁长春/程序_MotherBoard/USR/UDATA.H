@@ -22,11 +22,11 @@
 #define         VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
 #define         MOTOR_F_SAFE            60      // 正转保护，单位秒
 #define			TIM_SLEEP				5000	// ms,休眠倒计时时间
-#define			TIM_KEY					300		// ms，连击间隔
+#define			TIM_KEY					200		// ms，连击间隔
 #define         TIM_CHECKEYS          	2000    // ms,YS检测时间
 #define         BH_SAFE                 5000    // ms, BH方波检测
 #define         TIM_BH0                 4000    // ms, BH反向运动时间
-#define         TIM_30                  60000*30// 30分钟不响应
+#define         TIM_30                  1		// 30分钟不响应
 #define         TIM_BAT                 5000    // ms ,检测BAT电压周期
 #define			TIM_AM_ON				3000	// ms,AM有效时对应的LED指示点亮时间
 #define			TIM_AM_OFF				500		// ms,AM无效时对应的LED指示点亮时间

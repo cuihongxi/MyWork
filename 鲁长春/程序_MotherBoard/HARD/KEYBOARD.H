@@ -51,8 +51,8 @@ extern  keyStr key_AM ;
 
 void Key_GPIO_Init();
 void Key_ScanLeave();                   //À… ÷≥Ã–Ú
-void Y30_function();
-
+//void Y30_function();
+void KeyScanControl();
 
 #endif
 

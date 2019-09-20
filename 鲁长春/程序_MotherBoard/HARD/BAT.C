@@ -36,7 +36,7 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 		else if(bat->val > VALVE_BAT_NoBACK)	state = BAT_STATE_38BC1;							
 		else									state = BAT_STATE_NoBACK;	
 	}
-	if((bat->state != state) && (taskBatControl->state == Wait || taskBatControl->state == Stop))
+	if((bat->state != state) && (taskBatControl->state == Stop)) // taskBatControl->state == Wait ||
 	{
 		bat->state = state;
 		OS_AddFunction(taskBatControl,OS_DeleteTask,0);						// 移除任务
@@ -68,7 +68,7 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 			debug("bat->val ＜ 7.2V 红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警\r\n");
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
-			OS_AddCycleFunction(taskBatControl,30);							// 重复30次
+			OS_AddCycleFunction(taskBatControl,3);							// 重复30次
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,5000,BatState);					
 		}else								// 当电压＜6.9V时系统不再响应反转信号，\

@@ -1,4 +1,3 @@
-
 #include "main.h"
 
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
@@ -9,13 +8,12 @@ u32 				dm_counter 	= 0;				// 开机检测DM，计数器
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
 TaskLinkStr* 		tasklink 	= {0};				// 任务列表
 u16 				sleeptime	= TIM_SLEEP;		// 睡眠倒计时
-u8 					flag_KEY_Z 	= 0;				// 传递给马达函数，让他根据val做出动作
-u8 					flag_KEY_Y 	= 0;
+
 u32 				threshold_30 	= 0;			// 30分钟无动作阀值
 BATStr 				bat = {0};						// 电池结构体
 TaskStr* 			taskBatControl 	= {0};	
 TaskStr* 			taskYS			= {0};			// YS测量任务
-
+TaskStr* 			taskKeyScan		= {0};			// KEY 扫描
 
 JugeCStr 			beep = {0};
 JugeCStr 			LEDAM_juge = {0};
@@ -29,7 +27,7 @@ extern keyStr 		key_AM;
 extern keyStr 		key_Y30;
 extern u8			flag_YS_isno;
 extern keyStr 		key_DM;
-extern u8			flag_motorIO;
+
 
 //唤醒数据初始化
 //void Wake_InitDat()
@@ -98,15 +96,7 @@ void MakeSysWakeUp()
 	debug(" WakeUp \r\n");
 }
 
-void BeepStart()
-{
-	#if BEEP_SW > 0
-	GPIO_SET(GPIO_BEEP);
-	#else
-	GPIO_RESET(GPIO_BEEP);
-	#endif
-	
-}
+
 void BeepStop()
 {
 	#if BEEP_SW > 0
@@ -122,7 +112,7 @@ void main()
 	delay_ms(500);									// 等待系统稳定
 	UART_INIT(115200);
 
-	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+//	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	
 	LEN_RED_Close();
 	LEN_GREEN_Close();
@@ -131,10 +121,11 @@ void main()
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
-
+	taskKeyScan = OS_CreatTask(&timer2);			// 创建按键扫描任务
+	
 	Make_SysSleep();								// 系统进入休眠状态
 	FL_GPIO_Init();
-	 enableInterrupts();                                                 		// 使能中断
+	enableInterrupts();                             // 使能中断
 	//检测一次电池电压
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
@@ -164,76 +155,24 @@ void main()
 	  { 
 	  }
 	  else	//休眠函数
-	  {
-          
- //           DATA_Init();               
+	  {            
             halt();
 			if(flag_wake == 0)
 			{	
-				//按键处理函数
-				if(key_val)
-				{
-					switch(key_val)
-					{
-						case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
-							break;
-						case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
-							break;
-						case KEY_VAL_AM: 	
-							if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
-							else					amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
-							LEN_GREEN_Open();
-							LEDAM_juge.start = 1;
-							LEDAM_juge.counter = 0;
-							break;
-						case KEY_VAL_Y30:
-
-							if(jugeYS.start || jugeYS.switchon)	//有YS
-							{
-								switch(key_Y30.val)
-								{
-									case 1: ys_timer30 = TIM_30; 		YS_30.start = 1;	break;
-									case 2: ys_timer30 = TIM_30 * 2; 	YS_30.start = 1;	break;
-									case 3: ys_timer30 = TIM_30 * 6; 	YS_30.start = 1;	break;
-								}
-								YS_30.start = 1;
-								YS_30.counter = 0;
-								y30time = TIM_Y30_ON;
-							}else y30time = TIM_Y30_OFF;
-							LEN_RED_Open();
-							LEDY30_juge.start = 1;
-							LEDY30_juge.counter = 0;
-							break;
-						case KEY_VAL_DM:								
-							if(key_DM.val == six)	//对话马达转向
-							{
-									flag_motorIO = ~flag_motorIO;
-									FLASH_ProgramByte(ADDR_motorIO,flag_motorIO);
-									key_DM.val = off;
-									debug("马达对换引脚\r\n");
-							}
-					}
-					
-					beep.start = 1;
-					BeepStart();	
-					
-					key_val = KEY_VAL_NULL;
-				}
-				
 				if(flag_exti)	Key_ScanLeave();                   					//松手程序
-				
+				//按键扫描
+				KeyScanControl();
 				//电源管理
 				BatControl(&bat,tasklink,taskBatControl);
-//				//马达运动
-//				MotorControl();
-//				//检测限位
-//				CheckBC1BC2();
-//				//YS—D，供电控制
-//				YS_Control();	
+				//检测限位
+				CheckBC1BC2();
+				//马达运动
+				MotorControl();
+				//YS—D，供电控制
+				YS_Control();
 				OS_Task_Run(tasklink);
 			}else
 				MakeSysWakeUp();
-	 
 	  }
 
 	}
@@ -261,7 +200,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) prx.IRQCallBack(&prx);
 	flag_wake = 1;
-	debug("*");
+	//debug("*");
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
 
@@ -292,7 +231,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	//无YS计时开窗
 	Juge_counter(&jugeYS_No,TIM_OPEN);
 	//YS 30分钟不响应
-	Juge_counter(&YS_30,ys_timer30);
+	Juge_counter(&YS_30, (u32)60000*ys_timer30);
 	//BEEP
 	if(Juge_counter(&beep,130)) BeepStop();
 	//LEDAM
@@ -325,12 +264,9 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
 //	//睡眠倒计时
 //	sleeptime --;
 //	if(sleeptime == 0) Make_SysSleep();
-  	TIM2_ClearITPendingBit(TIM2_IT_Update); 
+	
+//  	TIM2_ClearITPendingBit(TIM2_IT_Update); 
 	
 }
-
-
-
-
 
 

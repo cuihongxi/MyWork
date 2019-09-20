@@ -35,7 +35,7 @@ typedef enum
 extern JugeCStr 	jugeYS ;				//YS信号产生后计时
 extern JugeCStr 	jugeYS_No;
 extern JugeCStr 	YS_30;
-extern u32			ys_timer30;
+extern u8			ys_timer30;
 
 //函数
 

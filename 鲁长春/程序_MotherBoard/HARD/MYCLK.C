@@ -1,8 +1,6 @@
 #include "MyCLK.H"
 
-
 //    关闭所有外设时钟
-
 void CLOSE_CLK_ALL(void)
 {
     CLK->PCKENR1 = 0;
@@ -11,7 +9,6 @@ void CLOSE_CLK_ALL(void)
 
 
 //    打开外设时钟1
-
 
 void OPEN_CLK1(unsigned char Clk_Peripheral1)
 {

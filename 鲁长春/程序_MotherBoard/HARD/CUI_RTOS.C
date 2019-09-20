@@ -11,32 +11,38 @@ u32 GetSysTime(TimerLinkStr* timerlink)
 bool Free_taskBefore(TaskStr* task)
 {
 	funLinkStr* that = (funLinkStr*)&task->funNode;
-	if(SingleList_Iterator((void**)&that) !=0 && task->pthis != that)
+	
+	if(SingleList_Iterator((void**)&that) !=0 )// 如果任务链表下有任务
 	{
-		funLinkStr* pthat = that;
-		SingleList_DeleteNode(&task->funNode,that); 					// 删除节点
-		while(SingleList_Iterator((void**)&that) && task->pthis != that)
-		{	
-			SingleList_DeleteNode(&task->funNode,that); 					// 删除节点
-			SingleList_Insert(&(task->timerNode.tasklink->ramlink),pthat);		// 添加到内存释放空间
-			pthat = that;
+		funLinkStr* pcurrent = that;
+		if( task->pthis != that)
+		{
+			that = SingleList_DeleteNode(&task->funNode,pcurrent); 				// 删除节点
+			SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间	
+			while(SingleList_Iterator((void**)&that) && task->pthis != that) 	//先删除节点，后释放空间
+			{	
+				pcurrent = that;													// 保存该节点地址
+				that = SingleList_DeleteNode(&task->funNode,pcurrent); 				// 删除节点
+				SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间			
+			}
+				
 		}
-		SingleList_Insert(&(task->timerNode.tasklink->ramlink),pthat);		// 添加到内存释放空间
+		//执行pthis == that操作
+		pcurrent = that;
+		if(SingleList_Iterator((void**)&that))
+		{
+			task->state = Wait;
+		}else 
+		{
+			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
+			task->state = Stop;
+		}
+		SingleList_DeleteNode(&task->funNode,pcurrent); 						// 删除节点
+		SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间		
 	}
 
-	if(SingleList_Iterator((void**)&task->pthis))
-	{
-		task->state = Wait;
-	}else 
-	{
-	
-		SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
-		task->state = Stop;
-	}
-	SingleList_DeleteNode(&task->funNode,that); 						// 删除节点
-	SingleList_Insert(&(task->timerNode.tasklink->ramlink),that);		// 添加到内存释放空间
-	if(task->state == Stop) return (bool)TRUE;
-	else return (bool)FALSE;
+	if(task->state == Stop) return (bool)FALSE;
+	else return (bool)TRUE ;
 	
 }
 
@@ -74,6 +80,11 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
 {
 	TaskStr* task = (TaskStr*)malloc(sizeof(TaskStr));
+	if(task == 0)
+	{
+		debug("OS_CreatTask :malloc NULL \r\n");
+		return 0;
+	}
 	task->pthis = 0;
 	task->timerlink = timerlink;
 	task->timerNode.task = task;
@@ -85,6 +96,11 @@ TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 {
 	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
+	if(funNode == 0)
+	{
+		debug("OS_AddFunction :malloc NULL \r\n");
+		return;
+	}
 	funNode->osfun = fun;
 	funNode->time = time;
 	funNode->number = MAX_NUMBER;
@@ -97,6 +113,11 @@ void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 {
 	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
+	if(funNode == 0)
+	{
+		debug("OS_AddCycleFunction :malloc NULL \r\n");
+		return;
+	}
 	funNode->osfun = OS_DeleteTask;
 	funNode->time = 0;
 	funNode->number = num - 1;			// 因为前面已经执行一遍了
@@ -106,9 +127,15 @@ void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 
 //添加条件判断函数到任务
 //定时器中判断条件函数如果为真则计时结束，跳转任务
+//主函数中如果条件为真则删除该任务前面的所有函数
 void OS_AddJudegeFunction(TaskStr* task,osfun fun,u32 time,jugefun funJuge)
 {
 	judgeFunStr* funNode = (judgeFunStr*)malloc(sizeof(judgeFunStr));
+	if(funNode == 0)
+	{
+		debug("OS_AddJudegeFunction :malloc NULL \r\n");
+		return;
+	}	
 	funNode->funLink.osfun = fun;
 	funNode->funLink.time = time;
 	funNode->funLink.number = MAX_NUMBER;
@@ -197,7 +224,8 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 				if((((judgeFunStr*)(pNext->task->pthis))->jugefun()) != 0) 
 				{
 					((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
-					if(Free_taskBefore(pNext->task)) OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
+					if(Free_taskBefore(pNext->task)) 
+						OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
 					SingleList_DeleteNode(timer, pNext);			// 删除定时
 					
 				}

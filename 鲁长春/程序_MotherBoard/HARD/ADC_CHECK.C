@@ -9,7 +9,7 @@ float 		YSdat 		= 0;			// ys-u
 extern		TaskStr* 	taskYS		;	// YS测量任务
 				
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
-u32			ys_timer30 	= 0;			//YS不响应计时
+u8			ys_timer30 	= 0;			//YS不响应计时
 extern 		TaskLinkStr* 			tasklink;			// 任务列表
 extern 		WindowState				windowstate;
 
@@ -70,7 +70,7 @@ void YS_Function()
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		
 		GPIO_RESET(YSD_GPIO);
-		if(YSdat > VALVE_YS_D )	//超过报警阀值
+		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
 			if(jugeYS.switchon == 0 && windowstate != to_BC1)
 			{
@@ -95,19 +95,26 @@ void YS_Function()
 	}
 
 }
+
+bool JugeYS()
+{
+	return (bool)YS_30.start ;
+}
 //YS控制
 void YS_Control()
 {
 	static u8 flag_0 = 0;
 	static u8 flag_1	= 0;				
-	if(taskYS->state == Wait || taskYS->state == Stop)
+	if(taskYS->state == Stop)
 	{
-		//debug("key_AM.val = %d flag_0 = %d GPIO_READ(GPIO_38KHZ_BC1) = %d\r\n",key_AM.val,flag_0,GPIO_READ(GPIO_38KHZ_BC1));
 		if(((windowstate == to_BC1  && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
 		{
 			debug("remove YS check \r\n");
 			flag_0 = 1;
 			flag_1 = 0;
+			jugeYS.start = 0;
+			jugeYS.counter = 0;
+			jugeYS.switchon = 0;			
 			GPIO_RESET(YSD_GPIO);									//关闭YS电源		
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
 			OS_AddTask(tasklink,taskYS);							// 删除检测任务	
@@ -115,6 +122,7 @@ void YS_Control()
 		}else
 		if(windowstate != to_BC1 && YS_30.start == 0 && flag_0)
 		{
+			debug("flag_0 = 0\r\n");
 			flag_0 = 0;
 		}else
 		
@@ -122,11 +130,15 @@ void YS_Control()
 			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 			flag_1= 1;
-			OS_AddFunction(taskYS,OS_DeleteTask,0);
-			OS_AddFunction(taskYS,ADC_PowerOn,10);
-			OS_AddFunction(taskYS,YS_Function,TIM_CHECKEYS);
-			OS_AddTask(tasklink,taskYS);							// 添加检测任务
 			debug("add YS check \r\n");
+			OS_AddFunction(taskYS,OS_DeleteTask,0);
+			debug("OS_DeleteTask \r\n");
+			OS_AddJudegeFunction(taskYS,ADC_PowerOn,10,JugeYS);
+			debug("ADC_PowerOn \r\n");
+			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
+			debug("YS_Function \r\n");
+			OS_AddTask(tasklink,taskYS);							// 添加检测任务
+			
 		}		
 	}
 

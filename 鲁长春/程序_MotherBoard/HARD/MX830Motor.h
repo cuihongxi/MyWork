@@ -68,8 +68,6 @@ void CheckBC1BC2();			// BC1,BC2
 
 void Motor_STOP();
 void Motor_Z();
-void CheckWindowState();
-
-
+WindowState CheckWindowState();
 
 #endif

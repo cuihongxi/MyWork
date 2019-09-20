@@ -1,6 +1,10 @@
 #include "keyboard.h"
 #include "stm8l15x_exti.h"
 #include "CUI_RTOS.H"
+#include "LED_SHOW.H"
+#include "ADC_CHECK.H"
+#include "stmflash.h"
+//#include "MX830Motor.h"
 
 u8 		flag_exti	= 0;
 u8 		key_val 	= 0;
@@ -15,8 +19,32 @@ u8 		flag_duima_clear  	= 0;	//清除对码
 u32 	Y30_Risingtime 		= 0;
 u32 	DM_Risingtime 		= 0;		
 
+u8 					flag_KEY_Z 	= 0;				// 传递给马达函数，让他根据val做出动作
+u8 					flag_KEY_Y 	= 0;
+u8					signal_key = 0;
+
 extern	TimerLinkStr 	timer2 ;					// 任务的定时器
 extern	JugeCStr 		YS_30 ;
+extern	TaskStr* 		taskKeyScan;
+extern	u16				amtime ;
+extern	u16				y30time ;
+extern	JugeCStr 		LEDAM_juge ;
+extern	JugeCStr 		LEDY30_juge ;
+extern	JugeCStr 		beep;
+extern 	u8				flag_motorIO;
+extern 	TaskLinkStr* 	tasklink;
+
+
+void BeepStart()
+{
+	beep.start = 1;
+	#if BEEP_SW > 0
+	GPIO_SET(GPIO_BEEP);
+	#else
+	GPIO_RESET(GPIO_BEEP);
+	#endif
+	
+}
 
 // 松手程序
 void Key_ScanLeave()
@@ -26,6 +54,7 @@ void Key_ScanLeave()
 	{
 		if((GetSysTime(&timer2) - Y30_Risingtime) > TIM_Y30_DELAY)
 		{
+			debug("取消Y30延时");
 			YS_30.start = 0;
 			YS_30.counter = 0;//取消Y30延时
 		}
@@ -47,9 +76,9 @@ void Key_ScanLeave()
 	
     if(GPIO_READ(GPIO_DER_Z)&&GPIO_READ(GPIO_DER_Y)&&GPIO_READ(GPIO_AM)&&GPIO_READ(GPIO_Y30)&&GPIO_READ(GPIO_DM))
     {
-	  	debug("-----key null-------\r\n");
+	 //	debug("-----key null-------\r\n");
         flag_exti = 0;
-		key_val = KEY_VAL_NULL;
+	//	key_val = KEY_VAL_NULL;
     }
 }
 
@@ -118,10 +147,81 @@ u32 ScanKey(keyStr* key)
 				
 	return time;	
 }
+
+//按键处理函数
+void KeyFun()
+{					
+	if(key_val)
+	{
+		switch(key_val)
+		{
+			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
+				break;
+			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
+				break;
+			case KEY_VAL_AM: 	
+				if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
+				else					amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
+				LEN_GREEN_Open();
+				LEDAM_juge.start = 1;
+				LEDAM_juge.counter = 0;
+				break;
+			case KEY_VAL_Y30:
+
+				if(jugeYS.start || jugeYS.switchon)	//有YS
+				{
+					switch(key_Y30.val)
+					{
+						case 1: ys_timer30 = TIM_30; 		YS_30.start = 1;	break;
+						case 2: ys_timer30 = TIM_30 * 2; 	YS_30.start = 1;	break;
+						case 3: ys_timer30 = TIM_30 * 6; 	YS_30.start = 1;	break;
+					}
+					YS_30.start = 1;
+					YS_30.counter = 0;
+					y30time = TIM_Y30_ON;
+					debug("ys_timer30 = %d\r\n",ys_timer30);
+				}else y30time = TIM_Y30_OFF;
+				LEN_RED_Open();
+				LEDY30_juge.start = 1;
+				LEDY30_juge.counter = 0;
+				break;
+			case KEY_VAL_DM:	
+				//debug("key_DM.val = %d\r\n",key_DM.val);
+				if(key_DM.val == six)	//对话马达转向
+				{
+						flag_motorIO = ~flag_motorIO;
+						FLASH_ProgramByte(ADDR_motorIO,flag_motorIO);
+						key_DM.val = off;
+						debug("马达对换引脚\r\n");
+				}
+		}
+		
+		
+		BeepStart();		
+		key_val = KEY_VAL_NULL;
+	}
+}
+
+bool Juge_key()
+{
+	return (bool)signal_key;
+}
+void KeyScanControl()
+{
+	if(flag_exti && taskKeyScan->state == Stop)
+	{
+		signal_key = 0;
+		OS_AddJudegeFunction(taskKeyScan,OS_DeleteTask,TIM_KEY,Juge_key);			
+		OS_AddJudegeFunction(taskKeyScan,KeyFun,4,Juge_key);
+		OS_AddFunction(taskKeyScan,OS_DeleteTask,0);	
+		OS_AddTask(tasklink,taskKeyScan);// 添加检测任务
+	}
+}
+
 INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 {
-	debug("in key ti,flag_exti = %d\r\n",flag_exti);
-    if(key_val == KEY_VAL_NULL)
+//	debug("in key ti,flag_exti = %d\r\n",flag_exti);
+   // if(key_val == KEY_VAL_NULL)
     {
 		if(GPIO_READ(GPIO_DER_Z) == RESET)
 		{
@@ -146,7 +246,8 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		if(key_val)
 		{
 			flag_exti = 1;   
-			debug("key_val = %d\r\n",key_val);
+			signal_key = 1;
+		//	debug("key_val = %d\r\n",key_val);
 		}	
     }
 
@@ -156,7 +257,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 
 INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 {
-    if(key_val == KEY_VAL_NULL)
+  //  if(key_val == KEY_VAL_NULL)
     {
 		if(GPIO_READ(GPIO_DM) == RESET)
 		{
@@ -165,10 +266,11 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 		}
 		if(key_val)
 		{
-			flag_exti = 1;   
-			debug("key_val = %d\r\n",key_val);
+			flag_exti = 1; 
+			signal_key = 1;
+			//debug("key_val = %d\r\n",key_val);
 		}	
     }
-	debug("EXTI7_IRQHandler\r\n");
+//	debug("EXTI7_IRQHandler\r\n");
 	EXTI_ClearITPendingBit (EXTI_IT_Pin7);
 }
