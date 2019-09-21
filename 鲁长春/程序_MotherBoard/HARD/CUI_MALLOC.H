@@ -19,10 +19,10 @@
 
 #define     DEBUG_Malloc_LEVEL  0  // 调试开关
 
-#define		Malloc_MINI				4								// 小字节分配的最小单元
-#define		Malloc_MINIINDEX		31								// 索引数，以字节位数减一，7,15,32
-#define     Malloc_UNIT       (Malloc_MINI*Malloc_MINIINDEX+8)        // 大字节分配的最小单元
-#define     Malloc_MAXSIZE    1056      // 分配最大内存空间，必须是Malloc_UNIT*8的整数倍,1056
+#define		Malloc_MINI				1								// 小字节分配的最小单元
+#define		Malloc_MINIINDEX		7								// 索引数，以字节位数减一，7,15,32
+#define     Malloc_UNIT       8//(Malloc_MINI*Malloc_MINIINDEX+8)        // 大字节分配的最小单元
+#define     Malloc_MAXSIZE    1024      // 分配最大内存空间，必须是Malloc_UNIT*8的整数倍,1056
 
 
 #if   DEBUG_Malloc_LEVEL >0

@@ -111,22 +111,23 @@ void BeepStop()
 
 void FunInMain()
 {	
-	KeyScanControl();	// 按键扫描
-//	CheckBC1BC2();		// 检测限位
+	
+	CheckBC1BC2();		// 检测限位
 	YS_Control();		// YS，供电控制
 	MotorControl();		// 马达运动
-//	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
+	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
 	
 }
-
+//按键处理函数
+void KeyFun();
 void main()
 {
 
   	CLK_GPIO_Init();								// 低功耗时钟和GPIO初始化,2MHZ
-	delay_ms(500);									// 等待系统稳定
+	delay_ms(1000);									// 等待系统稳定
 	UART_INIT(115200);
 
-//	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	
 	LEN_RED_Close();
 	LEN_GREEN_Close();
@@ -175,8 +176,24 @@ void main()
             halt();
 			if(flag_wake == 0)
 			{	
-				OS_Task_Run(tasklink);
+				//KeyScanControl();	// 按键扫描
+				 KeyFun();
 				if(flag_exti)	Key_ScanLeave();            // 松手程序
+				OS_Task_Run(tasklink);
+				
+				/*nrf接收函数*/
+				if(prx.hasrxlen != 0)
+				{
+				  debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
+					for(u8 i=0;i<prx.hasrxlen;i++)
+					  {
+						debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+					  }
+					
+					debug("\r\n##################################\r\n");
+					
+					prx.hasrxlen = 0;
+				}	
 			}else
 				MakeSysWakeUp();
 	  }
@@ -206,7 +223,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) prx.IRQCallBack(&prx);
 	flag_wake = 1;
-	//debug("*");
+	debug("*");
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
 

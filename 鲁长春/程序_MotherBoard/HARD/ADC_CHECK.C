@@ -66,16 +66,16 @@ void ADC_PowerOn()
 //YS检测任务
 void YS_Function()
 {
-//	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
-//	{
+	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
+	{
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		GPIO_RESET(YSD_GPIO);
-		debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
+		//debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
 			if(jugeYS.switchon == 0 && windowstate != to_BC1)
 			{
-				debug(" YSdat超过报警阀值\r\n");
+				debug(" YSdat = %f\r\n",YSdat);
 				jugeYS.start = 1;	//开着窗
 			}
 			if(key_AM.val == on && windowstate == to_BC1)						//关着窗
@@ -93,35 +93,33 @@ void YS_Function()
 			if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET && jugeYS_No.switchon == 0)//关着窗
 				jugeYS_No.start = 1;	//开始无YS计时。超过阀值，自动开窗
 		}	
-//	}
+	}
 
 }
 
 bool JugeYS()
 {
-	return (bool)YS_30.start ;
+	return (bool)(YS_30.start || (windowstate == to_BC1  && key_AM.val == off));
 }
 //YS控制
 void YS_Control()
 {
 	static u8 flag_0 = 0;
-	static u8 flag_1	= 0;				
-	if(taskYS->state == Stop)
+	static u8 flag_1	= 0;
+//	if(taskYS->state == Stop)
+//		debug("\r\ntaskYS state == Stop\r\n");
+	if(taskYS->state == Stop || taskYS->state == Wait)
 	{
 		if(((windowstate == to_BC1  && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
 		{
-			debug("remove YS check \r\n");
+			debug("\r\nremove YS check\r\n");
 			flag_0 = 1;
 			flag_1 = 0;
 			jugeYS.start = 0;
 			jugeYS.counter = 0;
 			jugeYS.switchon = 0;
-			
 			flag_flag_FL_SHUT = 0;
-			GPIO_RESET(YSD_GPIO);									//关闭YS电源		
-			OS_AddFunction(taskYS,OS_DeleteTask,0);
-			OS_AddTask(tasklink,taskYS);							// 删除检测任务	
-			
+			GPIO_RESET(YSD_GPIO);										//关闭YS电源				
 		}else
 		if(windowstate != to_BC1 && YS_30.start == 0 && flag_0)
 		{
@@ -133,8 +131,8 @@ void YS_Control()
 			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 			flag_1= 1;
-			debug("add YS check \r\n");
-			OS_AddFunction(taskYS,OS_DeleteTask,0);
+			debug("\r\nadd YS check\r\n");
+			//OS_AddFunction(taskYS,OS_DeleteTask,0);
 			OS_AddJudegeFunction(taskYS,ADC_PowerOn,10,JugeYS);
 			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
 			OS_AddTask(tasklink,taskYS);							// 添加检测任务

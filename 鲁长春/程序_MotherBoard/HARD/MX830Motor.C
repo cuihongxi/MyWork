@@ -14,7 +14,6 @@ u8						flag_motorIO = 0;		// 马达引脚调换标志
 u8						flag_YS_isno = 0;		// YS无检测
 WindowState				windowstate = open;
 u8 						flag_flag_FL_SHUT = 0;
-
 extern	TaskLinkStr* 	tasklink;				// 任务列表
 extern	u8 				flag_KEY_Z ;			// 传递给马达函数，让他根据val做出动作
 extern	u8 				flag_KEY_Y ;
@@ -239,7 +238,7 @@ void MotorControl()
 				flag_30 = 0;
 				counter_BH = 0;
 			}
-			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0) // 窗限位动作
+			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0 && flag_flag_FL_SHUT) // 窗限位动作
 			{
 				debug("窗限位动作:");
 				motorStruct.flag_BC = 1;
@@ -307,7 +306,8 @@ void MotorControl()
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 	//			if(key_AM.val == on)
 	//				shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间			
-			}else
+			}
+			else
 				if(jugeYS_No.switchon)											//无YS开窗
 				{
 					debug("无YS开窗\r\n");
@@ -317,9 +317,9 @@ void MotorControl()
 					OS_AddFunction(taskMotor,MotorSTOP,4);			// 停止
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 					OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-				}else
-			//按键<Z
-			if(flag_KEY_Z)
+				}
+			else
+			if(flag_KEY_Z)//按键<Z
 			{
 				flag_KEY_Z = 0;
 				debug("key_Z.val = %d\r\n",key_Z.val);
@@ -347,10 +347,9 @@ void MotorControl()
 				}
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-			}else
-
-			//按键>Y
-			if(flag_KEY_Y)
+			}
+			else
+			if(flag_KEY_Y)//按键>Y
 			{
 				flag_KEY_Y = 0;
 				debug("KEY_Y \r\n");
@@ -403,8 +402,8 @@ void CheckBC1BC2()
 	if(motorStruct.dir != STOP)	
 	{	
 		CheckWindowState();
-		if(motorStruct.dir == FORWARD && windowstate == to_BC1 && motorStruct.flag_BC == 0 && flag_KEY_Z != 1) motorStruct.flag_BC1 = 1;
-		if(motorStruct.dir == BACK &&  windowstate == to_BC2 && motorStruct.flag_BC == 0 && flag_KEY_Y != 1) motorStruct.flag_BC2 = 1;	
+		if(windowstate == to_BC1 && motorStruct.flag_BC == 0 && flag_KEY_Z != 1) motorStruct.flag_BC1 = 1;
+		if(windowstate == to_BC2 && motorStruct.flag_BC == 0 && flag_KEY_Y != 1) motorStruct.flag_BC2 = 1;	
 	}
 
 	if((windowstate == to_BC1 && motorStruct.dir == FORWARD) ||(windowstate == to_BC2 && motorStruct.dir == BACK))

@@ -58,6 +58,7 @@ void Key_ScanLeave()
 			debug("取消Y30延时");
 			YS_30.start = 0;
 			YS_30.counter = 0;//取消Y30延时
+			YS_30.switchon = 0;
 		}
 		Y30_Risingtime = 0;
 	}
@@ -77,9 +78,8 @@ void Key_ScanLeave()
 	
     if(GPIO_READ(GPIO_DER_Z)&&GPIO_READ(GPIO_DER_Y)&&GPIO_READ(GPIO_AM)&&GPIO_READ(GPIO_Y30)&&GPIO_READ(GPIO_DM))
     {
-	 //	debug("-----key null-------\r\n");
+	 	debug("-----key null-------\r\n");
         flag_exti = 0;
-	//	key_val = KEY_VAL_NULL;
     }
 }
 
@@ -197,7 +197,7 @@ void KeyFun()
 		}
 		
 		
-		BeepStart();		
+		//BeepStart();		
 		key_val = KEY_VAL_NULL;
 	}
 }
@@ -248,7 +248,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		{
 			flag_exti = 1;   
 			signal_key = 1;
-		//	debug("key_val = %d\r\n",key_val);
+			debug("key_val = %d\r\n",key_val);
 		}	
     }
 

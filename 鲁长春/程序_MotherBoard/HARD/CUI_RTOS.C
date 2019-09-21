@@ -6,6 +6,12 @@ u32 GetSysTime(TimerLinkStr* timerlink)
 	return timerlink->counter * IRQ_PERIOD;
 }
 
+//释放内存
+void OS_FreeRom(SingleList* list,void * prom)
+{
+	SingleList_Insert(list,prom);	// 添加到内存释放空间
+	//free(prom);
+}
 //删除当前任务的节点之前所有任务，包括该任务
 //如果下面还有任务则返回真
 bool Free_taskBefore(TaskStr* task)
@@ -18,12 +24,12 @@ bool Free_taskBefore(TaskStr* task)
 		if( task->pthis != that)
 		{
 			that = SingleList_DeleteNode(&task->funNode,pcurrent); 				// 删除节点
-			SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间	
+			OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);			// 添加到内存释放空间
 			while(SingleList_Iterator((void**)&that) && task->pthis != that) 	//先删除节点，后释放空间
 			{	
-				pcurrent = that;													// 保存该节点地址
-				that = SingleList_DeleteNode(&task->funNode,pcurrent); 				// 删除节点
-				SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间			
+				pcurrent = that;												// 保存该节点地址
+				that = SingleList_DeleteNode(&task->funNode,pcurrent); 			// 删除节点
+				OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间
 			}
 				
 		}
@@ -37,8 +43,8 @@ bool Free_taskBefore(TaskStr* task)
 			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
 			task->state = Stop;
 		}
-		SingleList_DeleteNode(&task->funNode,pcurrent); 						// 删除节点
-		SingleList_Insert(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间		
+		SingleList_DeleteNode(&task->funNode,pcurrent); 						// 删除节点		
+		OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);				// 添加到内存释放空间
 	}
 
 	if(task->state == Stop) return (bool)FALSE;
@@ -61,7 +67,7 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		}		
 		else	//释放该任务的动态函数空间
 		{
-			if(Free_taskBefore(task)) 
+				Free_taskBefore(task);
 				task->pthis = 0;
 		}	
 	}else
@@ -70,10 +76,10 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		{
 			task->pthis->number --;
 			task->state = Wait;
-			task->pthis = 0;
-		}else
-			if(Free_taskBefore(task))task->pthis = 0;
-			//Free_taskBefore(task);
+			
+		}else Free_taskBefore(task);
+		
+		task->pthis = 0;
 				
 	}
 }
@@ -163,14 +169,14 @@ void OsSectionFun(TaskStr* task)
 	{
 		Free_taskBefore(task);	
 	}
-		SingleList_Iterator((void**)&task->pthis);					// 取一个任务
-		
-		if(task->pthis != 0 && task->pthis->osfun !=0)
-		{
-			task->pthis->osfun();									// 执行函数
-			CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
-			return;													// 跳出程序
-		}		
+	SingleList_Iterator((void**)&task->pthis);					// 取一个任务
+	
+	if(task->pthis != 0 && task->pthis->osfun !=0)
+	{
+		task->pthis->osfun();									// 执行函数
+		CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
+		return;													// 跳出程序
+	}		
 }
 
 //判断任务是否为空，是返回真，否则返回假
@@ -181,6 +187,8 @@ bool OsJudge_TaskIsNull(TaskStr* task)
 		return (bool)TRUE;
 	else return (bool)FALSE;
 }
+
+extern TimerLinkStr 		timer2;
 //任务队列运行
 void OS_Task_Run(TaskLinkStr* tasklink)
 {
@@ -191,15 +199,19 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 		OsSectionFun((TaskStr*)ptask);
 	}
 	//释放内存
+	
 	ptask = &tasklink->ramlink;
 	if(SingleList_Iterator((SingleListNode**)&ptask))
 	{
+		//u32 time = GetSysTime(&timer2);
 		SingleList_DeleteNode(&tasklink->ramlink, ptask);
 		while(SingleList_IteratorFree((SingleListNode**)&ptask))
 		{
 			SingleList_DeleteNode(&tasklink->ramlink, ptask);
 		}
+		//debug("free time: %lu ms\r\n",GetSysTime(&timer2) - time);
 	}
+	
 		
 	
 }
@@ -227,7 +239,7 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 				{
 					((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
 					//if(Free_taskBefore(pNext->task)) 
-						OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
+						OS_AddTask(pNext->tasklink,pNext->task) ;	// 添加任务到队列	
 					SingleList_DeleteNode(timer, pNext);			// 删除定时
 					
 				}
