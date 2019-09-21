@@ -7,7 +7,7 @@ u32 GetSysTime(TimerLinkStr* timerlink)
 }
 
 //删除当前任务的节点之前所有任务，包括该任务
-//如果下面还有任务则返回假
+//如果下面还有任务则返回真
 bool Free_taskBefore(TaskStr* task)
 {
 	funLinkStr* that = (funLinkStr*)&task->funNode;
@@ -61,8 +61,8 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		}		
 		else	//释放该任务的动态函数空间
 		{
-			Free_taskBefore(task);
-			task->pthis = 0;
+			if(Free_taskBefore(task)) 
+				task->pthis = 0;
 		}	
 	}else
 	{
@@ -70,9 +70,11 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		{
 			task->pthis->number --;
 			task->state = Wait;
+			task->pthis = 0;
 		}else
-			Free_taskBefore(task);
-		task->pthis = 0;
+			if(Free_taskBefore(task))task->pthis = 0;
+			//Free_taskBefore(task);
+				
 	}
 }
 
@@ -157,10 +159,10 @@ void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task)
 void OsSectionFun(TaskStr* task)
 {
 	if(task->pthis == 0) task->pthis = (funLinkStr*)&task->funNode;
-//	if(task->pthis->type == judge && (((judgeFunStr*)(task->pthis))->result == TRUE))	//条件判断为真，删除该任务所有函数
-//	{
-//		Free_taskBefore(task);	
-//	}
+	if(task->pthis->type == judge && (((judgeFunStr*)(task->pthis))->result == TRUE))	//条件判断为真，删除该任务所有函数
+	{
+		Free_taskBefore(task);	
+	}
 		SingleList_Iterator((void**)&task->pthis);					// 取一个任务
 		
 		if(task->pthis != 0 && task->pthis->osfun !=0)
@@ -224,7 +226,7 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 				if((((judgeFunStr*)(pNext->task->pthis))->jugefun()) != 0) 
 				{
 					((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
-					if(Free_taskBefore(pNext->task)) 
+					//if(Free_taskBefore(pNext->task)) 
 						OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
 					SingleList_DeleteNode(timer, pNext);			// 删除定时
 					

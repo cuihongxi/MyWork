@@ -52,6 +52,7 @@ void Key_ScanLeave()
 	
 	if(Y30_Risingtime != 0 && GPIO_READ(GPIO_Y30))
 	{
+		//debug("GetSysTime(&timer2) - Y30_Risingtime = %lu\r\n",(GetSysTime(&timer2) - Y30_Risingtime));
 		if((GetSysTime(&timer2) - Y30_Risingtime) > TIM_Y30_DELAY)
 		{
 			debug("取消Y30延时");
@@ -172,9 +173,9 @@ void KeyFun()
 				{
 					switch(key_Y30.val)
 					{
-						case 1: ys_timer30 = TIM_30; 		YS_30.start = 1;	break;
-						case 2: ys_timer30 = TIM_30 * 2; 	YS_30.start = 1;	break;
-						case 3: ys_timer30 = TIM_30 * 6; 	YS_30.start = 1;	break;
+						case 1: ys_timer30 = TIM_30; 			break;
+						case 2: ys_timer30 = TIM_30 * 2; 		break;
+						case 3: ys_timer30 = TIM_30 * 6; 		break;
 					}
 					YS_30.start = 1;
 					YS_30.counter = 0;
@@ -186,7 +187,6 @@ void KeyFun()
 				LEDY30_juge.counter = 0;
 				break;
 			case KEY_VAL_DM:	
-				//debug("key_DM.val = %d\r\n",key_DM.val);
 				if(key_DM.val == six)	//对话马达转向
 				{
 						flag_motorIO = ~flag_motorIO;
@@ -241,6 +241,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		if(GPIO_READ(GPIO_Y30) == RESET)
 		{
 			Y30_Risingtime = ScanKey(&key_Y30);		//保存按下的时刻
+//			debug("Y30_Risingtime = %d\r\n",(u32)Y30_Risingtime);
 			key_val = KEY_VAL_Y30;
 		}
 		if(key_val)

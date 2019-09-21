@@ -6,12 +6,13 @@
 JugeCStr 	jugeYS_No 	= {0};			// 无雨水，AM打开时计时开窗
 JugeCStr 	jugeYS 		= {0};			// YS信号超警戒,启动计时器，超过4S，触发	
 float 		YSdat 		= 0;			// ys-u
-extern		TaskStr* 	taskYS		;	// YS测量任务
-				
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
 u8			ys_timer30 	= 0;			//YS不响应计时
+
 extern 		TaskLinkStr* 			tasklink;			// 任务列表
 extern 		WindowState				windowstate;
+extern		TaskStr* 				taskYS		;		// YS测量任务
+extern		u8 						flag_flag_FL_SHUT;
 
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
@@ -65,16 +66,16 @@ void ADC_PowerOn()
 //YS检测任务
 void YS_Function()
 {
-	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
-	{
+//	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
+//	{
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
-		
 		GPIO_RESET(YSD_GPIO);
+		debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
 			if(jugeYS.switchon == 0 && windowstate != to_BC1)
 			{
-				debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
+				debug(" YSdat超过报警阀值\r\n");
 				jugeYS.start = 1;	//开着窗
 			}
 			if(key_AM.val == on && windowstate == to_BC1)						//关着窗
@@ -92,7 +93,7 @@ void YS_Function()
 			if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET && jugeYS_No.switchon == 0)//关着窗
 				jugeYS_No.start = 1;	//开始无YS计时。超过阀值，自动开窗
 		}	
-	}
+//	}
 
 }
 
@@ -114,7 +115,9 @@ void YS_Control()
 			flag_1 = 0;
 			jugeYS.start = 0;
 			jugeYS.counter = 0;
-			jugeYS.switchon = 0;			
+			jugeYS.switchon = 0;
+			
+			flag_flag_FL_SHUT = 0;
 			GPIO_RESET(YSD_GPIO);									//关闭YS电源		
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
 			OS_AddTask(tasklink,taskYS);							// 删除检测任务	
@@ -132,11 +135,8 @@ void YS_Control()
 			flag_1= 1;
 			debug("add YS check \r\n");
 			OS_AddFunction(taskYS,OS_DeleteTask,0);
-			debug("OS_DeleteTask \r\n");
 			OS_AddJudegeFunction(taskYS,ADC_PowerOn,10,JugeYS);
-			debug("ADC_PowerOn \r\n");
 			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
-			debug("YS_Function \r\n");
 			OS_AddTask(tasklink,taskYS);							// 添加检测任务
 			
 		}		

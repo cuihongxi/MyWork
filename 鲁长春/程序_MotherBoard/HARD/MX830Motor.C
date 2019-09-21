@@ -13,6 +13,7 @@ u32 					shut_time = 0;
 u8						flag_motorIO = 0;		// 马达引脚调换标志
 u8						flag_YS_isno = 0;		// YS无检测
 WindowState				windowstate = open;
+u8 						flag_flag_FL_SHUT = 0;
 
 extern	TaskLinkStr* 	tasklink;				// 任务列表
 extern	u8 				flag_KEY_Z ;			// 传递给马达函数，让他根据val做出动作
@@ -89,12 +90,12 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 		switch(motorStruct->dir)
 		{
 			case FORWARD    :     
-				//	debug("dir = FORWARD\r\n");           
+					debug("dir = FORWARD\r\n");           
 					Motor_Forward();
 			  	//	BH_CheckStart();
 			  break;
 			case BACK       :        
-			//debug("dir = BACK\r\n"); 
+			debug("dir = BACK\r\n"); 
 					Motor_Back();
 				//	BH_CheckStart();
 			  break;
@@ -197,7 +198,6 @@ void WindowStateBC2()
 void MotorControl()
 {
 	static u8 flag_motor_erro = 0;
-	static	u8 flag_flag_FL_SHUT = 0;
 	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动
 	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30 == 1 || bat.state == BAT_STATE_NoBACK)
 	{
@@ -280,17 +280,21 @@ void MotorControl()
 				OS_AddTask(tasklink,taskMotor);								// 添加到任务队列
 			}		
 			//YS达到阀值，关窗
-			else if(jugeYS.switchon && flag_flag_FL_SHUT == 0)
+			else if(jugeYS.switchon)
 			{
-				flag_flag_FL_SHUT = 1;
-				debug("\r\nYS达到阀值，关窗\r\n");
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				OS_AddJudegeFunction(taskMotor,ShutDownWindow,60000,YSFL_MotorProtect);	// 执行关窗
-				OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-				if(key_AM.val == on)
-					shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间
+				if(flag_flag_FL_SHUT == 0)
+				{
+					flag_flag_FL_SHUT = 1;
+					debug("\r\nYS达到阀值，关窗\r\n");
+					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+					OS_AddJudegeFunction(taskMotor,ShutDownWindow,60000,YSFL_MotorProtect);	// 执行关窗
+					OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
+					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+					OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
+					if(key_AM.val == on)
+						shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间				
+				}
+
 			}else
 			if(flag_FL_SHUT)//FL达到阀值，关窗
 			{
@@ -313,11 +317,12 @@ void MotorControl()
 					OS_AddFunction(taskMotor,MotorSTOP,4);			// 停止
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 					OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-				}
+				}else
 			//按键<Z
 			if(flag_KEY_Z)
 			{
 				flag_KEY_Z = 0;
+				debug("key_Z.val = %d\r\n",key_Z.val);
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				switch(key_Z.val)
 				{
@@ -348,6 +353,7 @@ void MotorControl()
 			if(flag_KEY_Y)
 			{
 				flag_KEY_Y = 0;
+				debug("KEY_Y \r\n");
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				switch(key_Y.val)
 				{

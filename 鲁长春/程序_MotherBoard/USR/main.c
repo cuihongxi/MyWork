@@ -15,6 +15,9 @@ TaskStr* 			taskBatControl 	= {0};
 TaskStr* 			taskYS			= {0};			// YS测量任务
 TaskStr* 			taskKeyScan		= {0};			// KEY 扫描
 
+TaskStr* 			taskInMain   	={0};
+
+
 JugeCStr 			beep = {0};
 JugeCStr 			LEDAM_juge = {0};
 JugeCStr 			LEDY30_juge = {0};
@@ -105,6 +108,17 @@ void BeepStop()
 	GPIO_SET(GPIO_BEEP);
 	#endif
 }
+
+void FunInMain()
+{	
+	KeyScanControl();	// 按键扫描
+//	CheckBC1BC2();		// 检测限位
+	YS_Control();		// YS，供电控制
+	MotorControl();		// 马达运动
+//	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
+	
+}
+
 void main()
 {
 
@@ -122,7 +136,9 @@ void main()
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
 	taskKeyScan = OS_CreatTask(&timer2);			// 创建按键扫描任务
-	
+	taskInMain = OS_CreatTask(&timer2);				// 创建主函数运行任务
+	OS_AddFunction(taskInMain,FunInMain,50);	
+	OS_AddTask(tasklink,taskInMain);
 	Make_SysSleep();								// 系统进入休眠状态
 	FL_GPIO_Init();
 	enableInterrupts();                             // 使能中断
@@ -159,18 +175,8 @@ void main()
             halt();
 			if(flag_wake == 0)
 			{	
-				if(flag_exti)	Key_ScanLeave();                   					//松手程序
-				//按键扫描
-				KeyScanControl();
-				//电源管理
-				BatControl(&bat,tasklink,taskBatControl);
-				//检测限位
-				CheckBC1BC2();
-				//马达运动
-				MotorControl();
-				//YS—D，供电控制
-				YS_Control();
 				OS_Task_Run(tasklink);
+				if(flag_exti)	Key_ScanLeave();            // 松手程序
 			}else
 				MakeSysWakeUp();
 	  }
