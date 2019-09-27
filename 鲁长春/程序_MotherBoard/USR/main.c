@@ -128,7 +128,7 @@ void main()
 	UART_INIT(115200);
 
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	
+	prx.txbuf[0] =39; //收到回复信息，填充‘9’
 	LEN_RED_Close();
 	LEN_GREEN_Close();
 	FlashData_Init();
@@ -222,8 +222,7 @@ void main()
 INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) prx.IRQCallBack(&prx);
-	flag_wake = 1;
-	debug("*");
+//	flag_wake = 1;
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
 

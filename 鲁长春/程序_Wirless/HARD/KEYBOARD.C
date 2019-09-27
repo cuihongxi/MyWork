@@ -1,9 +1,9 @@
 #include "keyboard.h"
 #include "stm8l15x_exti.h"
 
-
 u8      flag_exti = 0 ;
-extern u8 keyval ;
+
+extern 	u8 					keyval ;
 
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
@@ -150,17 +150,18 @@ void Key_GPIO_Init()
 }
 
 
-//IRQ 中断服务函数 D0 A0
+//IRQ 中断服务函数 D0 A0 //NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 {
   if(GPIO_READ(Lie_1)== RESET || GPIO_READ(Lie_2)== RESET)
   {
    	    if(keyval ==KEY_VAL_NULL)
 		{
-			flag_exti = 1;  
-			keyval = Keyscan();    
-		}  
-  }	
+			flag_exti = 1;
+			keyval = Keyscan();  
+		}
+  }
+
    EXTI_ClearITPendingBit (EXTI_IT_Pin0);
 } 
  

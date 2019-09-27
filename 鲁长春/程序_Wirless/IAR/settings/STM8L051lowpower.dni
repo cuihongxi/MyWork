@@ -38,7 +38,7 @@ ShowSource=1
 [Simulator]
 Freq=16000000
 [DebugChecksum]
-Checksum=-1026913753
+Checksum=2011295770
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -59,12 +59,13 @@ LoggingEnabled=_ 0
 LogFile=_ ""
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\MYFUN\MyCLK.H}.9.1" 0 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\HARD\KEYBOARD.C}.164.4" 0 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\HARD\KEYBOARD.C}.165.4" 0 0 0 0 "" 0 ""
 Count=2
 [Aliases]
 A0=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_clk.c" ""
-A1=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_gpio.c" ""
-Count=2
+A1=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_exti.c" ""
+A2=_ "E:\MyWork\鲁长春\程序_Wirless\LIB\src\stm8l15x_gpio.c" ""
+Count=3
 SuppressDialog=1
 [DebuggerSettings]
 DisableInterruptsWhenStepping=1

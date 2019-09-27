@@ -69,12 +69,12 @@ void FreeGPIO_Config()
 void Init_LedGPIO(void)
 {
 	GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
-	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
+//	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
 	GPIO_RESET(Z_LED);
-	GPIO_RESET(T_LED);
+//	GPIO_RESET(T_LED);
 	delay_ms(1000);
 	GPIO_SET(Z_LED);
-	GPIO_SET(T_LED);
+//	GPIO_SET(T_LED);
 	  
 }
 
@@ -106,11 +106,13 @@ void main()
     RCC_Config();
     FreeGPIO_Config();
 	Key_GPIO_Init();
-	Init_TOUCHGPIO();
+
+	delay_ms(500);
 	UART_INIT(115200);					
 	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
 
-	Init_LedGPIO();				
+	Init_LedGPIO();	
+	Init_TOUCHGPIO();
 	PWM_Init();			//呼吸灯，PWM初始化
 	TIM3_INIT();		//定时器3,1ms
 	
@@ -134,24 +136,23 @@ void main()
 		 debug("\r\n");
 		 switch(keyval)
 		 {
-			case KEY_VAL_AM:	NRF_AutoAck_TxPacket(&ptx, u8 *txbuf,u8 size);
+			case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
 		   break;
-			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");
+			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
 		   break;
+			case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
 		   break;
-			case KEY_VAL_Y30:debug("KEY_VAL_Y30");
+			case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
 		   break;
-			case KEY_VAL_I30:debug("KEY_VAL_I30");
+			case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
 		   break;
-			case KEY_VAL_I60:debug("KEY_VAL_I60");
+			case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
 		   break;
-			case KEY_VAL_I100:debug("KEY_VAL_I100");
+			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
 		   break;
-			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");
+			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
 		   break;
-			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");
-		   break;
-			case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");
+			case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
 		   break;
 		   
 		 }
@@ -221,7 +222,7 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 		PWM_SetDutyCycle(pwm);
 		flag_pwm = 1;
 		pwm_dir = 1;
-	//	debug("in touch TI \r\n");
+		debug("in touch TI \r\n");
 	}
 	
 	EXTI_ClearITPendingBit (EXTI_IT_Pin1);  
@@ -232,6 +233,9 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 //NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
-   ptx.IRQCallBack(&ptx);
+  if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
+  {
+  	ptx.IRQCallBack(&ptx);
+  }
    EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }             
