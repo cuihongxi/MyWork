@@ -153,10 +153,25 @@ u8* CUI_MALLOCMini(u32 leng_th)
 	}
 }
 
+//u8* mymemcpy(u8* pd ,u8* ps ,u32 len)
+//{
+//	u32 i = 0;
+//	u32 temp = len/sizeof(u32);
+//	for(i=0;i<temp;i++) ((u32*)pd)[i] = ((u32*)ps)[i];
+//	i *= sizeof(u32);
+//	for(;i<len;i++) pd[i] = ps[i];
+//	return &pd[len];
+//}
+
 //内存清零
 void Clear_MM(u8* p,u32 leng_th)
 {
-	for(u32 i=0;i<leng_th;i++)p[i] = 0;
+	//for(u32 i=0;i<leng_th;i++)p[i] = 0;	
+	u32 i = 0;
+	u32 temp = leng_th/sizeof(u32);
+	for(i=0;i<temp;i++) ((u32*)p)[i] = 0;
+	i *= sizeof(u32);
+	for(;i<leng_th;i++) p[i] = 0;
 }
 /************************************************************************************
 *-函数名称	：动态申请内存
@@ -195,23 +210,27 @@ void* CUI_MALLOC(u32  leng_th)
 */
 Flag_Status Free_MallocGE(u8* Malloc,u8* mallocArray,u32 malloc_unit,u32 malloc_maxsize,u8* indexMalloc)
 {
-      u32   i; // 索引表项
-      u8    j; // 当前项字节的位
-      if(Malloc != 0)
+ //     u32   i; // 索引表项
+ //     u8    j; // 当前项字节的位
+	  u8 array[8] = {0x7f,0xbf,0xdf,0xef,0xf7,0xfb,0xfd,0xfe};
+	  u32 z = (Malloc - mallocArray);
+//	  u8 k;
+ //     if(Malloc != 0)
       {
-            i = (Malloc - mallocArray)/malloc_unit/8;
-            j = (Malloc - mallocArray)/malloc_unit%8; 
+        //    i = z/120/*malloc_unit/8*/;
+        //    j = (z/malloc_unit)&7; 
  
-      Malloc_Log("Free Malloc :indexMalloc[%lu].[%d]\r\n",i,j);
-      while((indexMalloc[i] &(0x80>>j)) != 0 && i < ((malloc_maxsize/malloc_unit+7)/8))
+ //     Malloc_Log("Free Malloc :indexMalloc[%lu].[%d]\r\n",i,j);
+//	  k = (0x80>>j);
+ //     while((indexMalloc[i] & k) != 0 && i < 10/*((malloc_maxsize/malloc_unit+7)/8)*/)
       {
-            indexMalloc[i]  &= (~(0x80>>j));
-            j++;
-            if(j>=8)
-            {
-                  j = 0;
-                  i ++;
-            }
+            indexMalloc[z/120]  &= array[((u8)(z/malloc_unit))&7];//(~(0x80>>j));
+//            j++;
+//            if(j>=8)
+//            {
+//                  j = 0;
+//                  i ++;
+//            }
       }
       
  //#if   DEBUG_Malloc_LEVEL > 1
@@ -221,10 +240,11 @@ Flag_Status Free_MallocGE(u8* Malloc,u8* mallocArray,u32 malloc_unit,u32 malloc_
 //                                    debug("indexMalloc[%lu] = %x  ",m,indexMalloc[m]);
 //                              }
 //                                    debug("\r\n");
-//#endif       
-      if(i < (malloc_maxsize/malloc_unit+7)/8) return ISOK;     
-      else
-      return ISERROR;
+//#endif  
+	  
+//      if(i < (malloc_maxsize/malloc_unit+7)/8) return ISOK;     
+//      else
+//      return ISERROR;
       }
       return ISERROR;
 }

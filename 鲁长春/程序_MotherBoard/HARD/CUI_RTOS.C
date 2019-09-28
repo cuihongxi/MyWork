@@ -199,17 +199,14 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 		OsSectionFun((TaskStr*)ptask);
 	}
 	//ÊÍ·ÅÄÚ´æ
-	
-	ptask = &tasklink->ramlink;
+ 	ptask = &tasklink->ramlink;
+	//u32 time = GetSysTime(&timer2);
 	if(SingleList_Iterator((SingleListNode**)&ptask))
 	{
-		//u32 time = GetSysTime(&timer2);
-		SingleList_DeleteNode(&tasklink->ramlink, ptask);
-		while(SingleList_IteratorFree((SingleListNode**)&ptask))
-		{
-			SingleList_DeleteNode(&tasklink->ramlink, ptask);
-		}
-		//debug("free time: %lu ms\r\n",GetSysTime(&timer2) - time);
+		SingleCycListNode* back = ptask;
+		ptask = SingleList_DeleteNode(&tasklink->ramlink, ptask);
+		free(back);	
+		//debug("free time = %lu ms\r\n",GetSysTime(&timer2) - time);
 	}
 	
 		
