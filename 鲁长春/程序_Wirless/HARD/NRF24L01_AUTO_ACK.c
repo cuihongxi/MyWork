@@ -54,6 +54,7 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
 	NRF24L01_PTXInMainReset(ptx);
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
+	NRF24L01_PWR(0);
 }
 
 //发射模式自动接收完成回调函数
@@ -69,6 +70,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 				debug(" %d ",ptx->rxbuf[i]);
 			  }   
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
+		NRF24L01_PWR(0);
 }
 
 //发射模式自动发射完成回调函数

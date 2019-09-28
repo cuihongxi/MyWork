@@ -1,26 +1,64 @@
 
 #include "24l01.h"
 
-
+//#define DMA_SPI
 #ifdef DMA_SPI
-#include "stm8s_spi.h"
+#include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
 u8  ADDRESS2[RX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; 
 u8* address = ADDRESS1;
 
-#if     DEBUG_24L01 > 0
-u8 arraybuf[5] = {0};
-#endif
+//用ID号生产新的收发地址
+void CreatNewAddr(u8* ChipID,u8* newAddr)
+{
+      u8 dat[5] = {0};
+      dat[0] = ChipID[0]^ChipID[5];
+      dat[1] = ChipID[1]^ChipID[11];
+      dat[2] = ChipID[2]^ChipID[10];
+      dat[3] = ChipID[3]^ChipID[9]^ChipID[6];
+      dat[4] = ChipID[4]^ChipID[8]^ChipID[7];
+      newAddr[0] ^= dat[0];
+      newAddr[1] ^= dat[1];
+      newAddr[2] ^= dat[2];
+      newAddr[3] ^= dat[3];
+      newAddr[4] ^= dat[4];
+}
+
+/*******************************************************************************
+****函数名称:
+****函数功能:获取芯片ID函数
+****版本:V1.0
+****日期:14-2-2014
+****入口参数:无
+****出口参数:无
+****说明:96位唯一ID
+********************************************************************************/
+void Get_ChipID(u8 *ChipID)
+{
+	ChipID[0] = *(__IO u8 *)(0X4926); 
+	ChipID[1] = *(__IO u8 *)(0X4927); 
+	ChipID[2] = *(__IO u8 *)(0X4928);
+    ChipID[3] = *(__IO u8 *)(0X4929);
+	ChipID[4] = *(__IO u8 *)(0X492A); 
+	ChipID[5] = *(__IO u8 *)(0X492B); 
+	ChipID[6] = *(__IO u8 *)(0X492C);
+	ChipID[7] = *(__IO u8 *)(0X492D); 
+	ChipID[8] = *(__IO u8 *)(0X492E); 
+	ChipID[9] = *(__IO u8 *)(0X492F);
+	ChipID[10] = *(__IO u8 *)(0X4930); 
+	ChipID[11] = *(__IO u8 *)(0X4931); 
+}
+
 /*****************SPI时序函数******************************************/
 u8 SPI2_ReadWriteByte(unsigned char date)
 {
-#ifdef DMA_SPI
-     while(SPI_GetFlagStatus(SPI_FLAG_TXE) == RESET);
-        SPI_SendData(date);
-     while(SPI_GetFlagStatus(SPI_FLAG_RXNE) == RESET);
-        return SPI_ReceiveData();   
+#ifdef DMA_SPI 
+     while(SPI_GetFlagStatus(SPI1,SPI_FLAG_TXE) == RESET);
+        SPI_SendData(SPI1,date);
+     while(SPI_GetFlagStatus(SPI1,SPI_FLAG_RXNE) == RESET);
+        return SPI_ReceiveData(SPI1);   
 #else
     unsigned char i;
    	for(i=0;i<8;i++)                // 循环8次
@@ -58,15 +96,17 @@ void NRF24L01_GPIO_Init(void)
    // NRF24L01_GPIO_IRQ();
 	
 #ifdef DMA_SPI
-    SPI_DeInit(); 
-    SPI_Init(SPI_FIRSTBIT_MSB, 
-              SPI_BAUDRATEPRESCALER_2, 
-              SPI_MODE_MASTER, 
-              SPI_CLOCKPOLARITY_LOW, 
-              SPI_CLOCKPHASE_1EDGE, 
-              SPI_DATADIRECTION_2LINES_FULLDUPLEX, 
-              SPI_NSS_SOFT,7);
-    SPI_Cmd(ENABLE); 
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
+    SPI_DeInit(SPI1); 
+    SPI_Init(SPI1,
+			 SPI_FirstBit_MSB, 
+              SPI_BaudRatePrescaler_2, 
+              SPI_Mode_Master, 
+              SPI_CPOL_Low, 
+              SPI_CPHA_1Edge, 
+              SPI_Direction_2Lines_FullDuplex, 
+              SPI_NSS_Soft,7);
+    SPI_Cmd(SPI1,ENABLE); 
 #endif
  
 
@@ -151,9 +191,9 @@ u8 NRF24L01_Read_Reg(u8 reg)
 u8 NRF24L01_Read_Buf(u8 reg,u8 *pBuf,u8 len)
 {
 	u8 status,u8_ctr;
-    SCLK_OUT_0;
+        SCLK_OUT_0;
   	CSN_OUT_0;                              //使能SPI传输
-  	status = SPI2_ReadWriteByte(reg);         //发送寄存器值(位置),并读取状态值   	   
+  	status=SPI2_ReadWriteByte(reg);         //发送寄存器值(位置),并读取状态值   	   
  	for(u8_ctr=0;u8_ctr<len;u8_ctr++)pBuf[u8_ctr]=SPI2_ReadWriteByte(0XFF);//读出数据
   	CSN_OUT_1;                              //关闭SPI传输
   	return status;                          //返回读到的状态值
@@ -182,7 +222,10 @@ u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
     SCLK_OUT_0 ;
 	CE_OUT_0;                               //StandBy I模式	
   	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,size);
- 	CE_OUT_1;                               //启动发送 置高CE激发数据发送    
+ 	CE_OUT_1;                               //启动发送 置高CE激发数据发送 
+#ifdef DMA_SPI
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+#endif
 	return 0;//其他原因发送失败
 }
 //启动NRF24L01发送一次数据
@@ -217,7 +260,7 @@ void NRF24L01_RX_Mode(void)
         NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
 		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
-        CE_OUT_1; 
+       // CE_OUT_1; 
         DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
 }						 
 //该函数初始化NRF24L01到TX模式
@@ -235,7 +278,7 @@ void NRF24L01_TX_Mode(void)
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 
-        CE_OUT_1;
+      //  CE_OUT_1;
         DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
     //  CE_OUT_0; 
 }
@@ -243,8 +286,16 @@ void NRF24L01_TX_Mode(void)
 //1打开0关闭电源
 void NRF24L01_PWR(u8 state)
 {
+#ifdef DMA_SPI
+CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
+#endif
+	CE_OUT_0; 
     u8 config = NRF24L01_Read_Reg(CONFIG);
-    if(state) NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
+    if(state)
+	{
+		NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
+		CE_OUT_1;
+	}	
     else NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
 
 }

@@ -1,9 +1,9 @@
 
 #include "24l01.h"
 
-
+//#define DMA_SPI
 #ifdef DMA_SPI
-#include "stm8s_spi.h"
+#include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
@@ -54,11 +54,11 @@ void Get_ChipID(u8 *ChipID)
 /*****************SPI时序函数******************************************/
 u8 SPI2_ReadWriteByte(unsigned char date)
 {
-#ifdef DMA_SPI
-     while(SPI_GetFlagStatus(SPI_FLAG_TXE) == RESET);
-        SPI_SendData(date);
-     while(SPI_GetFlagStatus(SPI_FLAG_RXNE) == RESET);
-        return SPI_ReceiveData();   
+#ifdef DMA_SPI 
+     while(SPI_GetFlagStatus(SPI1,SPI_FLAG_TXE) == RESET);
+        SPI_SendData(SPI1,date);
+     while(SPI_GetFlagStatus(SPI1,SPI_FLAG_RXNE) == RESET);
+        return SPI_ReceiveData(SPI1);   
 #else
     unsigned char i;
    	for(i=0;i<8;i++)                // 循环8次
@@ -96,15 +96,17 @@ void NRF24L01_GPIO_Init(void)
    // NRF24L01_GPIO_IRQ();
 	
 #ifdef DMA_SPI
-    SPI_DeInit(); 
-    SPI_Init(SPI_FIRSTBIT_MSB, 
-              SPI_BAUDRATEPRESCALER_2, 
-              SPI_MODE_MASTER, 
-              SPI_CLOCKPOLARITY_LOW, 
-              SPI_CLOCKPHASE_1EDGE, 
-              SPI_DATADIRECTION_2LINES_FULLDUPLEX, 
-              SPI_NSS_SOFT,7);
-    SPI_Cmd(ENABLE); 
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
+    SPI_DeInit(SPI1); 
+    SPI_Init(SPI1,
+			 SPI_FirstBit_MSB, 
+              SPI_BaudRatePrescaler_2, 
+              SPI_Mode_Master, 
+              SPI_CPOL_Low, 
+              SPI_CPHA_1Edge, 
+              SPI_Direction_2Lines_FullDuplex, 
+              SPI_NSS_Soft,7);
+    SPI_Cmd(SPI1,ENABLE); 
 #endif
  
 
@@ -255,7 +257,7 @@ void NRF24L01_RX_Mode(void)
         NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
 		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
-        CE_OUT_1; 
+       // CE_OUT_1; 
         DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
 }						 
 //该函数初始化NRF24L01到TX模式
@@ -273,7 +275,7 @@ void NRF24L01_TX_Mode(void)
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 
-        CE_OUT_1;
+      //  CE_OUT_1;
         DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
     //  CE_OUT_0; 
 }
@@ -281,11 +283,15 @@ void NRF24L01_TX_Mode(void)
 //1打开0关闭电源
 void NRF24L01_PWR(u8 state)
 {
+	
 	CE_OUT_0; 
     u8 config = NRF24L01_Read_Reg(CONFIG);
-    if(state) NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
+    if(state)
+	{
+		NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
+		CE_OUT_1;
+	}	
     else NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
-	CE_OUT_1;
 }
 
 //设置接收频率

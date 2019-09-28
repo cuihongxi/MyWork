@@ -21,6 +21,9 @@ TaskStr* 			taskInMain   	={0};
 JugeCStr 			beep = {0};
 JugeCStr 			LEDAM_juge = {0};
 JugeCStr 			LEDY30_juge = {0};
+JugeCStr 			NRFpowon = {0};
+JugeCStr 			NRFpowoff = {0};
+
 u16					amtime = 0;
 u16					y30time = 0;
 
@@ -73,6 +76,8 @@ void Make_SysSleep()
 //	debug("sleep:\r\n");
 //	LowPowerSet();
 //	TIM2_Cmd(DISABLE);
+	NRF24L01_PWR(0); 
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
 	CLK_LSICmd(ENABLE);											//使能LSI
 	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  //RTC时钟源LSI，
 	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        //等待LSI就绪
@@ -165,6 +170,7 @@ void main()
 	
 	CheckWindowState();								// 读一下窗的位置
 	Key_GPIO_Init();								// 触摸按键初始化
+	NRFpowon.start = 1;
 	
 	while(1)
 	{
@@ -174,6 +180,7 @@ void main()
 	  else	//休眠函数
 	  {            
             halt();
+			 
 			if(flag_wake == 0)
 			{	
 				//KeyScanControl();	// 按键扫描
@@ -221,7 +228,13 @@ void main()
 //IRQ 中断服务函数
 INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
-	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) prx.IRQCallBack(&prx);
+		
+	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
+	{
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
+		prx.IRQCallBack(&prx);
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
+	}
 //	flag_wake = 1;
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
@@ -260,6 +273,23 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	if(Juge_counter(&LEDAM_juge,amtime)) LEN_GREEN_Close();	
 	//LEDY30
 	if(Juge_counter(&LEDY30_juge,y30time)) LEN_RED_Close();	
+	//nrf间隔打开电源
+	if(Juge_counter(&NRFpowon,40)) 
+	{
+		//debug("NRFpowon\r\n");
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
+		NRF24L01_PWR(1);
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
+		NRFpowoff.start = 1;
+	}
+	if(Juge_counter(&NRFpowoff,40)) 
+	{
+	//	debug("NRFpowoff\r\n");
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
+		NRF24L01_PWR(0);
+		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
+		NRFpowon.start = 1;
+	}	
 	
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 

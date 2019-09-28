@@ -23,7 +23,7 @@ u8 flag_pwm = 0;		//触摸PWM开启标志
 u8 zled_counter = 0;
 u8 pwm = 1;
 u8 pwm_dir = 0;			//0 自减，1自增
-
+u8 flag_wake = 1;
 //鏃堕挓閰嶇疆
 void RCC_Config()
 {
@@ -31,10 +31,10 @@ void RCC_Config()
     CLK->CKDIVR  &= 0XE7;   
     CLK->CKDIVR &= 0xF8;    
     CLK->ICKCR |= CLK_ICKCR_HSION;     
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
+ //   CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
     CLK_PeripheralClockConfig(CLK_Peripheral_TIM4,DISABLE);
     CLK_PeripheralClockConfig(CLK_Peripheral_I2C1,DISABLE);    
-    CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+ //   CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
     CLK_PeripheralClockConfig(CLK_Peripheral_USART1,DISABLE);
     CLK_PeripheralClockConfig(CLK_Peripheral_BEEP,DISABLE);    
     CLK_PeripheralClockConfig(CLK_Peripheral_DAC,DISABLE);
@@ -100,6 +100,28 @@ void TIM3_INIT()
 
 }
 
+//让系统休眠
+void Make_SysSleep()
+{
+//	debug("sleep:\r\n");
+//	LowPowerSet();
+
+	NRF24L01_PWR(0); 
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
+	CLK_LSICmd(ENABLE);											//使能LSI
+	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  //RTC时钟源LSI，
+	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        //等待LSI就绪
+	PWR_UltraLowPowerCmd(ENABLE); 								//使能电源的低功耗模式
+	PWR_FastWakeUpCmd(ENABLE);
+
+	flag_wake = 0;
+}
+//让系统唤醒
+void MakeSysWakeUp()
+{
+	flag_wake = 1;
+	debug(" WakeUp \r\n");
+}
 void main()
 {    
 
@@ -115,50 +137,51 @@ void main()
 	Init_TOUCHGPIO();
 	PWM_Init();			//呼吸灯，PWM初始化
 	TIM3_INIT();		//定时器3,1ms
-	
+
     while(1)
     {    
-		//没有触摸，关闭呼吸灯
-	  if((GPIO_READ(TOUCH_IO) == RESET) && pwm == 100) 
-	  {
-	  	PWM_Status(PWM_OFF);
-		zled_counter = 0;
-		pwm = 1;
-		flag_pwm = 0;
-	  }
-		//按键检测
-	  if(flag_exti)
-	  {      
-			Key_ScanLeave();
-	  }
-	   if(keyval != KEY_VAL_NULL)
-	   {
-		 debug("\r\n");
-		 switch(keyval)
-		 {
-			case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
-		   break;
-			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
-		   break;
-			case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
-		   break;
-			case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
-		   break;
-			case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
-		   break;
-			case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
-		   break;
-			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
-		   break;
-			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
-		   break;
-			case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
-		   break;
-		   
-		 }
-		 keyval = KEY_VAL_NULL;
+		if(flag_wake)
+		{
+			//按键检测
+		  if(flag_exti)
+		  {      
+				Key_ScanLeave();
+		  }
+		   if(keyval != KEY_VAL_NULL)
+		   {
+			 debug("\r\n");
+			 switch(keyval)
+			 {
+				case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
+			   break;
+				case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
+			   break;
+				case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
+			   break;
+				case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
+			   break;
+				case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
+			   break;
+				case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
+			   break;
+				case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
+			   break;
+				case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
+			   break;
+				case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
+			   break;
+			   
+			 }
+			 keyval = KEY_VAL_NULL;
 			debug("\r\n");
-	   }	  
+		   }	  
+			if(flag_exti == 0 && flag_pwm == 0)Make_SysSleep();		
+		}else
+		{
+			halt();
+			MakeSysWakeUp();
+		}
+		
 
 
     }   
@@ -207,7 +230,17 @@ INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
 				if(pwm == 1) flag_pwm = 0;
 			} 
 			PWM_SetDutyCycle(pwm);
-		}  
+		}
+	 //没有触摸，关闭呼吸灯
+	  if((GPIO_READ(TOUCH_IO) == RESET) && pwm == 100) 
+	  {
+	  	PWM_Status(PWM_OFF);
+		zled_counter = 0;
+		pwm = 1;
+		flag_pwm = 0;
+		TIM3_Cmd(DISABLE);
+		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
+	  }
   }
   
   TIM3_ClearITPendingBit(TIM3_IT_Update);  
@@ -217,6 +250,8 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 {
   	if(GPIO_READ(TOUCH_IO) != RESET)	
 	{
+		TIM3_Cmd(ENABLE);
+		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
 		PWM_Status(PWM_ON);
 		pwm = 1;
 		PWM_SetDutyCycle(pwm);
@@ -235,7 +270,10 @@ INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
   if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
   {
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
   	ptx.IRQCallBack(&ptx);
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+	
   }
    EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }             

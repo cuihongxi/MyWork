@@ -1,6 +1,6 @@
 #include "keyboard.h"
 #include "stm8l15x_exti.h"
-
+#include "24l01.h"
 u8      flag_exti = 0 ;
 
 extern 	u8 					keyval ;
@@ -157,6 +157,7 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
   {
    	    if(keyval ==KEY_VAL_NULL)
 		{
+			NRF24L01_PWR(1);
 			flag_exti = 1;
 			keyval = Keyscan();  
 		}
@@ -173,6 +174,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
    {
    	    if(keyval ==KEY_VAL_NULL)
 		{
+			NRF24L01_PWR(1);
 			flag_exti = 1;  
 			keyval = Keyscan();    
 		}

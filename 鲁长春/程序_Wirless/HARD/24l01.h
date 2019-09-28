@@ -134,8 +134,8 @@
 #define CSN_OUT_1       GPIO_SET(NRF24L01_CSN_PIN)
 #endif
 
-#define REPEAT_TIME     5      //重发次数
-#define	REPEAT_DELAY	5		//重复间隔，单位250uS
+#define REPEAT_TIME     15      //重发次数
+#define	REPEAT_DELAY	15		//重复间隔，单位250uS
 
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
