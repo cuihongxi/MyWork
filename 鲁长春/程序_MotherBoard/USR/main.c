@@ -6,7 +6,8 @@ u8 					rxbuf[10] 	= {0};				// nrf接收缓存
 u8 					flag_wake 	= 1;				// 唤醒标志
 u32 				dm_counter 	= 0;				// 开机检测DM，计数器
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
-TaskLinkStr* 		tasklink 	= {0};				// 任务列表
+TaskLinkStr			task_link 	= {0};
+TaskLinkStr* 		tasklink 	= &task_link;		// 任务列表
 u16 				sleeptime	= TIM_SLEEP;		// 睡眠倒计时
 
 u32 				threshold_30 	= 0;			// 30分钟无动作阀值
@@ -137,7 +138,7 @@ void main()
 	LEN_RED_Close();
 	LEN_GREEN_Close();
 	FlashData_Init();
-	tasklink = SingleCycList_Create();				// 创建一个任务循环链表
+//	tasklink = SingleCycList_Create();				// 创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次

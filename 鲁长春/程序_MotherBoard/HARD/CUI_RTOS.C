@@ -1,4 +1,6 @@
 #include "CUI_RTOS.H"
+#include "CUI_MALLOC1.H"
+#include "CUI_MALLOC0.H"
 
 //获取系统时间
 u32 GetSysTime(TimerLinkStr* timerlink)
@@ -87,7 +89,7 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 //创建一个任务，绑定定时器
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
 {
-	TaskStr* task = (TaskStr*)malloc(sizeof(TaskStr));
+	TaskStr* task = (TaskStr*)mallocTask(sizeof(TaskStr));
 	if(task == 0)
 	{
 		debug("OS_CreatTask :malloc NULL \r\n");
@@ -103,7 +105,7 @@ TaskStr* OS_CreatTask(TimerLinkStr* timerlink)
 //添加函数到任务
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 {
-	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
+	funLinkStr* funNode = (funLinkStr*)mallocFun(sizeof(funLinkStr));
 	if(funNode == 0)
 	{
 		debug("OS_AddFunction :malloc NULL \r\n");
@@ -120,7 +122,7 @@ void OS_AddFunction(TaskStr* task,osfun fun,u32 time)
 //将前面的函数执行num次之后，再将其删除，并继续往下执行
 void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 {
-	funLinkStr* funNode = (funLinkStr*)malloc(sizeof(funLinkStr));
+	funLinkStr* funNode = (funLinkStr*)mallocFun(sizeof(funLinkStr));
 	if(funNode == 0)
 	{
 		debug("OS_AddCycleFunction :malloc NULL \r\n");
@@ -138,7 +140,7 @@ void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num)
 //主函数中如果条件为真则删除该任务前面的所有函数
 void OS_AddJudegeFunction(TaskStr* task,osfun fun,u32 time,jugefun funJuge)
 {
-	judgeFunStr* funNode = (judgeFunStr*)malloc(sizeof(judgeFunStr));
+	judgeFunStr* funNode = (judgeFunStr*)mallocFun(sizeof(judgeFunStr));
 	if(funNode == 0)
 	{
 		debug("OS_AddJudegeFunction :malloc NULL \r\n");
@@ -200,13 +202,13 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 	}
 	//释放内存
  	ptask = &tasklink->ramlink;
-	//u32 time = GetSysTime(&timer2);
+	u32 time = GetSysTime(&timer2);
 	if(SingleList_Iterator((SingleListNode**)&ptask))
 	{
 		SingleCycListNode* back = ptask;
 		ptask = SingleList_DeleteNode(&tasklink->ramlink, ptask);
-		free(back);	
-		//debug("free time = %lu ms\r\n",GetSysTime(&timer2) - time);
+		freeFun(back);	
+		debug("free time = %lu ms\r\n",GetSysTime(&timer2) - time);
 	}
 	
 		

@@ -11,7 +11,7 @@
 #include "stm8l15x.h"
 #include "stm8l15x_gpio.h"
 #include "UDATA.H"
-#include "CUI_MALLOC.H"
+
 
 
 #define DEBUG_LEVEL 1		//调试接口
@@ -64,8 +64,7 @@
 #define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
 #define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
 
-#define	malloc(a)	CUI_MALLOC(a)
-#define	free(a)		FreeCUI_MALLOC(a)
+
 
 //定时判断数据类型
 typedef struct{
@@ -74,6 +73,7 @@ typedef struct{
 	u32 counter;		//计数
 }JugeCStr;
 
+typedef enum {ISOK = 0, ISERROR = 1} Flag_Status;
 
 /*公用函数*/
 

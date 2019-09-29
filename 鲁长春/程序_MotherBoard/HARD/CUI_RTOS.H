@@ -81,6 +81,9 @@ struct _TaskStr{
 
 };
 
+#define	mallocFun(a)	CUI_MALLOC1_OneUnit();
+#define	freeFun(a)		FreeCUI_MALLOC1(a)
+#define	mallocTask(a)	CUI_MALLOC0(&malloc0Mesg,a);
 /*函数*/
 u32 OS_TimerFunc(TimerLinkStr* timer);							// 定时器内函数
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink);					// 创建一个任务，绑定定时器

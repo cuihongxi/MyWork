@@ -4,12 +4,12 @@
 
 //创建一个循环链表
 
-SingleCycList* SingleCycList_Create(void)
-{
-	SingleCycListNodeStr* cyc = (SingleCycListNodeStr*)malloc(sizeof(SingleCycListNodeStr));
-	cyc->next = 0;
-	return cyc;
-}
+//SingleCycList* SingleCycList_Create(void)
+//{
+////	SingleCycListNodeStr* cyc = (SingleCycListNodeStr*)malloc(sizeof(SingleCycListNodeStr));
+////	cyc->next = 0;
+//	return cyc;
+//}
 ///循环单链表插入
 int SingleCycList_Insert(SingleCycList* list, SingleCycListNode* node) // O(n)
 { 

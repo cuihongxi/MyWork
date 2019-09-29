@@ -18,7 +18,7 @@ struct _SingleCycListNode
 };
 
 
-SingleCycList* SingleCycList_Create(void);
+//SingleCycList* SingleCycList_Create(void);
 int SingleCycList_Insert(SingleCycList* list, SingleCycListNode* node) ;	// 循环单链表插入
 SingleCycListNode*  SingleCycList_DeleteNode(SingleCycList* list, SingleCycListNode* node);
 SingleCycListNode* SingleCycList_Iterator(SingleCycListNode** node);//迭代器,如果有下一个则返回下一个指针，否则返回 0
