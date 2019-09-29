@@ -202,13 +202,17 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 	}
 	//ÊÍ·ÅÄÚ´æ
  	ptask = &tasklink->ramlink;
+#if SHOW_FREE_TIMEMS >0
 	u32 time = GetSysTime(&timer2);
+#endif
 	if(SingleList_Iterator((SingleListNode**)&ptask))
 	{
 		SingleCycListNode* back = ptask;
 		ptask = SingleList_DeleteNode(&tasklink->ramlink, ptask);
-		freeFun(back);	
+		freeFun(back);
+#if SHOW_FREE_TIMEMS >0
 		debug("free time = %lu ms\r\n",GetSysTime(&timer2) - time);
+#endif
 	}
 	
 		

@@ -52,7 +52,7 @@ void CLK_GPIO_Init()
     GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_DM,	GPIO_Mode_In_PU_No_IT);
-	GPIO_Init(GPIO_BEEP,GPIO_Mode_Out_PP_Low_Slow);
+	GPIO_Init(GPIO_BEEP,GPIO_Mode_Out_PP_High_Slow);
 }
 
 
@@ -108,11 +108,11 @@ void MakeSysWakeUp()
 
 void BeepStop()
 {
-	#if BEEP_SW > 0
-	GPIO_RESET(GPIO_BEEP);
-	#else
+//	#if BEEP_SW > 0
+//	GPIO_RESET(GPIO_BEEP);
+//	#else
 	GPIO_SET(GPIO_BEEP);
-	#endif
+//	#endif
 }
 
 void FunInMain()
@@ -138,7 +138,6 @@ void main()
 	LEN_RED_Close();
 	LEN_GREEN_Close();
 	FlashData_Init();
-//	tasklink = SingleCycList_Create();				// 创建一个任务循环链表
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);				// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
@@ -153,6 +152,8 @@ void main()
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);	
+
+	//while(1);
 	//上电检测DM电平，来判断马达的最大行程时间	
 	if(GPIO_READ(GPIO_DM) == RESET)
 	{

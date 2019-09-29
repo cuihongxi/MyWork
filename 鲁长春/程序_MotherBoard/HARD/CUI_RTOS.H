@@ -13,6 +13,7 @@
 		
 */
 
+#define 	SHOW_FREE_TIMEMS 0		//串口打印释放内存的时间
 
 #define		MAX_NUMBER		0XFF		// 任务的最大循环次数，等于就无限循环
 #define		TYPE_NUMBER		u8			// 数据类型

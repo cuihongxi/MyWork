@@ -38,11 +38,11 @@ extern 	TaskLinkStr* 	tasklink;
 void BeepStart()
 {
 	beep.start = 1;
-	#if BEEP_SW > 0
-	GPIO_SET(GPIO_BEEP);
-	#else
+//	#if BEEP_SW > 0
+//	GPIO_SET(GPIO_BEEP);
+//	#else
 	GPIO_RESET(GPIO_BEEP);
-	#endif
+//	#endif
 	
 }
 
@@ -197,7 +197,7 @@ void KeyFun()
 		}
 		
 		
-		//BeepStart();		
+		BeepStart();		
 		key_val = KEY_VAL_NULL;
 	}
 }

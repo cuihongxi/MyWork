@@ -37,11 +37,11 @@
 	debug("\r\nstart:\r\n");\
 }while(0)
 #else
-#define	UART_INIT(baud) RST->CR = 0x00;
+#define	UART_INIT(baud) RST->CR = 0x00;	//»Ö¸´RST½ÅÎª¸´Î»½Å
 #define debug(...)   
 #endif
 
-#define BEEP_SW 1
+#define BEEP_SW 0
 #if BEEP_SW > 0
 #define		GPIO_BEEP			GPIOA,GPIO_Pin_0		// ·äÃùÆ÷
 #else

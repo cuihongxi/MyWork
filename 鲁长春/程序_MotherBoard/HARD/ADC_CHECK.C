@@ -17,13 +17,13 @@ extern		u8 						flag_flag_FL_SHUT;
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
 {
-	return (0.0024175824175*ad);
+	return (0.0026*ad);//(0.0024175824175*ad);
 }
 
 //根据AD值计算YS端电压
 float YSGetAD(u16 ad)
 {
-	return (0.0008058608058*ad);
+	return (0.0009*ad);//(0.0008058608058*ad);
 }
 
 
@@ -68,6 +68,7 @@ void YS_Function()
 {
 	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
 	{
+		GPIO_SET(YSD_GPIO);
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		GPIO_RESET(YSD_GPIO);
 		//debug(" YSdat = %d.%d\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10);
@@ -132,8 +133,7 @@ void YS_Control()
 		{
 			flag_1= 1;
 			debug("\r\nadd YS check\r\n");
-			//OS_AddFunction(taskYS,OS_DeleteTask,0);
-			OS_AddJudegeFunction(taskYS,ADC_PowerOn,10,JugeYS);
+			//OS_AddJudegeFunction(taskYS,ADC_PowerOn,4,JugeYS);
 			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
 			OS_AddTask(tasklink,taskYS);							// 添加检测任务
 			

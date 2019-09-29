@@ -93,7 +93,7 @@ void CLK_Change2LSI()
 //切换HSI时钟源
 void CLK_Change2HSI()
 {
-	CLK_LSICmd (DISABLE); 
+//	CLK_LSICmd (DISABLE); 
 	CLK_HSICmd (ENABLE);    							//使能HSI
     CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSI);		//HSI为系统时钟
     while(CLK_GetFlagStatus(CLK_FLAG_HSIRDY)==RESET);	//等待HSI准备就绪
