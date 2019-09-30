@@ -16,13 +16,10 @@
 
 #define         Battery_GPIO            GPIOA,GPIO_Pin_5  
 #define         BatControl_GPIO         GPIOC,GPIO_Pin_1  //控制端
-
 #define         YS_GPIO                 GPIOC,GPIO_Pin_4                
 #define         YSD_GPIO                GPIOA,GPIO_Pin_4 	//给YS传感器供电
-
-#define         CHARGE_PRO_PIN			GPIOD,GPIO_Pin_0   	//充电保护 
-
-#define			GPIO_TEMP				GPIOC,GPIO_Pin_1			// 过热保护，AD > 2.85v 停止马达
+#define         CHARGE_PRO_PIN		GPIOD,GPIO_Pin_0   	//充电保护 
+#define		GPIO_TEMP		GPIOC,GPIO_Pin_1	// 过热保护，AD > 2.85v 停止马达
 
 
 typedef enum 

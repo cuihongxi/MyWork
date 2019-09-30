@@ -7,27 +7,30 @@
 #include "stmflash.h"
 #include "BAT.H"
 
-Motor_Struct    		motorStruct = {0};      // 马达状态结构体
-TaskStr* 				taskMotor = {0};		// 马达运动任务
-u32 					shut_time = 0;
-u8						flag_motorIO = 0;		// 马达引脚调换标志
-u8						flag_YS_isno = 0;		// YS无检测
-WindowState				windowstate = open;
-u8 						flag_flag_FL_SHUT = 0;
-extern	TaskLinkStr* 	tasklink;				// 任务列表
-extern	u8 				flag_KEY_Z ;			// 传递给马达函数，让他根据val做出动作
-extern	u8 				flag_KEY_Y ;
-extern	keyStr 			key_Z ;
-extern	keyStr 			key_Y;
-extern	u32 			dm_counter;				// 开机检测DM，计数器
-extern	u8 				flag_30 ;
-extern 	u32 			counter_BH	;			// BH计数
-extern 	u8 				flag_no30;
-extern 	u32 			threshold_30 ;
+Motor_Struct    	motorStruct 	= {0};      	// 马达状态结构体
+TaskStr* 		taskMotor 	= {0};		// 马达运动任务
+u32 			shut_time 	= 0;		// 之前的版本是保存关窗的时间，现在改为保存窗的BH位置：hasrun
+u8			flag_motorIO 	= 0;		// 马达引脚调换标志
+u8			flag_YS_isno 	= 0;		// FLYS无检测
+WindowState		windowstate 	= open;
+u8 			flag_flag_FL_SHUT = 0;
+
+extern	TaskLinkStr* 	tasklink;		// 任务列表
+extern	u8 		flag_KEY_Z;		// 传递给马达函数，让他根据val做出动作
+extern	u8 		flag_KEY_Y;
+extern	keyStr 		key_Z;
+extern	keyStr 		key_Y;
+extern	u32 		dm_counter;		// 开机检测DM，计数器
+extern	u8 		flag_BHProtect;
+extern 	u32 		counter_BH;		// BH计数
+extern 	u8 		flag_no30;
+extern 	u32 		threshold_30 ;
 extern 	TimerLinkStr 	timer2;
-extern 	u8				flag_FLreasion;
-extern 	u8 				flag_FL_SHUT;
-extern	BATStr 			bat;					// 电池管理
+extern 	u8		flag_FLreasion;
+extern 	u8 		flag_FL_SHUT;
+extern	BATStr 		bat;			// 电池管理
+extern	u8		ys_timer30;		// YS不响应计时
+extern	JugeCStr 	YS_30;
 /**************************************
 *@brief
 *@note 
@@ -105,7 +108,7 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 					GPIO_ResetBits(MX830Motor_GPIO_BI);
 					key_Y.counter = 0;
 					key_Z.counter = 0;
-					BH_CheckStop();
+					
 			  }          
 			  break;
 			case HOLD       :  
@@ -169,20 +172,33 @@ void ShutDownWindow()
 
 bool MotorProtectWithY30()	//电机转动保护，充电保护，BH方波保护，Y30延时
 {
-	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) \
+	return (bool)((motorStruct.counter > MOTOR_F_SAFE) \
 		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start);
 }
 
 bool MotorProtect()	//除了Y30电机转动保护，充电保护，BH方波保护
 {
-	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) \
-		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE);
+	return (bool)(motorStruct.erro);
 }
+
+bool MotorProtectAM()	//AM模式下，除了Y30电机转动保护，充电保护，BH方波保护，达到AM位置
+{
+	if(motorStruct.hasrun >= shut_time)shut_time = 0;
+	return (bool)((motorStruct.counter > MOTOR_F_SAFE) \
+		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || motorStruct.hasrun >= shut_time);
+}
+
 
 bool YSFL_MotorProtect()	//电机转动保护，充电保护，BH方波保护，Y30延时,关窗到限位
 {
-	return (bool)(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) \
+	bool juge = (bool)((motorStruct.counter > MOTOR_F_SAFE) \
 		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||  CheckWindowState() == to_BC1);
+	if(juge)
+	{
+		jugeYS.switchon = 0;
+		flag_flag_FL_SHUT = 0;
+	}
+	return juge;
 }
 
 void WindowStateBC1()
@@ -197,15 +213,15 @@ void WindowStateBC2()
 void MotorControl()
 {
 	static u8 flag_motor_erro = 0;
-	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动
-	if(motorStruct.counter > ((u32)1000 * MOTOR_F_SAFE) || GPIO_READ(CHARGE_PRO_PIN) != RESET || flag_no30 == 1 || bat.state == BAT_STATE_NoBACK)
+	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动,除去BH无方波
+	if( GPIO_READ(CHARGE_PRO_PIN) != RESET || (motorStruct.erro & 0x0f))
 	{
+		motorStruct.command = STOP;	//正反转保护时间判断
+		motorStruct.flag_BC1 = 0;
+		motorStruct.flag_BC2 = 0;
 		if(flag_motor_erro == 0)
 		{
 			flag_motor_erro = 1;
-			motorStruct.command = STOP;	//正反转保护时间判断
-			motorStruct.flag_BC1 = 0;
-			motorStruct.flag_BC2 = 0;		
 			debug("充电状态禁止转动，超过转动时限，BAT电压过低禁止转动\r\n");
 		}
 	}
@@ -216,11 +232,13 @@ void MotorControl()
 		反转至38BC2高电平，延时1秒正转1.5秒停转。
 		if((taskMotor->state == Stop)) // taskMotor->state == Wait || 
 		{
-			if(counter_BH > BH_SAFE && flag_30 == 0)							// 方波超时保护
+			if((motorStruct.erro == ERROR_BH)&& flag_BHProtect == 0)							// 方波超时保护
 			{
+			    	
 				debug("方波超时保护\r\n");
-				flag_30 = 1;													//如果出现BH，则会在中断中清零
+				flag_BHProtect = 1;													//如果出现BH，则会在中断中清零
 				counter_BH = 0;
+				motorStruct.erro &= ~ERROR_BH;
 				//按马达当前转向，反向旋转4S，再继续原来转向
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				OS_AddJudegeFunction(taskMotor,BH_Motor1,TIM_BH0,MotorProtect);	// 反向旋转4S
@@ -228,15 +246,20 @@ void MotorControl()
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 			}
-			else if(counter_BH > BH_SAFE && flag_30 == 1)						//再次出现无方波
+			else if((motorStruct.erro == ERROR_BH) && flag_BHProtect == 1)						//再次出现无方波
 			{
 				debug("再次出现无方波\r\n");
-				motorStruct.command = STOP;	//正反转保护时间判断
-				//30分钟不响应YS信号
+				motorStruct.command = STOP;	
+				// 30分钟不响应YSFL信号
 				flag_no30 = 1;
-				threshold_30 = GetSysTime(&timer2) + TIM_30;
-				flag_30 = 0;
+				FL_CheckStop();
+				// threshold_30 = GetSysTime(&timer2) + TIM_30;
+				ys_timer30 = TIM_30;
+				YS_30.start = 1;
+				YS_30.counter = 0;
+				flag_BHProtect = 0;
 				counter_BH = 0;
+				motorStruct.erro &= ~ERROR_BH;
 			}
 			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0 && flag_flag_FL_SHUT) // 窗限位动作
 			{
@@ -254,12 +277,8 @@ void MotorControl()
 					motorStruct.hasrun = 0;
 					if(shut_time != 0)			//计算关窗用的时间
 					{
-						shut_time = GetSysTime(&timer2) - shut_time;
-						FLASH_ProgramWord(ADDR_shut_time,shut_time);	// FLASH保存本次关窗的时间
-						shut_time = 0;
 						//没有FLYS时，启动定时器计时，延时打开窗
 						flag_YS_isno = 1;
-							
 					}
 					jugeYS.switchon = 0;		//不进行Y30按键检测
 					flag_flag_FL_SHUT = 0;
@@ -286,12 +305,16 @@ void MotorControl()
 					flag_flag_FL_SHUT = 1;
 					debug("\r\nYS达到阀值，关窗\r\n");
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-					OS_AddJudegeFunction(taskMotor,ShutDownWindow,60000,YSFL_MotorProtect);	// 执行关窗
+					OS_AddJudegeFunction(taskMotor,ShutDownWindow,(u32)1000*MOTOR_F_SAFE,YSFL_MotorProtect);	// 执行关窗
 					OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 					OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 					if(key_AM.val == on)
-						shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间				
+					{
+						shut_time = motorStruct.hasrun;	//AM下自动记录关窗时间	
+						debug("\r\nshut_time = %lu\r\n",shut_time);
+					}
+									
 				}
 
 			}else
@@ -300,21 +323,19 @@ void MotorControl()
 				debug("FL达到阀值，关窗\r\n");
 				flag_FL_SHUT = 0;
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				OS_AddJudegeFunction(taskMotor,ShutDownWindow,60000,YSFL_MotorProtect);	// 执行关窗
+				OS_AddJudegeFunction(taskMotor,ShutDownWindow,(u32)1000*MOTOR_F_SAFE,YSFL_MotorProtect);	// 执行关窗
 				OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务				
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
-	//			if(key_AM.val == on)
-	//				shut_time = GetSysTime(&timer2);							//AM下自动记录关窗时间			
+				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列			
 			}
 			else
-				if(jugeYS_No.switchon)											//无YS开窗
+				if(jugeYS_No.switchon)											//无YS,FL开窗
 				{
 					debug("无YS开窗\r\n");
 					jugeYS_No.switchon = 0;
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-					OS_AddJudegeFunction(taskMotor,OpenWindow,FLASH_ReadWord(ADDR_shut_time),MotorProtect);	// 执行开窗
-					OS_AddFunction(taskMotor,MotorSTOP,4);			// 停止
+					OS_AddJudegeFunction(taskMotor,OpenWindow,(u32)1000*MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
+					OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 					OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 				}
@@ -356,13 +377,15 @@ void MotorControl()
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				switch(key_Y.val)
 				{
-					case off:OS_AddFunction(taskMotor,MotorSTOP,4);				// STOP开窗
+					case off:
+						OS_AddFunction(taskMotor,MotorSTOP,4);		// STOP开窗
 					break;
-					case on:OS_AddJudegeFunction(taskMotor,Motor_Y,4,MotorProtect);				// 执行>Y
+					case on:
+						OS_AddJudegeFunction(taskMotor,Motor_Y,4,MotorProtect);				// 执行>Y
 					break;
 					case two:// 开1/3
-					debug("KEY_Y :two\r\n");
-					debug("motorStruct.hasrun =0x%x%x\r\n",(u16)(motorStruct.hasrun>>16),(u16)(motorStruct.hasrun));
+						debug("KEY_Y :two\r\n");
+						debug("motorStruct.hasrun =%dr\n",motorStruct.hasrun);
 						if(motorStruct.hasrun > dm_counter/3)
 							OS_AddJudegeFunction(taskMotor,Motor_Z,motorStruct.hasrun - dm_counter/3,MotorProtect);// 执行>Y
 						else OS_AddJudegeFunction(taskMotor,Motor_Y,dm_counter/3 - motorStruct.hasrun,MotorProtect);	
@@ -377,11 +400,11 @@ void MotorControl()
 					break;
 				}
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
+				OS_AddTask(tasklink,taskMotor);								// 添加到任务队列
 			}	
 		}		
 	}
-	MX830Motor_StateDir(&motorStruct);	 								// 马达根据命令运动
+	MX830Motor_StateDir(&motorStruct);	 									// 马达根据命令运动
 }
 
 //BC1,BC2

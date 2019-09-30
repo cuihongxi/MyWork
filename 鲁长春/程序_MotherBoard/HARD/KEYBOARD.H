@@ -8,9 +8,9 @@
 
 //------------------------------------°´¼üÉ¨Ãè----------------------------	
 
-#define KEY_VAL_DER_Z			1
-#define KEY_VAL_DER_Y			2
-#define KEY_VAL_AM				4
+#define KEY_VAL_DER_Z		1
+#define KEY_VAL_DER_Y		2
+#define KEY_VAL_AM		4
 #define KEY_VAL_Y30            	8 
 #define KEY_VAL_DM            	0X10
 
@@ -45,7 +45,7 @@ typedef struct{
 
 
 extern  u8      flag_exti;
-extern  u8 		key_val;
+extern  u8 	key_val;
 
 extern  keyStr key_AM ;
 

@@ -7,18 +7,18 @@ JugeCStr 	jugeYS_No 	= {0};			// 无雨水，AM打开时计时开窗
 JugeCStr 	jugeYS 		= {0};			// YS信号超警戒,启动计时器，超过4S，触发	
 float 		YSdat 		= 0;			// ys-u
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
-u8			ys_timer30 	= 0;			//YS不响应计时
+u8		ys_timer30 	= 0;			// YS不响应计时
 
-extern 		TaskLinkStr* 			tasklink;			// 任务列表
-extern 		WindowState				windowstate;
-extern		TaskStr* 				taskYS		;		// YS测量任务
-extern		u8 						flag_flag_FL_SHUT;
-
+extern 		TaskLinkStr* 	tasklink;		// 任务列表
+extern 		WindowState	windowstate;
+extern		TaskStr* 	taskYS;			// YS测量任务
+extern		u8 		flag_flag_FL_SHUT;
+extern 		u8		flag_YS_isno;		
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
 {
 	return (0.0026*ad);//(0.0024175824175*ad);
-}
+}	
 
 //根据AD值计算YS端电压
 float YSGetAD(u16 ad)
@@ -31,9 +31,9 @@ float YSGetAD(u16 ad)
 //YS,FL,Battery的GPIO初始化
 void GPIO_ADC_Init()
 {
-    GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
+    	GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
 	GPIO_Init(BatControl_GPIO,GPIO_Mode_Out_PP_High_Slow);
-    GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
+    	GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
 	GPIO_Init(CHARGE_PRO_PIN,GPIO_Mode_In_FL_No_IT); 		//充电保护，高电平需要保护
 	GPIO_Init(YSD_GPIO,GPIO_Mode_Out_PP_Low_Slow);
 }
@@ -128,16 +128,24 @@ void YS_Control()
 			flag_0 = 0;
 		}else
 		
-		if((windowstate != to_BC1 ||(windowstate == to_BC1 && key_AM.val != off))\
-			&& YS_30.start == 0 && flag_1 == 0 )	//开着窗或者关着窗并且AM打开并且没有30分钟限制
+		if(windowstate != to_BC1 && YS_30.start == 0 && flag_1 == 0 )	// 开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
+
 			flag_1= 1;
 			debug("\r\nadd YS check\r\n");
 			//OS_AddJudegeFunction(taskYS,ADC_PowerOn,4,JugeYS);
 			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
-			OS_AddTask(tasklink,taskYS);							// 添加检测任务
+			OS_AddTask(tasklink,taskYS);								// 添加检测任务
 			
-		}		
+		}else
+		if(flag_YS_isno)
+		{
+			flag_YS_isno = 0;
+			debug("\r\nadd YS check\r\n");
+			//OS_AddJudegeFunction(taskYS,ADC_PowerOn,4,JugeYS);
+			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
+			OS_AddTask(tasklink,taskYS);								// 添加检测任务			
+		}
 	}
 
 }

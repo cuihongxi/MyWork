@@ -25,13 +25,13 @@ bool Free_taskBefore(TaskStr* task)
 		funLinkStr* pcurrent = that;
 		if( task->pthis != that)
 		{
-			that = SingleList_DeleteNode(&task->funNode,pcurrent); 				// 删除节点
-			OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);			// 添加到内存释放空间
-			while(SingleList_Iterator((void**)&that) && task->pthis != that) 	//先删除节点，后释放空间
+			that = SingleList_DeleteNode(&task->funNode,pcurrent); 		// 删除节点
+			OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间
+			while(SingleList_Iterator((void**)&that) && task->pthis != that) //先删除节点，后释放空间
 			{	
 				pcurrent = that;												// 保存该节点地址
-				that = SingleList_DeleteNode(&task->funNode,pcurrent); 			// 删除节点
-				OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间
+				that = SingleList_DeleteNode(&task->funNode,pcurrent); 		// 删除节点
+				OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);	// 添加到内存释放空间
 			}
 				
 		}
@@ -45,8 +45,8 @@ bool Free_taskBefore(TaskStr* task)
 			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
 			task->state = Stop;
 		}
-		SingleList_DeleteNode(&task->funNode,pcurrent); 						// 删除节点		
-		OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);				// 添加到内存释放空间
+		SingleList_DeleteNode(&task->funNode,pcurrent); 			// 删除节点		
+		OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间
 	}
 
 	if(task->state == Stop) return (bool)FALSE;
@@ -63,8 +63,8 @@ void CUI_RTOS_Delayms(TaskStr* task,u32 time)
 		if(time)
 		{
 			task->state = Suspend;
-			task->timerNode.counter = GetSysTime(task->timerlink) + time;			// 计时阀值
-			SingleList_Insert(task->timerlink, &task->timerNode);					// 添加到定时任务
+			task->timerNode.counter = GetSysTime(task->timerlink) + time;		// 计时阀值
+			SingleList_Insert(task->timerlink, &task->timerNode);			// 添加到定时任务
 			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);	// 将该任务从任务循环队列中移除
 		}		
 		else	//释放该任务的动态函数空间
@@ -175,7 +175,7 @@ void OsSectionFun(TaskStr* task)
 	
 	if(task->pthis != 0 && task->pthis->osfun !=0)
 	{
-		task->pthis->osfun();									// 执行函数
+		task->pthis->osfun();							// 执行函数
 		CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
 		return;													// 跳出程序
 	}		
@@ -186,7 +186,7 @@ bool OsJudge_TaskIsNull(TaskStr* task)
 {
 	funLinkStr* pthis =  (funLinkStr*)&task->funNode;
 	if(SingleList_Iterator((void**)&pthis) == 0)					//没有任务
-		return (bool)TRUE;
+	return (bool)TRUE;
 	else return (bool)FALSE;
 }
 

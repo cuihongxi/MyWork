@@ -8,30 +8,30 @@
 
 u8 		flag_exti	= 0;
 u8 		key_val 	= 0;
-keyStr 	key_Z 		= {0};
-keyStr 	key_Y		= {0};
-keyStr 	key_AM 		= {0};
-keyStr 	key_Y30 	= {0};
-keyStr 	key_DM 		= {0};
+keyStr 		key_Z 		= {0};
+keyStr 		key_Y		= {0};
+keyStr 		key_AM 		= {0};
+keyStr 		key_Y30 	= {0};
+keyStr 		key_DM 		= {0};
 
 u8 		flag_duima  		= 0;	//对码状态
 u8 		flag_duima_clear  	= 0;	//清除对码
-u32 	Y30_Risingtime 		= 0;
-u32 	DM_Risingtime 		= 0;		
+u32 		Y30_Risingtime 		= 0;
+u32 		DM_Risingtime 		= 0;		
 
-u8 					flag_KEY_Z 	= 0;				// 传递给马达函数，让他根据val做出动作
-u8 					flag_KEY_Y 	= 0;
-u8					signal_key = 0;
+u8 		flag_KEY_Z 		= 0;	// 传递给马达函数，让他根据val做出动作
+u8 		flag_KEY_Y 		= 0;
+u8		signal_key 		= 0;
 
-extern	TimerLinkStr 	timer2 ;					// 任务的定时器
-extern	JugeCStr 		YS_30 ;
-extern	TaskStr* 		taskKeyScan;
-extern	u16				amtime ;
-extern	u16				y30time ;
-extern	JugeCStr 		LEDAM_juge ;
-extern	JugeCStr 		LEDY30_juge ;
-extern	JugeCStr 		beep;
-extern 	u8				flag_motorIO;
+extern	TimerLinkStr 	timer2 ;		// 任务的定时器
+extern	JugeCStr 	YS_30 ;
+extern	TaskStr* 	taskKeyScan;
+extern	u16		amtime ;
+extern	u16		y30time ;
+extern	JugeCStr 	LEDAM_juge ;
+extern	JugeCStr 	LEDY30_juge ;
+extern	JugeCStr 	beep;
+extern 	u8		flag_motorIO;
 extern 	TaskLinkStr* 	tasklink;
 
 
@@ -92,25 +92,25 @@ void keyStr_Init(keyStr* key,GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin)
 }
 void Key_GPIO_Init()
 {
-	  keyStr_Init(&key_Z,GPIO_DER_Z);
-	  keyStr_Init(&key_Y,GPIO_DER_Y);
-	  keyStr_Init(&key_AM,GPIO_AM);
-	  keyStr_Init(&key_Y30,GPIO_Y30);
-	  keyStr_Init(&key_DM,GPIO_DM);
-	  
-	  GPIO_Init(GPIO_DER_Z,	KEY_GPIOMODE);
-	  GPIO_Init(GPIO_DER_Y,	KEY_GPIOMODE);
-	  GPIO_Init(GPIO_AM,	KEY_GPIOMODE);
-	  GPIO_Init(GPIO_Y30,	KEY_GPIOMODE);
-	  GPIO_Init(GPIO_DM,	KEY_GPIOMODE);
-	  
-	  disableInterrupts();
-      EXTI_SelectPort(EXTI_Port_B);
-      EXTI_SetHalfPortSelection(EXTI_HalfPort_B_LSB,ENABLE);   
-      EXTI_SetPortSensitivity(EXTI_Port_B,EXTI_Trigger_Falling);				// 设置端口敏感性
-	  EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
-	  //使能中断
-      enableInterrupts();                                                 		// 使能中断
+	keyStr_Init(&key_Z,GPIO_DER_Z);
+	keyStr_Init(&key_Y,GPIO_DER_Y);
+	keyStr_Init(&key_AM,GPIO_AM);
+	keyStr_Init(&key_Y30,GPIO_Y30);
+	keyStr_Init(&key_DM,GPIO_DM);
+
+	GPIO_Init(GPIO_DER_Z,	KEY_GPIOMODE);
+	GPIO_Init(GPIO_DER_Y,	KEY_GPIOMODE);
+	GPIO_Init(GPIO_AM,	KEY_GPIOMODE);
+	GPIO_Init(GPIO_Y30,	KEY_GPIOMODE);
+	GPIO_Init(GPIO_DM,	KEY_GPIOMODE);
+
+	disableInterrupts();
+	EXTI_SelectPort(EXTI_Port_B);
+	EXTI_SetHalfPortSelection(EXTI_HalfPort_B_LSB,ENABLE);   
+	EXTI_SetPortSensitivity(EXTI_Port_B,EXTI_Trigger_Falling);	// 设置端口敏感性
+	EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
+	//使能中断
+	enableInterrupts();                                                 // 使能中断
 }
 
 
@@ -162,7 +162,7 @@ void KeyFun()
 				break;
 			case KEY_VAL_AM: 	
 				if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
-				else					amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
+				else		amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
 				LEN_GREEN_Open();
 				LEDAM_juge.start = 1;
 				LEDAM_juge.counter = 0;

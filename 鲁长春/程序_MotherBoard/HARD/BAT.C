@@ -2,7 +2,7 @@
 #include "lowpower.h"
 #include "ADC_CHECK.H"
 #include "LED_SHOW.H"
-
+#include "MX830Motor.h"
 extern	BATStr bat;						// µç³Ø¹ÜÀí
 u8 state = 0;
 
@@ -26,15 +26,27 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	{
 		bat->flag = 0;
 		bat->val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
-		
-		//debug("bat = %d.%d\r\n",(u8)bat->val,(u8)(bat->val*10)-(u8)bat->val*10);
-		if(bat->val >=VALVE_BAT_CHECK) bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// ¼ÆËã¼ì²â¼ä¸ô
+
+		if(bat->val >=VALVE_BAT_CHECK) 
+		    bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// ¼ÆËã¼ì²â¼ä¸ô
 		else bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKL;
-		if(bat->val > VALVE_BAT_GREEN)			state = BAT_STATE_GREEN;									
-		else if(bat->val > VALVE_BAT_SHARP3)	state = BAT_STATE_GREENSHARP3;
-		else if(bat->val > VALVE_BAT_Motor) 	state = BAT_STATE_REDSHARP3;								
-		else if(bat->val > VALVE_BAT_NoBACK)	state = BAT_STATE_38BC1;							
-		else									state = BAT_STATE_NoBACK;	
+		if(bat->val > VALVE_BAT_GREEN)			
+		    state = BAT_STATE_GREEN;									
+		else if(bat->val > VALVE_BAT_SHARP3)	
+		    state = BAT_STATE_GREENSHARP3;
+		else if(bat->val > VALVE_BAT_Motor) 	
+		    state = BAT_STATE_REDSHARP3;								
+		else if(bat->val > VALVE_BAT_NoBACK)	
+		    state = BAT_STATE_38BC1;							
+		else					
+		{
+			state = BAT_STATE_NoBACK;
+			motorStruct.erro |= ERROR_BH;
+		}
+		if(motorStruct.erro & ERROR_BH)
+		{
+			if(bat->val > VALVE_BAT_NoBACK) motorStruct.erro &= ~ERROR_BH;
+		}
 	}
 	if((bat->state != state) && (taskBatControl->state == Stop)) // taskBatControl->state == Wait ||
 	{
