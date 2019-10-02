@@ -78,7 +78,7 @@ void Key_ScanLeave()
 	
     if(GPIO_READ(GPIO_DER_Z)&&GPIO_READ(GPIO_DER_Y)&&GPIO_READ(GPIO_AM)&&GPIO_READ(GPIO_Y30)&&GPIO_READ(GPIO_DM))
     {
-	 	debug("-----key null-------\r\n");
+	 	//debug("-----key null-------\r\n");
         flag_exti = 0;
     }
 }
@@ -128,11 +128,13 @@ u32 ScanKey(keyStr* key)
 		{
 			key->counter = time;
 			key->val = on;
+			debug("key on\r\n");
 		}	
 		else
 		{
 			if(time < (key->counter + TIM_KEY))	//连击
 			{
+			    debug("连击 = %d\r\n",key->val);
 				if(key->val < six)
 					key->val ++;
 				key->counter = time;
@@ -140,7 +142,7 @@ u32 ScanKey(keyStr* key)
 			{
 				key->val = off;	//停止
 				key->counter = 0;
-				
+				debug("key off\r\n");
 			}
 		}	
 			
@@ -156,9 +158,9 @@ void KeyFun()
 	{
 		switch(key_val)
 		{
-			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;
+			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;//if(key_Z.val > three)key_Z.val = three;
 				break;
-			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;
+			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;//if(key_Y.val > three)key_Y.val = three;
 				break;
 			case KEY_VAL_AM: 	
 				if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
@@ -220,8 +222,8 @@ void KeyScanControl()
 
 INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 {
-//	debug("in key ti,flag_exti = %d\r\n",flag_exti);
-   // if(key_val == KEY_VAL_NULL)
+	debug("\r\nin key ti	");
+    if(key_val == KEY_VAL_NULL)
     {
 		if(GPIO_READ(GPIO_DER_Z) == RESET)
 		{
@@ -248,7 +250,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		{
 			flag_exti = 1;   
 			signal_key = 1;
-			debug("key_val = %d\r\n",key_val);
+			//debug("key_val = %d\r\n",key_val);
 		}	
     }
 
@@ -258,7 +260,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 
 INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 {
-  //  if(key_val == KEY_VAL_NULL)
+    if(key_val == KEY_VAL_NULL)
     {
 		if(GPIO_READ(GPIO_DM) == RESET)
 		{

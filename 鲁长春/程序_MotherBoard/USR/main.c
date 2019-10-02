@@ -187,9 +187,9 @@ void main()
 		{	
 			//KeyScanControl();	// 按键扫描
 			 KeyFun();
-			if(flag_exti)	Key_ScanLeave();            // 松手程序
-			OS_Task_Run(tasklink);
 			
+			OS_Task_Run(tasklink);
+			if(flag_exti)	Key_ScanLeave();            // 松手程序
 			/*nrf接收函数*/
 			if(prx.hasrxlen != 0)
 			{
@@ -200,7 +200,7 @@ void main()
 				  }
 				
 				debug("\r\n##################################\r\n");
-				
+				if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
 				prx.hasrxlen = 0;
 			}	
 		}else
@@ -277,7 +277,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		NRF24L01_PWR(0);
 		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
 		NRFpowon.start = 1;
-	}	
+	}
 	
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 

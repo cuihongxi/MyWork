@@ -2,7 +2,7 @@
 #include "lowpower.h"
 #include "MX830Motor.h"
 
-u8 		flag_BHProtect = 0;				// BH方波保护	
+u8 		flag_BHProtectStep = 0;				// BH方波保护执行的步骤	
 u8 		flag_no30 = 0;					// 30分钟不响应YSFL
 u32 		fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u32 		counter_BH	= 0;				//BH计数
@@ -142,7 +142,7 @@ void BH_Check()
 				debug("马达.hasrun --\r\n");
 			}
 			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
-			if(flag_BHProtect == 1 )flag_BHProtect = 0;	// 恢复故障
+			if(flag_BHProtectStep == 1 )flag_BHProtectStep = 0;	// 恢复故障
 		}
 		
 		counterFileter_BH = counter + TIM_BH_FILTER;

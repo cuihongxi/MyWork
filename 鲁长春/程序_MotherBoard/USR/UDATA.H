@@ -22,7 +22,7 @@
 #define         	VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
 #define         	MOTOR_F_SAFE            60000   // ms,正转保护
 #define			TIM_SLEEP		5000	// ms,休眠倒计时时间
-#define			TIM_KEY			500	// ms，连击间隔
+#define			TIM_KEY			1000	// ms，连击间隔
 #define         	TIM_CHECKEYS          	2000    // ms,YS检测时间
 #define         	BH_SAFE                 10000    // ms, BH方波检测
 #define         	TIM_BH0                 4000    // ms, BH反向运动时间
