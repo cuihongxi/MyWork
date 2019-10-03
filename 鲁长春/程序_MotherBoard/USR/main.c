@@ -117,11 +117,11 @@ void BeepStop()
 
 void FunInMain()
 {	
-	CheckBC1BC2();		// 检测限位
-	YS_Control();		// YS，供电控制
-	FL_Control();		// FL，供电控制
+	//CheckBC1BC2();		// 检测限位
+	//YS_Control();		// YS，供电控制
+	//FL_Control();		// FL，供电控制
 	MotorControl();		// 马达运动
-	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
+	//BatControl(&bat,tasklink,taskBatControl);	// 电源管理
 	
 }
 //按键处理函数
@@ -141,7 +141,7 @@ void main()
 	taskYS = OS_CreatTask(&timer2);				// 创建YS测量任务 ，每2秒检测一次
 	taskKeyScan = OS_CreatTask(&timer2);			// 创建按键扫描任务
 	taskInMain = OS_CreatTask(&timer2);			// 创建主函数运行任务
-	OS_AddFunction(taskInMain,FunInMain,50);	
+	OS_AddFunction(taskInMain,FunInMain,40);	
 	OS_AddTask(tasklink,taskInMain);
 	Make_SysSleep();					// 系统进入休眠状态
 	FL_GPIO_Init();

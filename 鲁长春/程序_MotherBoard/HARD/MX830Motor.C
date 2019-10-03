@@ -292,8 +292,8 @@ void MotorControl()
 				switch(key_Z.val)
 				{
 					case off:
-						motorStruct.needrun = motorStruct.hasrun;				// STOP关窗
-						OS_AddFunction(taskMotor,MotorSTOP,4);
+						//motorStruct.needrun = motorStruct.hasrun + 1;				// STOP关窗
+						//OS_AddFunction(taskMotor,MotorSTOP,4);
 					break;
 					case on:
 						motorStruct.needrun = 0;				// 执行<z
@@ -312,6 +312,9 @@ void MotorControl()
 				    
 				}
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
+				//OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
+				OS_AddFunction(taskMotor,MotorSTOP,4);
+				
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 			}
@@ -323,8 +326,8 @@ void MotorControl()
 				switch(key_Y.val)
 				{
 					case off:
-						motorStruct.needrun = motorStruct.hasrun;		// STOP开窗
-						OS_AddFunction(taskMotor,MotorSTOP,4);
+						//motorStruct.needrun = motorStruct.hasrun-1;		// STOP开窗
+						
 					break;
 					case on:
 						motorStruct.needrun = dm_counter;			// 执行>Y
@@ -343,6 +346,8 @@ void MotorControl()
 					
 				}
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
+				
+				OS_AddFunction(taskMotor,MotorSTOP,4);
 				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);								// 添加到任务队列
 			}	

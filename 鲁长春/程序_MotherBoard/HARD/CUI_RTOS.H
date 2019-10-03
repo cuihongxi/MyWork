@@ -78,13 +78,18 @@ struct _TaskStr{
 	SingleListNodeStr 	funNode;		// 链表,用于添加到任务队列中
 	funLinkStr* 		pthis;			// 记录当前执行到的函数
 	TimerLinkStr* 		timerlink;		// 定时器执行链表
-	taskState 			state;			// 任务状态
-
+	taskState 		state;			// 任务状态
 };
 
-#define	mallocFun(a)	CUI_MALLOC1_OneUnit();
+
+
+#define	mallocFun(a)		CUI_MALLOC1_OneUnit();
 #define	freeFun(a)		FreeCUI_MALLOC1(a)
-#define	mallocTask(a)	CUI_MALLOC0(&malloc0Mesg,a);
+#define	mallocTask(a)		CUI_MALLOC0(&malloc0Mesg,a);
+
+#define	OS_ITCLOSE()		disableInterrupts();
+#define	OS_ITOPEN()		enableInterrupts();
+
 /*函数*/
 u32 OS_TimerFunc(TimerLinkStr* timer);							// 定时器内函数
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink);					// 创建一个任务，绑定定时器

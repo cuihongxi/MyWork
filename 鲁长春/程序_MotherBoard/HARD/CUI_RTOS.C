@@ -171,6 +171,7 @@ void OsSectionFun(TaskStr* task)
 	 
 	if(task->pthis != 0 && task->pthis->type == judge && (((judgeFunStr*)(task->pthis))->result == TRUE))	//条件判断为真，删除该任务所有函数
 	{
+	    debug("free\r\n");
 		Free_taskBefore(task);		
 	}
 	if(task->pthis == 0) task->pthis = (funLinkStr*)&task->funNode;
@@ -235,11 +236,13 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 		{
 			if((((judgeFunStr*)(pNext->task->pthis))->jugefun()) != 0) 
 			{
-			    	debug("中断\r\n");
+			    	//OS_ITCLOSE();
 				((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
-				//if(Free_taskBefore(pNext->task)) 
+				//if(Free_taskBefore(pNext->task))
 					OS_AddTask(pNext->tasklink,pNext->task) ;	// 添加任务到队列	
 				SingleList_DeleteNode(timer, pNext);		// 删除定时
+				debug("中断\r\n");
+				//OS_ITOPEN();
 				continue;
 			}
 		}
