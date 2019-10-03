@@ -117,11 +117,11 @@ void BeepStop()
 
 void FunInMain()
 {	
-	//CheckBC1BC2();		// 检测限位
-	//YS_Control();		// YS，供电控制
-	//FL_Control();		// FL，供电控制
+	CheckBC1BC2();		// 检测限位
+	YS_Control();		// YS，供电控制
+	FL_Control();		// FL，供电控制
 	MotorControl();		// 马达运动
-	//BatControl(&bat,tasklink,taskBatControl);	// 电源管理
+	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
 	
 }
 //按键处理函数
@@ -249,10 +249,12 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	//YS 30分钟不响应
 	if(Juge_counter(&YS_30, (u32)60000*ys_timer30))
 	{
+	    debug("Y30 stop windowstate = %d\r\n",windowstate);
 		if(flag_no30) 
 		{
 			flag_no30 = 0; 	// 复位由BH无方波引起的延时30分钟
-			
+//			CheckWindowState();
+//			if(windowstate != to_BC1) FL_CheckStart();
 		}
 	}
 	//BEEP

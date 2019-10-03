@@ -85,6 +85,7 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		ERROR_OK		0	// 无故障
 #define		ERROR_BAT		(0x01)	// BAT电压过低
 #define		ERROR_MOTOR		(0x02)	// 马达持续转动超时
+#define		ERROR_CHARG		(0x04)	// 充电保护
 #define		ERROR_BH		(0x10)	// BH没有波形
 
 

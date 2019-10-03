@@ -12,7 +12,7 @@ u8		ys_timer30 	= 0;			// YS不响应计时
 extern 		TaskLinkStr* 	tasklink;		// 任务列表
 extern 		WindowState	windowstate;
 extern		TaskStr* 	taskYS;			// YS测量任务
-extern		u8 		flag_flag_FL_SHUT;
+extern		u8 		flag_flag_YS_SHUT;
 extern 		u8		flag_YS_isno;		
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
@@ -91,7 +91,7 @@ void YS_Function()
 			jugeYS.start = 0;
 			jugeYS.counter = 0;
 			jugeYS.switchon = 0;
-			if(key_AM.val == on && GPIO_READ(GPIO_38KHZ_BC1) == RESET && jugeYS_No.switchon == 0)//关着窗
+			if(key_AM.val == on && windowstate == to_BC1 && jugeYS_No.switchon == 0)//关着窗
 				jugeYS_No.start = 1;	//开始无YS计时。超过阀值，自动开窗
 		}	
 	}
@@ -100,16 +100,20 @@ void YS_Function()
 
 bool JugeYS()
 {
-	return (bool)(YS_30.start || (windowstate == to_BC1  && key_AM.val == off));
+	return (bool)(YS_30.start || ( key_AM.val == off && windowstate == to_BC1));
 }
+
+bool JugeYSAM()
+{
+	return (bool)(key_AM.val == off);
+}
+
 //YS控制
 void YS_Control()
 {
 	static u8 flag_0 = 0;
 	static u8 flag_1	= 0;
-//	if(taskYS->state == Stop)
-//		debug("\r\ntaskYS state == Stop\r\n");
-	if(taskYS->state == Stop || taskYS->state == Wait)
+	if(taskYS->state == Stop)
 	{
 		if(((windowstate == to_BC1  && key_AM.val == off)|| YS_30.start) && flag_0 == 0) 	//不检测YS
 		{
@@ -119,7 +123,7 @@ void YS_Control()
 			jugeYS.start = 0;
 			jugeYS.counter = 0;
 			jugeYS.switchon = 0;
-			flag_flag_FL_SHUT = 0;
+			flag_flag_YS_SHUT = 0;
 			GPIO_RESET(YSD_GPIO);										//关闭YS电源				
 		}else
 		if(windowstate != to_BC1 && YS_30.start == 0 && flag_0)
@@ -143,7 +147,7 @@ void YS_Control()
 			flag_YS_isno = 0;
 			debug("\r\nadd YS check\r\n");
 			//OS_AddJudegeFunction(taskYS,ADC_PowerOn,4,JugeYS);
-			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYS);
+			OS_AddJudegeFunction(taskYS,YS_Function,TIM_CHECKEYS,JugeYSAM);
 			OS_AddTask(tasklink,taskYS);								// 添加检测任务			
 		}
 	}

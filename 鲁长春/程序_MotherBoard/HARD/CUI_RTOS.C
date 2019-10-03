@@ -40,12 +40,12 @@ bool Free_taskBefore(TaskStr* task)
 		if(SingleList_Iterator((void**)&that))
 		{
 			task->state = Wait;
-			debug("----Wait\r\n");
+		//	debug("----Wait\r\n");
 		}else 
 		{
 			SingleCycList_DeleteNode(task->timerNode.tasklink, &task->taskNode);// 将该任务从任务循环队列中移除
 			task->state = Stop;
-			debug("----Stop\r\n");
+		//	debug("----Stop\r\n");
 		}
 		SingleList_DeleteNode(&task->funNode,pcurrent); 			// 删除节点		
 		OS_FreeRom(&(task->timerNode.tasklink->ramlink),pcurrent);		// 添加到内存释放空间
@@ -171,7 +171,7 @@ void OsSectionFun(TaskStr* task)
 	 
 	if(task->pthis != 0 && task->pthis->type == judge && (((judgeFunStr*)(task->pthis))->result == TRUE))	//条件判断为真，删除该任务所有函数
 	{
-	    debug("free\r\n");
+	    //debug("free\r\n");
 		Free_taskBefore(task);		
 	}
 	if(task->pthis == 0) task->pthis = (funLinkStr*)&task->funNode;
@@ -239,9 +239,9 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 			    	//OS_ITCLOSE();
 				((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
 				//if(Free_taskBefore(pNext->task))
-					OS_AddTask(pNext->tasklink,pNext->task) ;	// 添加任务到队列	
+				OS_AddTask(pNext->tasklink,pNext->task) ;	// 添加任务到队列	
 				SingleList_DeleteNode(timer, pNext);		// 删除定时
-				debug("中断\r\n");
+				//debug("中断\r\n");
 				//OS_ITOPEN();
 				continue;
 			}

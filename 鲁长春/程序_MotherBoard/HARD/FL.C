@@ -3,7 +3,7 @@
 #include "MX830Motor.h"
 
 u8 		flag_BHProtectStep = 0;				// BH方波保护执行的步骤	
-u8 		flag_no30 = 0;					// 30分钟不响应YSFL
+u8 		flag_no30 = 0;					// BH故障，30分钟不响应YSFL
 u32 		fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u32 		counter_BH	= 0;				//BH计数
 u8		flag_FLreasion 	= 0;				// FL的原因关窗
@@ -28,24 +28,29 @@ void FL_CheckStart()
 {
     	flag_FLCheckState = 1;
 	GPIO_Init(GPIO_FLU,GPIO_Mode_In_PU_IT);  
-	debug("FL_CheckStart\r\n");
+		disableInterrupts();
+	EXTI_SetPinSensitivity(EXTI_Pin_6,EXTI_Trigger_Falling);
+    	enableInterrupts();					// 使能中断
+	debug("FL_CheckStart->\r\n");
 }
 
 void FL_CheckStop()
 {
     	flag_FLCheckState = 0;
 	GPIO_Init(GPIO_FLU,GPIO_Mode_Out_PP_Low_Slow);  
-	debug("FL_CheckStop\r\n");
+	debug("FL_CheckStop-->\r\n");
 	
 }
 
 void FL_Control()
 {
-    if(flag_FLCheckState == 0)
+    if(flag_FLCheckState == 0 && windowstate != to_BC1 && motorStruct.dir == STOP &&  flag_no30 == 0)
     {
-    	if(flag_no30 == 0) FL_CheckStart();
+	FL_CheckStart();		
     }
 }
+
+
 void FL_Check()
 {
 	static u32 	counter_FL = 0;					// FL计数器
@@ -53,7 +58,7 @@ void FL_Check()
 	static u8 flag = 0;						//第一次达到转速时启动计时标志
 	static u32 timer = 0;						//转速维持4S的计时
 	
-	if(GPIO_READ(GPIO_FLU) == RESET)
+	if(flag_FLCheckState && GPIO_READ(GPIO_FLU) == RESET )
 	{
 		debug("GPIO_FLU = 0\r\n");
 		u32 counter = GetSysTime(&timer2);
@@ -69,6 +74,7 @@ void FL_Check()
 			{
 				if((counter - timer)>TIM__FL_D)
 				{
+				    	debug("in it 	FL:持续时间到，关窗\r\n");
 					flag_FL_SHUT = 1;			// 持续时间到，关窗
 					FL_CheckStop();
 				}	

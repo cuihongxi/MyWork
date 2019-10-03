@@ -15,7 +15,7 @@
 #define			TIM_BAT_CHECKL		2000	// ms,小于VALVE_BAT_CHECK电压，检测间隔
 
 #define			TIM_MOTOR_Z		1000	// ms,马达到达BC1,或BC2时继续向前的时间，单位ms
-#define			TIM_MOTOR_F		1500	// ms,马达到达BC1,或BC2时反向的时间，单位ms
+#define			TIM_MOTOR_F		1000	// ms,马达停转时反转时间，解锁离合，单位ms
 #define         	VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
 #define         	TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
 #define         	TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
@@ -32,14 +32,14 @@
 #define			TIM_AM_OFF		500	// ms,AM无效时对应的LED指示点亮时间
 #define			TIM_Y30_ON		3000	// ms,Y30有效时对应的LED指示点亮时间
 #define			TIM_Y30_OFF		500	// ms,Y30无效时对应的LED指示点亮时间
-#define			TIM_OPEN		60000*5 // 无YS计时开窗
+#define			TIM_OPEN		5000    // ms,无YS计时开窗
 #define			TIM_Y30_DELAY		3000	// ms,Y30长按3S取消功能
 #define			TIM_DML			1000	// ms, 大于这个值，并小于TIM_DMH 内抬起DM，进入NRF对码
 #define			TIM_DMH			3000	// ms, 小于这个值，并大于TIM_DML 内抬起DM，进入NRF对码
 #define			TIM_DM_CLEARL		6000	// ms, 清除对码值下限
 #define			TIM_DM_CLEARH		10000	// ms, 清除对码值上限
 #define			TIM_BH_FILTER		50		// ms, BH滤波时间
-#define			TIM_FL_FILTER		2		// ms, FL滤波时间
+#define			TIM_FL_FILTER		1		// ms, FL滤波时间
 
 
 #endif
