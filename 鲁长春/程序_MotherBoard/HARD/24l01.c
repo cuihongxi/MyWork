@@ -6,10 +6,17 @@
 #include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
-u8  ADDRESS1[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
-u8  ADDRESS2[RX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; 
+u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
+u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
 u8* address = ADDRESS1;
-
+void NRF24L01_ResetAddr(u8* add)
+{
+    CE_OUT_0; 
+    address = add;
+    NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH);    //写本地地址	
+    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址	
+    CE_OUT_1; 
+}
 //用ID号生产新的收发地址
 void CreatNewAddr(u8* ChipID,u8* newAddr)
 {
@@ -40,7 +47,7 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[0] = *(__IO u8 *)(0X4926); 
 	ChipID[1] = *(__IO u8 *)(0X4927); 
 	ChipID[2] = *(__IO u8 *)(0X4928);
-    ChipID[3] = *(__IO u8 *)(0X4929);
+    	ChipID[3] = *(__IO u8 *)(0X4929);
 	ChipID[4] = *(__IO u8 *)(0X492A); 
 	ChipID[5] = *(__IO u8 *)(0X492B); 
 	ChipID[6] = *(__IO u8 *)(0X492C);
@@ -132,7 +139,7 @@ void Init_NRF24L01(u8 pip,u8 rf_ch)
     }
     NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH); ;    //写本地地址	
     NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址
-    NRF24L01_EnabelDPL(BIT_PIP0);									//使能通道0自动应答，动态长度
+    NRF24L01_EnabelDPL(BIT_PIP0);					//使能通道0自动应答，动态长度
     NRF24L01_Write_Reg(NRF_WRITE_REG+EN_RXADDR,(0x01<<pip));            //允许接收地址频道0 
     NRF24L01_Write_Reg(NRF_WRITE_REG+SETUP_RETR,(REPEAT_DELAY<<4)|REPEAT_TIME); //设置自动重发间隔时间;最大自动重发次数
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,rf_ch);            //设置信道工作频率，收发必须一致
@@ -254,8 +261,8 @@ void NRF24L01_RX_Mode(void)
  		debug("RX_Mode\r\n");
         CE_OUT_0; 
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff);	//清除中断标志
-        NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
-		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
+        NRF24L01_Write_Reg(FLUSH_RX,0x00); 		//清除RX_FIFO寄存器
+	NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
        // CE_OUT_1; 
         DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us

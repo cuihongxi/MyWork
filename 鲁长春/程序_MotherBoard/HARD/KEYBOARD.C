@@ -4,7 +4,7 @@
 #include "LED_SHOW.H"
 #include "ADC_CHECK.H"
 #include "stmflash.h"
-//#include "MX830Motor.h"
+#include "24l01.h"
 
 u8 		flag_exti	= 0;
 u8 		key_val 	= 0;
@@ -18,23 +18,31 @@ u8 		flag_duima  		= 0;	//对码状态
 u8 		flag_duima_clear  	= 0;	//清除对码
 u32 		Y30_Risingtime 		= 0;
 u32 		DM_Risingtime 		= 0;		
+u32 		AM_Risingtime 		= 0;
 
 u8 		flag_KEY_Z 		= 0;	// 传递给马达函数，让他根据val做出动作
 u8 		flag_KEY_Y 		= 0;
 u8		signal_key 		= 0;
 
-extern	TimerLinkStr 	timer2 ;		// 任务的定时器
-extern	JugeCStr 	YS_30 ;
-extern	TaskStr* 	taskKeyScan;
-extern	u16		amtime ;
-extern	u16		y30time ;
-extern	JugeCStr 	LEDAM_juge ;
-extern	JugeCStr 	LEDY30_juge ;
-extern	JugeCStr 	beep;
-extern 	u8		flag_motorIO;
-extern 	TaskLinkStr* 	tasklink;
+extern	TimerLinkStr 		timer2 ;	// 任务的定时器
+extern	JugeCStr 		YS_30 ;
+extern	TaskStr* 		taskKeyScan;
+extern	u16			amtime ;
 
-
+extern	JugeCStr 		LEDAM_juge ;
+extern	JugeCStr 		LEDY30_juge ;
+extern	JugeCStr 		beep;
+extern 	u8			flag_motorIO;
+extern 	TaskLinkStr* 		tasklink;
+extern 	u8 			ledSharpTimes;
+extern 	bool			is_suc;
+extern 	u32 			shut_time;
+extern 	u32 			systime;
+extern 	u8 			beepTimes;
+extern	u32			beepdelayon;
+extern	u32			beepdelayoff;
+extern	u8  			ADDRESS1[TX_ADR_WIDTH];
+extern	u8  			ADDRESS2[RX_ADR_WIDTH];
 void BeepStart()
 {
 	beep.start = 1;
@@ -49,29 +57,107 @@ void BeepStart()
 // 松手程序
 void Key_ScanLeave()
 {    	
-	
-	if(Y30_Risingtime != 0 && GPIO_READ(GPIO_Y30))
+    if(Y30_Risingtime != 0)
+    {
+	if(GPIO_READ(GPIO_Y30) ==RESET)
 	{
-		//debug("GetSysTime(&timer2) - Y30_Risingtime = %lu\r\n",(GetSysTime(&timer2) - Y30_Risingtime));
-		if((GetSysTime(&timer2) - Y30_Risingtime) > TIM_Y30_DELAY)
+		if((systime - Y30_Risingtime) > TIM_Y30_DELAY)
+		{	
+			if(key_Y30.val == off)
+			{
+			    	key_Y30.val = on;			
+				YS_30.start = 1;
+				YS_30.counter = 0;
+				ledSharpTimes = 12;
+				is_suc = (bool)TRUE;
+				ys_timer30 = TIM_30;
+				Y30_Risingtime = 0;
+				beepTimes = 2;
+				beepdelayoff = 200;
+				beepdelayon = 100;
+				debug("ys_timer30 = %d\r\n",ys_timer30);
+		
+			}
+			else 
+			{
+			    	key_Y30.val = off;
+				debug("取消Y30延时");
+				YS_30.start = 0;
+				YS_30.counter = 0;//取消Y30延时
+				YS_30.switchon = 0;
+				ys_timer30 = 0;
+				ledSharpTimes = 12;
+				beepTimes = 2;
+				beepdelayon = 500;
+				beepdelayoff = 10;
+				is_suc = (bool)FALSE;
+				key_val = KEY_VAL_NULL;
+				Y30_Risingtime = 0;
+			}
+		}	
+	}else Y30_Risingtime = 0;
+    }
+    
+    if(AM_Risingtime != 0)
+    {
+	if(GPIO_READ(GPIO_AM) == RESET)
+	{
+		if((systime - AM_Risingtime) > TIM_Y30_DELAY)
 		{
-			debug("取消Y30延时");
-			YS_30.start = 0;
-			YS_30.counter = 0;//取消Y30延时
-			YS_30.switchon = 0;
+			if(key_AM.val == off)
+			{
+			    	key_AM.val = on;
+				debug("打开AM延时\r\n");
+				is_suc = (bool)TRUE;
+				beepTimes = 2;
+				beepdelayoff = 200;
+				beepdelayon = 100;
+			}
+			else 
+			{
+			    	key_AM.val = off;
+				jugeYS_No.start = 0;
+				jugeYS_No.counter =0;
+				jugeYS_No.switchon = 0;
+				shut_time = 0;
+				debug("取消AM\r\n");
+				is_suc = (bool)FALSE;
+				beepTimes = 2;
+				beepdelayon = 500;
+				beepdelayoff = 10;
+			}
+			AM_Risingtime = 0;
+			ledSharpTimes = 12;
+			
 		}
-		Y30_Risingtime = 0;
 	}
-
+	else AM_Risingtime = 0;
+    }
+     
 	if(DM_Risingtime != 0 && GPIO_READ(GPIO_DM))
 	{
-		if((GetSysTime(&timer2) - DM_Risingtime) > TIM_DML && (GetSysTime(&timer2) - DM_Risingtime) < TIM_DMH )
+	    debug("systime = %lu\r\n",systime);
+		if((systime - DM_Risingtime) > TIM_DML && (systime - DM_Risingtime) < TIM_DMH )
 		{
-			 flag_duima = 1;	//对码状态
+			flag_duima = 1;	//对码状态
+			is_suc = (bool)TRUE;
+		    	ledSharpTimes = 6;
+			beepTimes = 2;
+			beepdelayon = 100;
+			beepdelayoff = 200;
+			debug("对码状态\r\n");
+			NRF24L01_ResetAddr(ADDRESS2);
+			
 		}
-		else if((GetSysTime(&timer2) - DM_Risingtime) > TIM_DM_CLEARL && (GetSysTime(&timer2) - DM_Risingtime) < TIM_DM_CLEARH )
+		else if((systime - DM_Risingtime) > TIM_DM_CLEARL && (systime - DM_Risingtime) < TIM_DM_CLEARH )
 		{
 			flag_duima_clear = 1;	//清除对码
+			is_suc = (bool)FALSE;
+		    	ledSharpTimes = 6;
+			beepTimes = 2;
+			beepdelayon = 500;
+			beepdelayoff = 10;
+			debug("清除对码\r\n");
 		}
 		DM_Risingtime = 0;
 	}
@@ -151,6 +237,7 @@ u32 ScanKey(keyStr* key)
 	return time;	
 }
 
+
 //按键处理函数
 void KeyFun()
 {					
@@ -158,37 +245,11 @@ void KeyFun()
 	{
 		switch(key_val)
 		{
-			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;//if(key_Z.val > three)key_Z.val = three;
+			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;BeepStart();;
 				break;
-			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;//if(key_Y.val > three)key_Y.val = three;
+			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;BeepStart();;
 				break;
-			case KEY_VAL_AM: 	
-				if(key_AM.val == off)	amtime = TIM_AM_OFF;	// 对应的LED指示点亮0.5秒后熄灭
-				else		amtime = TIM_AM_ON;		// 对应的LED指示点亮30秒后熄灭
-				LEN_GREEN_Open();
-				LEDAM_juge.start = 1;
-				LEDAM_juge.counter = 0;
-				break;
-			case KEY_VAL_Y30:
-
-				if(jugeYS.start || jugeYS.switchon)	//有YS
-				{
-					switch(key_Y30.val)
-					{
-						case 1: ys_timer30 = TIM_30; 			break;
-						case 2: ys_timer30 = TIM_30 * 2; 		break;
-						case 3: ys_timer30 = TIM_30 * 6; 		break;
-					}
-					YS_30.start = 1;
-					YS_30.counter = 0;
-					y30time = TIM_Y30_ON;
-					debug("ys_timer30 = %d\r\n",ys_timer30);
-				}else y30time = TIM_Y30_OFF;
-				LEN_RED_Open();
-				LEDY30_juge.start = 1;
-				LEDY30_juge.counter = 0;
-				break;
-			case KEY_VAL_DM:	
+			case KEY_VAL_DM:	BeepStart();
 				if(key_DM.val == six)	//对话马达转向
 				{
 						flag_motorIO = ~flag_motorIO;
@@ -199,7 +260,7 @@ void KeyFun()
 		}
 		
 		
-		BeepStart();		
+				
 		key_val = KEY_VAL_NULL;
 	}
 }
@@ -237,13 +298,14 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		}else
 		if(GPIO_READ(GPIO_AM) == RESET)
 		{
-			ScanKey(&key_AM);
+			//ScanKey(&key_AM);
+		    	AM_Risingtime = systime;
 			key_val = KEY_VAL_AM;
 		}else
 		if(GPIO_READ(GPIO_Y30) == RESET)
 		{
-			Y30_Risingtime = ScanKey(&key_Y30);		//保存按下的时刻
-//			debug("Y30_Risingtime = %d\r\n",(u32)Y30_Risingtime);
+			Y30_Risingtime =systime;//ScanKey(&key_Y30);		//保存按下的时刻
+			debug("Y30_Risingtime = %lu\r\n",Y30_Risingtime);
 			key_val = KEY_VAL_Y30;
 		}
 		if(key_val)
@@ -265,6 +327,7 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 		if(GPIO_READ(GPIO_DM) == RESET)
 		{
 			DM_Risingtime = ScanKey(&key_DM);
+			debug("DM_Risingtime = %lu\r\n",DM_Risingtime);
 			key_val = KEY_VAL_DM;
 		}
 		if(key_val)

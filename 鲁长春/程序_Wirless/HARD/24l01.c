@@ -6,9 +6,18 @@
 #include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
-u8  ADDRESS1[TX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; //发送地址
-u8  ADDRESS2[RX_ADR_WIDTH]={0x34,0x43,0x10,0x10,0x01}; 
-u8* address = ADDRESS1;
+u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
+u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
+u8* address = ADDRESS2;
+
+void NRF24L01_ResetAddr(u8* add)
+{
+    CE_OUT_0; 
+    address = add;
+    NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH);    //写本地地址	
+    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址	
+    CE_OUT_1; 
+}
 
 //用ID号生产新的收发地址
 void CreatNewAddr(u8* ChipID,u8* newAddr)

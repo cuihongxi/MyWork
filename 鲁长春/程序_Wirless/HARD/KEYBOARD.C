@@ -1,9 +1,12 @@
 #include "keyboard.h"
 #include "stm8l15x_exti.h"
 #include "24l01.h"
-u8      flag_exti = 0 ;
+u8      	flag_exti 		= 0 ;
+u8 		DM_time 		= 0;
 
-extern 	u8 					keyval ;
+
+extern		u32			systime;
+extern 		u8 			keyval ;
 
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
@@ -105,7 +108,7 @@ u8  Keyscan()
                                 
                                 switch (KeyPort)
                                 {
-                                    case 0x30: return(KEY_VAL_DUIMA);
+                                    case 0x30: DM_time = 1;return (KEY_VAL_DUIMA);
                                         break;
                                     case 0x50: return(KEY_VAL_I30);	
                                         break;
@@ -131,10 +134,25 @@ void Key_ScanLeave()
 							
     if(Read_Valu() == 0x07)
     {       
-	  	debug("key null\r\n");
-        flag_exti = 0;
+	debug("key null\r\n");
+        
         GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
         GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //列读数 
+	if(DM_time)
+	{
+	   // debug(" systime = %lu",(u32)systime);
+	    if(systime < 20000)
+	    {
+		debug(" :DM \r\n");
+	    }
+	    if(systime > 100000)debug(" :clear DM \r\n");
+	    systime = 0;
+	    DM_time = 0;
+	    keyval = KEY_VAL_NULL;
+	}
+	
+	flag_exti = 0;
+	
     }
 }
 

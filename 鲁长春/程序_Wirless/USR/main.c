@@ -24,6 +24,9 @@ u8 zled_counter = 0;
 u8 pwm = 1;
 u8 pwm_dir = 0;			//0 自减，1自增
 u8 flag_wake = 1;
+u32 systime = 0;
+
+extern u8 DM_time;
 //鏃堕挓閰嶇疆
 void RCC_Config()
 {
@@ -83,10 +86,10 @@ void Init_TOUCHGPIO(void)
 {
 	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
 	disableInterrupts();
-    EXTI_SelectPort(EXTI_Port_B);
+    	EXTI_SelectPort(EXTI_Port_B);
 	EXTI_SetPinSensitivity(EXTI_Pin_1,EXTI_Trigger_Rising);   
 	GPIO_RESET(TOUCH_IO);
-    enableInterrupts();                                           //使能中断
+    	enableInterrupts();                                           //使能中断
 }
 
 //TIM3初始化
@@ -103,17 +106,14 @@ void TIM3_INIT()
 //让系统休眠
 void Make_SysSleep()
 {
-//	debug("sleep:\r\n");
-//	LowPowerSet();
 
 	NRF24L01_PWR(0); 
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
-	CLK_LSICmd(ENABLE);											//使能LSI
-	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  //RTC时钟源LSI，
-	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        //等待LSI就绪
-	PWR_UltraLowPowerCmd(ENABLE); 								//使能电源的低功耗模式
+	CLK_LSICmd(ENABLE);						// 使能LSI
+	//CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_64);  	// RTC时钟源LSI
+	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	// 等待LSI就绪
+	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
 	PWR_FastWakeUpCmd(ENABLE);
-
 	flag_wake = 0;
 }
 //让系统唤醒
@@ -125,8 +125,8 @@ void MakeSysWakeUp()
 void main()
 {    
 
-    RCC_Config();
-    FreeGPIO_Config();
+	RCC_Config();
+	FreeGPIO_Config();
 	Key_GPIO_Init();
 
 	delay_ms(500);
@@ -136,63 +136,59 @@ void main()
 	Init_LedGPIO();	
 	Init_TOUCHGPIO();
 	PWM_Init();			//呼吸灯，PWM初始化
-	TIM3_INIT();		//定时器3,1ms
+	TIM3_INIT();			//定时器3,1ms
 
     while(1)
     {    
-		if(flag_wake)
-		{
-			//按键检测
-		  if(flag_exti)
-		  {      
-				Key_ScanLeave();
-		  }
-		   if(keyval != KEY_VAL_NULL)
-		   {
-			 debug("\r\n");
-			 switch(keyval)
-			 {
-				case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
-			   break;
-				case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
-			   break;
-				case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
-			   break;
-				case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
-			   break;
-				case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
-			   break;
-				case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
-			   break;
-				case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
-			   break;
-				case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
-			   break;
-				case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
-			   break;
-			   
-			 }
-			 keyval = KEY_VAL_NULL;
-			debug("\r\n");
-		   }	  
-			if(flag_exti == 0 && flag_pwm == 0)Make_SysSleep();		
-		}else
-		{
-			halt();
-			MakeSysWakeUp();
-		}
+	if(flag_wake)
+	{
+	//按键检测
+	  if(flag_exti)
+	  {      
+	      if(DM_time) systime ++;
+		Key_ScanLeave();
+		
+		    
+	  }
+	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA)
+	   {
+		 debug("\r\n");
+		 switch(keyval)
+		 {
+			case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
+		   break;
+			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
+		   break;
+			case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
+		   break;
+			case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
+		   break;
+			case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
+		   break;
+			case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
+		   break;
+			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
+		   break;
+			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
+		   break;
+	//				case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
+	//			   break;
+		   
+		 }
+		 keyval = KEY_VAL_NULL;
+		debug("\r\n");
+	   }	  
+		if(flag_exti == 0 && flag_pwm == 0)Make_SysSleep();		
+	}else
+	{
+		halt();
+		MakeSysWakeUp();
+	}
 		
 
 
     }   
     
-}
-
-
-//鑷姩鍞ら啋
-INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
-{       
-   RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 
 

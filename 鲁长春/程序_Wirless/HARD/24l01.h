@@ -167,6 +167,14 @@ void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);// RX ACK 自动回复，设置通
 /********************2019-8-18增加函数*********************************/
 
 u8 NRF24L01_GetStatus(void);	// 获取状态status
+
+/********************2019年9月8日增加函数*********************************/
+
+void CreatNewAddr(u8* ChipID,u8* newAddr);				// 用ID号生产新的收发地址
+void Get_ChipID(u8 *ChipID);
+/********************2019年10月4日增加函数*********************************/
+void NRF24L01_ResetAddr(u8* add);	//重设地址
+
 #endif
 
 

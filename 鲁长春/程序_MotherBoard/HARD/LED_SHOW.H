@@ -22,5 +22,6 @@ void LEN_RED_Open();
 void LEN_RED_Close();
 void LEN_GREEN_Open();
 void LEN_GREEN_Close();
+void LedSharpInIT(u8* time,bool success,u32 systime,u32 ontime,u32 offtime);// ÷–∂œ÷–øÏ…¡
 
 #endif

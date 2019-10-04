@@ -17,26 +17,28 @@ BATStr 			bat = {0};					// 电池结构体
 TaskStr* 		taskBatControl 	= {0};	
 TaskStr* 		taskYS			= {0};			// YS测量任务
 TaskStr* 		taskKeyScan		= {0};			// KEY 扫描
-
 TaskStr* 		taskInMain   	={0};
 
 
 JugeCStr 		beep = {0};
-JugeCStr 		LEDAM_juge = {0};
-JugeCStr 		LEDY30_juge = {0};
+
 JugeCStr 		NRFpowon = {0};
 JugeCStr 		NRFpowoff = {0};
 
 u16			amtime = 0;
-u16			y30time = 0;
-
+u32 			systime = 0;
+u8 			ledSharpTimes = 0;
+bool			is_suc = (bool)FALSE;
+u8 			beepTimes = 0;
+u32 			beepdelayon = 0;
+u32 			beepdelayoff = 0;
 extern u32 		counter_BH;					// BH计数
 extern u8 		flag_no30;
 extern keyStr 		key_AM;
 extern keyStr 		key_Y30;
-
 extern keyStr 		key_DM;
-
+extern u8 		flag_duima  		;	//对码状态
+extern u8 		flag_duima_clear  	;	//清除对码
 
 //唤醒数据初始化
 //void Wake_InitDat()
@@ -105,7 +107,7 @@ void MakeSysWakeUp()
 	debug(" WakeUp \r\n");
 }
 
-
+void BeepStart();
 void BeepStop()
 {
 //	#if BEEP_SW > 0
@@ -124,6 +126,30 @@ void FunInMain()
 	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
 	
 }
+
+void BeepInIT(u8* time,u32 systime,u32 ontime,u32 offtime)
+{   
+   	static u32 sys = 0; 
+	if(*time)
+	{
+	    if(systime > sys)
+	    {
+		    if(*time & 0x01)
+		    {
+			GPIO_SET(GPIO_BEEP);
+			sys = systime + offtime;
+		    }
+		    else 
+		    {
+			GPIO_RESET(GPIO_BEEP);
+			sys = systime + ontime;
+		    }
+		    (*time) --;
+	    }	    	     
+	    if(*time == 0) {BeepStop();sys = 0;}
+	}
+}
+
 //按键处理函数
 void KeyFun();
 void main()
@@ -190,6 +216,10 @@ void main()
 			
 			OS_Task_Run(tasklink);
 			if(flag_exti)	Key_ScanLeave();            // 松手程序
+			if(flag_duima)		//对码状态
+			{
+				
+			}
 			/*nrf接收函数*/
 			if(prx.hasrxlen != 0)
 			{
@@ -228,7 +258,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
 	
-	u32 systime = OS_TimerFunc(&timer2);			// 定时器内函数
+	 systime = OS_TimerFunc(&timer2);			// 定时器内函数
 	
 	//电池电量检测
 	if(systime >= bat.threshold) bat.flag = 1;
@@ -259,10 +289,10 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	}
 	//BEEP
 	if(Juge_counter(&beep,130)) BeepStop();
-	//LEDAM
-	if(Juge_counter(&LEDAM_juge,amtime)) LEN_GREEN_Close();	
-	//LEDY30
-	if(Juge_counter(&LEDY30_juge,y30time)) LEN_RED_Close();	
+	//设置成功时快闪
+	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,500);
+	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);
+	 
 	//nrf间隔打开电源
 	if(Juge_counter(&NRFpowon,40)) 
 	{

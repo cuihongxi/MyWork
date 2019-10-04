@@ -214,7 +214,7 @@ bool MotorProtectAM()	//AMÄ£Ê½ÏÂ£¬³ýÁËY30µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬´ïµ
 {
 //	return (bool)((motorStruct.counter > MOTOR_F_SAFE) \
 //		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || motorStruct.hasrun >= shut_time);
-	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time));	
+	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time) || key_AM.val == on);	
 
 }
 
