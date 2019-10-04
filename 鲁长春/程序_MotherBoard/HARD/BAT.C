@@ -51,26 +51,26 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	if((bat->state != state) && (taskBatControl->state == Stop)) // taskBatControl->state == Wait ||
 	{
 		bat->state = state;
-		OS_AddFunction(taskBatControl,OS_DeleteTask,0);						// 移除任务
+		OS_AddFunction(taskBatControl,OS_DeleteTask,0);				// 移除任务
 		if(state == BAT_STATE_GREEN)
 		{
 			debug("bat->val ＞ 8.4V时绿灯常亮\r\n");												
-			OS_AddFunction(taskBatControl,LEN_GREEN_Open,4);			// ＞8.4V时绿灯常亮。
+			OS_AddFunction(taskBatControl,LEN_GREEN_Open,4);		// ＞8.4V时绿灯常亮。
 			OS_AddFunction(taskBatControl,OS_DeleteTask,0);	
 		}		
-		else if(state == BAT_STATE_GREENSHARP3)							// ＞7.4V绿灯闪亮3次
+		else if(state == BAT_STATE_GREENSHARP3)					// ＞7.4V绿灯闪亮3次
 		{
 			debug("bat->val ＞ 7.4V绿灯闪亮3次\r\n");
 			OS_AddFunction(taskBatControl,LEN_GREEN_Open,200);	
 			OS_AddFunction(taskBatControl,LEN_GREEN_Close,200);				
-			OS_AddCycleFunction(taskBatControl,3);						//重复3次	
+			OS_AddCycleFunction(taskBatControl,3);				//重复3次	
 	
 		}else if(state == BAT_STATE_REDSHARP3) 	//＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
 		{
 			debug("bat->val ＜ 7.4V红灯闪亮3次,后转为每3秒闪亮一次红灯欠压指示\r\n");
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,200,BatState);
-			OS_AddCycleFunction(taskBatControl,3);						//重复3次
+			OS_AddCycleFunction(taskBatControl,3);				//重复3次
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,3000,BatState);
 			

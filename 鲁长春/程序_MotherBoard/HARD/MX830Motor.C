@@ -372,13 +372,13 @@ void MotorControl()
 				{
 					debug("关窗限位\r\n");
 					OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;		// 反转1.5秒
+					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;	// 反转1.5秒
 					OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
 					OS_AddFunction(taskMotor,WindowStateBC1,4);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
 					key_Z.counter = 0;
 					motorStruct.hasrun = 0;
-					if(shut_time != 0)			//计算关窗用的时间
+					if(shut_time != 0)		//计算关窗用的时间
 					{
 						//没有FLYS时，启动定时器计时，延时打开窗
 						flag_YS_isno = 1;
