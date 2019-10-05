@@ -93,7 +93,22 @@
 #define RF_SETUP_DAT    0x0e	//设置发射速率为2MHZ，发射功率为最大值0dB
 #endif
 
+//射频数据率-SI24
+#define	RF_DR_1M	0	
+#define	RF_DR_2M	0x01
+#define	RF_DR_250K	0x02
 
+//射频发送功率-SI24
+#define	RF_PWR_7dBm		0x07
+#define	RF_PWR_4dBm		0x06
+#define	RF_PWR_3dBm		0x05
+#define	RF_PWR_1dBm		0x04
+#define	RF_PWR_0dBm		0x03
+#define	RF_PWR_sub_4dBm		0x02
+#define	RF_PWR_sub_6dBm		0x01
+#define	RF_PWR_sub_12dBm	0x00
+
+#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|((dr&0x02)<<5)))
 
 /*以下宏定义为了移植方便而定义*/		
 
@@ -174,8 +189,10 @@ void CreatNewAddr(u8* ChipID,u8* newAddr);				// 用ID号生产新的收发地址
 void Get_ChipID(u8 *ChipID);
 /********************2019年10月4日增加函数*********************************/
 void NRF24L01_ResetAddr(u8* add);	//重设地址
+void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr);//设置射频数据率，发射功率
 
 #endif
+
 
 
 

@@ -45,7 +45,7 @@ void PWM_Status(u8 status)
   else
   {
 	PWMOUTPUT(PWM_TIME,DISABLE);
-    GPIO_SET(PWM_PIN);     
+    	GPIO_SET(PWM_PIN);     
   }
 }
 

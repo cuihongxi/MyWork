@@ -15,10 +15,11 @@ u8		flag_FLCheckState = 0;				//fl检测开始还是停止
 extern	TimerLinkStr 	timer2 ;				// 任务的定时器
 extern	u8 		flag_openDM;
 
-void FL_GPIO_Init()
+void BH_FL_GPIO_Init()
 {
 	FL_CheckStart();
 	BH_CheckStart();
+
 	disableInterrupts();
 	EXTI_SetPinSensitivity(EXTI_Pin_6,EXTI_Trigger_Falling);
     	enableInterrupts();					// 使能中断
@@ -28,9 +29,6 @@ void FL_CheckStart()
 {
     	flag_FLCheckState = 1;
 	GPIO_Init(GPIO_FLU,GPIO_Mode_In_PU_IT);  
-		disableInterrupts();
-	EXTI_SetPinSensitivity(EXTI_Pin_6,EXTI_Trigger_Falling);
-    	enableInterrupts();					// 使能中断
 	debug("FL_CheckStart->\r\n");
 }
 

@@ -22,7 +22,7 @@ typedef enum{
 extern	u8		flag_BH;
 
 
-void FL_GPIO_Init();
+void BH_FL_GPIO_Init();
 void FL_CheckStart();
 void FL_CheckStop();
 void BH_CheckStart();

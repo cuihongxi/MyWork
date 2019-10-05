@@ -17,8 +17,8 @@
 #define	PWM_TIME					3								/*设置定时器*/
 #define	_CHANNEL					1									/*通道号*/
 
-#define	CRYFRE						16								//定义晶振频率 ,MHZ
-#define PWM_PRESCALER				128								//分频系数					
+#define	CRYFRE						16						//定义晶振频率 ,MHZ
+#define PWM_PRESCALER				128							//分频系数					
 #define PWM_PERIOD        			1000 							//PWM的周期，单位us 								
 
 #define PWM_ON               		1     	

@@ -2,7 +2,6 @@
 
 
 
-
 void LSI_delayus(unsigned int  nCount)   //16M 晶振时  延时 1个微妙
 {
     nCount*=3;
@@ -16,3 +15,4 @@ void LSI_delayms(unsigned int  nCount)  //16M 晶振时  延时 1个毫秒
         LSI_delayus(1000);      
     }
 }
+

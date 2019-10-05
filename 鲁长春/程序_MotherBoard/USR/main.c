@@ -1,38 +1,34 @@
 #include "main.h"
 
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
-u8 			txbuf[] 	= {1};				// nrf发送缓存
+u8 			txbuf[5] 	= {0};				// nrf发送缓存
 u8 			rxbuf[10] 	= {0};				// nrf接收缓存
-u8 			flag_wake 	= 1;				// 唤醒标志
-u8 			flag_openDM = 0;				// 开机DM标志
-
+u8 			flag_openDM 	= 0;				// 开机DM标志
 u32 			dm_counter 	= 0;				// 开机检测DM，计数器
+
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
 TaskLinkStr		task_link 	= {0};
 TaskLinkStr* 		tasklink 	= &task_link;			// 任务列表
-u16 			sleeptime	= TIM_SLEEP;			// 睡眠倒计时
 
-u32 			threshold_30 	= 0;				// 30分钟无动作阀值
 BATStr 			bat = {0};					// 电池结构体
 TaskStr* 		taskBatControl 	= {0};	
-TaskStr* 		taskYS			= {0};			// YS测量任务
-TaskStr* 		taskKeyScan		= {0};			// KEY 扫描
+TaskStr* 		taskYS		= {0};				// YS测量任务
+TaskStr* 		taskKeyScan	= {0};				// KEY 扫描
 TaskStr* 		taskInMain   	={0};
 
+JugeCStr 		beep 		= {0};
+JugeCStr 		NRFpowon 	= {0};
+JugeCStr 		NRFpowoff 	= {0};
 
-JugeCStr 		beep = {0};
+//u16			amtime 		= 0;
+u32 			systime 	= 0;				// 保存系统时间，ms
+u8 			ledSharpTimes 	= 0;				// 控制LED闪烁次数
+bool			is_suc 		= (bool)FALSE;			// 设置是否成功
+u8 			beepTimes 	= 0;				// 蜂鸣器响的次数
+u32 			beepdelayon 	= 0;				// 蜂鸣器响的时间
+u32 			beepdelayoff 	= 0;				// 蜂鸣器关闭的时间
 
-JugeCStr 		NRFpowon = {0};
-JugeCStr 		NRFpowoff = {0};
-
-u16			amtime = 0;
-u32 			systime = 0;
-u8 			ledSharpTimes = 0;
-bool			is_suc = (bool)FALSE;
-u8 			beepTimes = 0;
-u32 			beepdelayon = 0;
-u32 			beepdelayoff = 0;
-extern u32 		counter_BH;					// BH计数
+extern u32 		counter_BH;			// BH计数
 extern u8 		flag_no30;
 extern keyStr 		key_AM;
 extern keyStr 		key_Y30;
@@ -40,11 +36,6 @@ extern keyStr 		key_DM;
 extern u8 		flag_duima  		;	//对码状态
 extern u8 		flag_duima_clear  	;	//清除对码
 
-//唤醒数据初始化
-//void Wake_InitDat()
-//{
-//	flag_checkBat = 1;			//每次唤醒。检测BAT电量一次
-//}
 //低时钟和GPIO初始化
 void CLK_GPIO_Init()
 {
@@ -60,25 +51,9 @@ void CLK_GPIO_Init()
 }
 
 
-
-//TIM2初始化
-//void TIM2_INIT()
-//{
-//    enableInterrupts();                                                 //使能全局中断
-//    CLK_PeripheralClockConfig(CLK_Peripheral_TIM2,ENABLE);              //打开时钟
-//    TIM2_DeInit();
-//    TIM2_TimeBaseInit(TIM2_Prescaler_1,TIM2_CounterMode_Up,2000);         //1ms 
-//    TIM2_ARRPreloadConfig(ENABLE);
-//    TIM2_ITConfig(TIM2_IT_Update, ENABLE);
-//    TIM2_ClearITPendingBit(TIM2_IT_Update); 
-//    TIM2_Cmd(ENABLE);
-//
-//}
-
 //让系统休眠
 void Make_SysSleep()
 {
-//	debug("sleep:\r\n");
 	NRF24L01_PWR(0); 
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
 	CLK_LSICmd(ENABLE);						//使能LSI
@@ -95,17 +70,8 @@ void Make_SysSleep()
 	PWR_UltraLowPowerCmd(ENABLE); 					//使能电源的低功耗模式
 	PWR_FastWakeUpCmd(ENABLE);
 	
-	//debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
-	flag_wake = 0;
 }
 
-//让系统唤醒
-void MakeSysWakeUp()
-{
-	//TIM2_Cmd(ENABLE);
-	sleeptime = TIM_SLEEP;
-	debug(" WakeUp \r\n");
-}
 
 void BeepStart();
 void BeepStop()
@@ -128,7 +94,7 @@ void FunInMain()
 }
 
 void BeepInIT(u8* time,u32 systime,u32 ontime,u32 offtime)
-{   
+{
    	static u32 sys = 0; 
 	if(*time)
 	{
@@ -170,7 +136,7 @@ void main()
 	OS_AddFunction(taskInMain,FunInMain,40);	
 	OS_AddTask(tasklink,taskInMain);
 	Make_SysSleep();					// 系统进入休眠状态
-	FL_GPIO_Init();
+	BH_FL_GPIO_Init();
 	//检测一次电池电压
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
@@ -178,7 +144,6 @@ void main()
 	//上电检测DM电平，来判断马达的最大行程时间	
 	if(GPIO_READ(GPIO_DM) == RESET)
 	{
-		
 		//马达反转到限位
 		motorStruct.command = FORWARD;
 		MX830Motor_StateDir(&motorStruct);
@@ -201,42 +166,29 @@ void main()
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	NRFpowon.start = 1;
 	while(1)
-	{
-      if(flag_wake)
-	  { 
-	  }
-	  else	//休眠函数
-	  {            
-            	halt();
-			 
-		if(flag_wake == 0)
-		{	
-			//KeyScanControl();	// 按键扫描
-			 KeyFun();
+	{         
+            	halt(); //停止模式	
+		//KeyScanControl();				// 按键扫描
+		KeyFun();
+		OS_Task_Run(tasklink);
+		if(flag_exti)	Key_ScanLeave();            	// 松手程序
+		
+		if(flag_duima)		//对码状态
+		{
 			
-			OS_Task_Run(tasklink);
-			if(flag_exti)	Key_ScanLeave();            // 松手程序
-			if(flag_duima)		//对码状态
-			{
-				
-			}
-			/*nrf接收函数*/
-			if(prx.hasrxlen != 0)
-			{
-			  	debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-				for(u8 i=0;i<prx.hasrxlen;i++)
-				  {
-					debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-				  }
-				
-				debug("\r\n##################################\r\n");
-				if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
-				prx.hasrxlen = 0;
-			}	
-		}else
-			MakeSysWakeUp();
-	  }
-
+		}
+		/*nrf接收函数*/
+		if(prx.hasrxlen != 0)
+		{
+			debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
+			for(u8 i=0;i<prx.hasrxlen;i++)
+			  {
+				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+			  }		
+			debug("\r\n##################################\r\n");
+			if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
+			prx.hasrxlen = 0;
+		}
 	}
 }
 
@@ -250,20 +202,17 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 		prx.IRQCallBack(&prx);
 		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
 	}
-//	flag_wake = 1;
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }
 
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
+	 systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
+	 
+	if(systime >= bat.threshold) bat.flag = 1;		// 电池电量检测间隔
 	
-	 systime = OS_TimerFunc(&timer2);			// 定时器内函数
-	
-	//电池电量检测
-	if(systime >= bat.threshold) bat.flag = 1;
-	// 马达运行计时
-	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)	
+	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)// 马达运行计时	
 	{
 		motorStruct.counter += IRQ_PERIOD;		// 马达运行超过阀值，停转
 		counter_BH += IRQ_PERIOD;			// BH超过阀值没有触发，停转
@@ -271,30 +220,22 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		if(counter_BH > BH_SAFE) motorStruct.erro |= ERROR_BH;
 	}
 	
-	//YS
-	Juge_counter(&jugeYS,TIM__YS_D);
-
-	//无YS计时开窗
-	Juge_counter(&jugeYS_No,TIM_OPEN);
-	//YS 30分钟不响应
-	if(Juge_counter(&YS_30, (u32)60000*ys_timer30))
+	Juge_counter(&jugeYS,TIM__YS_D);			// YS
+	Juge_counter(&jugeYS_No,TIM_OPEN);			// 无YS计时开窗
+	
+	if(Juge_counter(&YS_30, (u32)60000*ys_timer30))		//YS 30分钟不响应
 	{
-	    debug("Y30 stop windowstate = %d\r\n",windowstate);
-		if(flag_no30) 
-		{
-			flag_no30 = 0; 	// 复位由BH无方波引起的延时30分钟
-//			CheckWindowState();
-//			if(windowstate != to_BC1) FL_CheckStart();
-		}
+	    	debug("Y30 stop windowstate = %d\r\n",windowstate);
+		if(flag_no30) flag_no30 = 0; 			// 复位由BH无方波引起的延时30分钟
 	}
-	//BEEP
-	if(Juge_counter(&beep,130)) BeepStop();
-	//设置成功时快闪
-	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,500);
-	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);
+	
+	if(Juge_counter(&beep,130)) BeepStop();			// 按键蜂鸣器BEEP
+	
+	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,500);	// 设置时，LED闪烁控制
+	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	 
-	//nrf间隔打开电源
-	if(Juge_counter(&NRFpowon,40)) 
+	
+	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
 	{
 		//debug("NRFpowon\r\n");
 		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
@@ -314,11 +255,6 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 
 }
-//TIM2更新中断,1ms
-INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler,19)
-{
- // TIM2_ClearITPendingBit(TIM2_IT_Update); 
-	
-}
+
 
 

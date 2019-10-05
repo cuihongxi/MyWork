@@ -11,23 +11,27 @@
 #include "keyboard.h"
 #include "pwm.h"
 
+#define		PRESS_Y30	0X01
+#define		PRESS_MOTZ	0X02
+#define		PRESS_MOTY	0X04
+
+#define	TIM_MAXDELAY	1100
+
 Nrf24l01_PTXStr ptx = {0};
+u8 rxbuf[5] = {0};
 
-#define SIZE_TX 3
-u8 rxbuf[32] = {0};
-u8 txbuf[SIZE_TX] = {0};
+u8 		keyval = 0;
+u8 		flag_pwm = 0;		//´¥ÃþPWM¿ªÆô±êÖ¾
+u8 		pwm = 1;
+u8 		pwm_dir = 0;			//0 ×Ô¼õ£¬1×ÔÔö
+u8 		flag_wake = 1;
+u32 		systime = 0;
+u8 		pressKey = 0;
+u32 		presstime = 0;
+
+extern 		u32 		DM_time;
 
 
-u8 keyval = 0;
-u8 flag_pwm = 0;		//´¥ÃþPWM¿ªÆô±êÖ¾
-u8 zled_counter = 0;
-u8 pwm = 1;
-u8 pwm_dir = 0;			//0 ×Ô¼õ£¬1×ÔÔö
-u8 flag_wake = 1;
-u32 systime = 0;
-
-extern u8 DM_time;
-//æ—¶é’Ÿé…ç½®
 void RCC_Config()
 {
    //æ—¶é’Ÿåˆå§‹åŒ– 16mhz                                          
@@ -106,7 +110,10 @@ void TIM3_INIT()
 //ÈÃÏµÍ³ÐÝÃß
 void Make_SysSleep()
 {
-
+    debug(" Sleep \r\n");
+	TIM3_Cmd(DISABLE);
+	CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
+	systime = 0;
 	NRF24L01_PWR(0); 
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// ¹Ø±ÕSPIÊ±ÖÓ
 	CLK_LSICmd(ENABLE);						// Ê¹ÄÜLSI
@@ -119,9 +126,23 @@ void Make_SysSleep()
 //ÈÃÏµÍ³»½ÐÑ
 void MakeSysWakeUp()
 {
+    	NRF24L01_PWR(1);
 	flag_wake = 1;
+	CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
+	TIM3_Cmd(ENABLE);
+//	systime = 0;
 	debug(" WakeUp \r\n");
 }
+
+//Í¨¹ýNRFÏòÖ÷°å·¢ËÍÃüÁîº¯Êý
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8 cmd , u8 mes)
+{
+    u8 txbuf[5] = {0};
+    txbuf[0] = cmd;
+    txbuf[4] = mes;
+    NRF_AutoAck_TxPacket(ptx,txbuf,5);
+}
+
 void main()
 {    
 
@@ -142,43 +163,57 @@ void main()
     {    
 	if(flag_wake)
 	{
-	//°´¼ü¼ì²â
-	  if(flag_exti)
-	  {      
-	      if(DM_time) systime ++;
-		Key_ScanLeave();
-		
-		    
-	  }
-	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA)
+	  //°´¼ü¼ì²â
+	   if(flag_exti) Key_ScanLeave();
+	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
 	   {
-		 debug("\r\n");
 		 switch(keyval)
 		 {
-			case KEY_VAL_AM:	debug("KEY_VAL_AM");NRF_AutoAck_TxPacket(&ptx,"_AM",3);
+		     case KEY_VAL_Y30: pressKey = PRESS_Y30;presstime = systime + TIM_MAXDELAY;
 		   break;
-			case  KEY_VAL_POW_CA:debug("KEY_VAL_POW_CA");NRF_AutoAck_TxPacket(&ptx,"POW",3);
+		     case KEY_VAL_I30:
+		     switch(pressKey){
+			 case PRESS_Y30:debug("NRF Y30 ÑÓÊ±30·ÖÖÓ\r\n");NRF_SendCMD(&ptx,CMD_Y30, MES_Y30_3_1);
+			 break;
+			 case PRESS_MOTZ:debug("NRF Âí´ï¹Ø1/3\r\n");NRF_SendCMD(&ptx,CMD_Z, MES_Z_3_1);
+			 break;
+			 case PRESS_MOTY:debug("NRF Âí´ï¿ª1/3\r\n");NRF_SendCMD(&ptx,CMD_Y, MES_Y_3_1);
+			 break;
+		     };
+		     pressKey = 0;
 		   break;
-			case KEY_VAL_Y30:debug("KEY_VAL_Y30");NRF_AutoAck_TxPacket(&ptx,"Y30",3);
+			case KEY_VAL_I60:
+			switch(pressKey){
+			 case PRESS_Y30:debug("NRF Y30 ÑÓÊ±60·ÖÖÓ\r\n");NRF_SendCMD(&ptx,CMD_Y30, MES_Y30_3_2);
+			 break;
+			 case PRESS_MOTZ:debug("NRF Âí´ï¹Ø2/3\r\n");NRF_SendCMD(&ptx,CMD_Z, MES_Z_3_2);
+			 break;
+			 case PRESS_MOTY:debug("NRF Âí´ï¿ª2/3\r\n");NRF_SendCMD(&ptx,CMD_Y, MES_Y_3_2);
+			 break;
+		     };
+		     pressKey = 0;
 		   break;
-			case KEY_VAL_I30:debug("KEY_VAL_I30");NRF_AutoAck_TxPacket(&ptx,"I30",3);
+			case KEY_VAL_I100:
+			switch(pressKey){
+			 case PRESS_Y30:debug("NRF Y30 ÑÓÊ±90·ÖÖÓ\r\n");NRF_SendCMD(&ptx,CMD_Y30, MES_Y30_3_3);
+			 break;
+			 case PRESS_MOTZ:debug("NRF Âí´ïÈ«¹Ø\r\n");NRF_SendCMD(&ptx,CMD_Z, MES_Z_3_3);
+			 break;
+			 case PRESS_MOTY:debug("NRF Âí´ïÈ«¿ª\r\n");NRF_SendCMD(&ptx,CMD_Y, MES_Y_3_3);
+			 break;
+		     };
+		     pressKey = 0;
 		   break;
-			case KEY_VAL_I60:debug("KEY_VAL_I60");NRF_AutoAck_TxPacket(&ptx,"I60",3);
+			case KEY_VAL_MOTZ:pressKey = PRESS_MOTZ;presstime = systime + TIM_MAXDELAY;
 		   break;
-			case KEY_VAL_I100:debug("KEY_VAL_I100");NRF_AutoAck_TxPacket(&ptx,"100",3);
+			case KEY_VAL_MOTY:pressKey = PRESS_MOTY;presstime = systime + TIM_MAXDELAY;
 		   break;
-			case KEY_VAL_MOTZ:debug("KEY_VAL_MOTZ");NRF_AutoAck_TxPacket(&ptx,"MOZ",3);
-		   break;
-			case KEY_VAL_MOTY:debug("KEY_VAL_MOTY");NRF_AutoAck_TxPacket(&ptx,"MOY",3);
-		   break;
-	//				case KEY_VAL_DUIMA:debug("KEY_VAL_DUIMA");NRF_AutoAck_TxPacket(&ptx,"DM_",3);
-	//			   break;
 		   
 		 }
 		 keyval = KEY_VAL_NULL;
 		debug("\r\n");
 	   }	  
-		if(flag_exti == 0 && flag_pwm == 0)Make_SysSleep();		
+		if(flag_exti == 0 && flag_pwm == 0 &&  keyval == KEY_VAL_NULL && pressKey == 0)Make_SysSleep();		
 	}else
 	{
 		halt();
@@ -204,38 +239,43 @@ void assert_failed(u8* file,u32 line)
 //TIM3¸üÐÂÖÐ¶Ï,1ms
 INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
 {      
- 	//ºôÎüµÆPWM
+    systime ++;
+    if(pressKey)		if(systime > presstime) pressKey = 0;
+ //   if(systime > TIM_MAXDELAY)	flag_delay = 0;
+   // debug(".");
+  //ºôÎüµÆPWM
   if(flag_pwm )
   {
-		zled_counter ++;
-		if(zled_counter>15)
+	//zled_counter ++;
+	//if(zled_counter>15)
+	{
+		//zled_counter = 0;
+		if(pwm_dir)
 		{
-			zled_counter = 0;
-			if(pwm_dir)
+			pwm ++;
+			if(pwm>100)
 			{
-				pwm ++;
-				if(pwm>100)
-				{
-					pwm = 100;
-					pwm_dir = 0;
-				}				
-			}
-			else
-			{
-				pwm --;
-				if(pwm == 1) flag_pwm = 0;
-			} 
-			PWM_SetDutyCycle(pwm);
+				pwm = 100;
+				pwm_dir = 0;
+			}				
 		}
+		else
+		{
+			pwm --;
+			if(pwm == 1) flag_pwm = 0;
+		}
+		//debug("pwm = %d\r\n",pwm);
+		PWM_SetDutyCycle(pwm);
+	}
 	 //Ã»ÓÐ´¥Ãþ£¬¹Ø±ÕºôÎüµÆ
 	  if((GPIO_READ(TOUCH_IO) == RESET) && pwm == 100) 
 	  {
 	  	PWM_Status(PWM_OFF);
-		zled_counter = 0;
+		//zled_counter = 0;
 		pwm = 1;
 		flag_pwm = 0;
-		TIM3_Cmd(DISABLE);
-		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
+//		TIM3_Cmd(DISABLE);
+//		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
 	  }
   }
   
@@ -246,8 +286,8 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 {
   	if(GPIO_READ(TOUCH_IO) != RESET)	
 	{
-		TIM3_Cmd(ENABLE);
-		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
+	
+		//systime = 0;
 		PWM_Status(PWM_ON);
 		pwm = 1;
 		PWM_SetDutyCycle(pwm);

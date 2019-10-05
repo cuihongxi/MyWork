@@ -8,7 +8,7 @@
 u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
 u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
-u8* address = ADDRESS2;
+u8* address = ADDRESS1;
 
 void NRF24L01_ResetAddr(u8* add)
 {
@@ -145,7 +145,7 @@ void Init_NRF24L01(u8 pip,u8 rf_ch)
     NRF24L01_Write_Reg(NRF_WRITE_REG+EN_RXADDR,(0x01<<pip));            //允许接收地址频道0 
     NRF24L01_Write_Reg(NRF_WRITE_REG+SETUP_RETR,(REPEAT_DELAY<<4)|REPEAT_TIME); //设置自动重发间隔时间;最大自动重发次数
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,rf_ch);            //设置信道工作频率，收发必须一致
-    NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,RF_SETUP_DAT);// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
+    NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm));// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
 	NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x7c); //配置基本工作模式的参数;PWR_UP=0,EN_CRC,16BIT_CRC,接收模式,不所有中断	
 	
 }
@@ -309,25 +309,6 @@ CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
 
 }
 
-//设置接收频率
-void NRF24L01_SetRXHZ(u8 hz)
-{
-  CE_OUT_0; 
-  NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,hz);
-  CE_OUT_1;
-
- // NRF24L01_RX_Mode();                         //配置接收模式        
-}
-
-//设置发送频率
-void NRF24L01_SetTXHZ(u8 hz)
-{ 
-  CE_OUT_0; 
-  NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,hz);
-  CE_OUT_1;
-
-}
-
 //获取接收RX长度
 u8 NRF24L01_GetRXLen(void)
 {
@@ -350,9 +331,16 @@ void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip)
 u8 NRF24L01_GetStatus(void)
 {
   	u8 status;
-    SCLK_OUT_0;
+    	SCLK_OUT_0;
  	CSN_OUT_0;                              // 使能SPI传输		
   	status = SPI2_ReadWriteByte(NOP);       // 读取寄存器内容
   	CSN_OUT_1;                              // 禁止SPI传输
 	return status;
+}
+
+//设置射频数据率，发射功率
+void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr)
+{
+    	CE_OUT_0; 
+	NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(dr,pwr));
 }

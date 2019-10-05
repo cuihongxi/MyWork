@@ -1,12 +1,21 @@
 #include "keyboard.h"
 #include "stm8l15x_exti.h"
 #include "24l01.h"
-u8      	flag_exti 		= 0 ;
-u8 		DM_time 		= 0;
+#include "NRF24L01_AUTO_ACK.H"
 
+u8      	flag_exti 		= 0 ;
+u32 		DM_time 		= 0;
+u32 		AM_time 		= 0;
+u32 		POW_CA_time 		= 0;
+
+u8		flag_funAM		= 0;
+u8		flag_funPOW_CA		= 0;
 
 extern		u32			systime;
 extern 		u8 			keyval ;
+extern 		Nrf24l01_PTXStr 	ptx;
+
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
 
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
@@ -97,7 +106,7 @@ u8  Keyscan()
                                         break;
                                     case 0x50: return(KEY_VAL_I60);
                                         break;
-                                    case 0x60: return(KEY_VAL_POW_CA);
+                                    case 0x60: POW_CA_time = systime;return(KEY_VAL_POW_CA);
                                         break;
                                 };
                     break;
@@ -108,11 +117,11 @@ u8  Keyscan()
                                 
                                 switch (KeyPort)
                                 {
-                                    case 0x30: DM_time = 1;return (KEY_VAL_DUIMA);
+                                    case 0x30: DM_time = systime;return (KEY_VAL_DUIMA);
                                         break;
                                     case 0x50: return(KEY_VAL_I30);	
                                         break;
-                                    case 0x60: return(KEY_VAL_AM);
+                                    case 0x60: AM_time = systime;return(KEY_VAL_AM);
                                         break;
                                 };
                     break;
@@ -131,28 +140,55 @@ void Key_ScanLeave()
 
     GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
     GPIO_Lie_MOED_SET(GPIO_MODE_IN);    //列读数    
-							
+	
+	if(keyval == KEY_VAL_AM)
+	{
+	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
+	    if((systime - AM_time) > 3000)
+	    {
+		flag_funAM = ~flag_funAM;
+		debug(" AM :%d\r\n",flag_funAM);
+		//NRF发送AM命令
+		if(flag_funAM){ NRF_SendCMD(&ptx,CMD_AM, MES_AM_ON);}
+		else{NRF_SendCMD(&ptx,CMD_AM, MES_AM_OFF); }
+		keyval = KEY_VAL_NULL;
+	    }
+	    
+	}  
+	if(keyval == KEY_VAL_POW_CA)
+	{
+	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
+	    if((systime - POW_CA_time) > 3000)
+	    {
+		flag_funPOW_CA= ~flag_funPOW_CA;
+		debug(" POW_CA :%d\r\n",flag_funPOW_CA);
+		//NRF信号强度设定
+		if(flag_funPOW_CA){ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
+		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_0dBm);}
+		keyval = KEY_VAL_NULL;
+	    }
+	    
+	}
+	
     if(Read_Valu() == 0x07)
     {       
 	debug("key null\r\n");
         
         GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
         GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //列读数 
-	if(DM_time)
+	if(keyval == KEY_VAL_DUIMA)
 	{
-	   // debug(" systime = %lu",(u32)systime);
-	    if(systime < 20000)
+	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
+	    if((systime - DM_time)< 2000)
 	    {
 		debug(" :DM \r\n");
 	    }
-	    if(systime > 100000)debug(" :clear DM \r\n");
-	    systime = 0;
+	    if((systime - DM_time) > 6000)debug(" :clear DM \r\n");
 	    DM_time = 0;
-	    keyval = KEY_VAL_NULL;
-	}
-	
+	    
+	}	
 	flag_exti = 0;
-	
+	keyval = KEY_VAL_NULL;
     }
 }
 
@@ -175,9 +211,14 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
   {
    	    if(keyval ==KEY_VAL_NULL)
 		{
-			NRF24L01_PWR(1);
+			
+//			CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
+//			TIM3_Cmd(ENABLE);
+//			systime = 0;
+			//NRF24L01_PWR(1);
 			flag_exti = 1;
 			keyval = Keyscan();  
+
 		}
   }
 
@@ -192,9 +233,16 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
    {
    	    if(keyval ==KEY_VAL_NULL)
 		{
-			NRF24L01_PWR(1);
+		    
+		    	
+//			CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
+//			TIM3_Cmd(ENABLE);
+//			systime = 0;
+
 			flag_exti = 1;  
-			keyval = Keyscan();    
+			keyval = Keyscan();
+
+			
 		}
    }
    EXTI_ClearITPendingBit (EXTI_IT_Pin3);

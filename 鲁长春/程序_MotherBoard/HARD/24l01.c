@@ -9,6 +9,7 @@ u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
 u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
 u8* address = ADDRESS1;
+
 void NRF24L01_ResetAddr(u8* add)
 {
     CE_OUT_0; 
@@ -17,6 +18,7 @@ void NRF24L01_ResetAddr(u8* add)
     NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址	
     CE_OUT_1; 
 }
+
 //用ID号生产新的收发地址
 void CreatNewAddr(u8* ChipID,u8* newAddr)
 {
@@ -47,7 +49,7 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[0] = *(__IO u8 *)(0X4926); 
 	ChipID[1] = *(__IO u8 *)(0X4927); 
 	ChipID[2] = *(__IO u8 *)(0X4928);
-    	ChipID[3] = *(__IO u8 *)(0X4929);
+    ChipID[3] = *(__IO u8 *)(0X4929);
 	ChipID[4] = *(__IO u8 *)(0X492A); 
 	ChipID[5] = *(__IO u8 *)(0X492B); 
 	ChipID[6] = *(__IO u8 *)(0X492C);
@@ -139,11 +141,11 @@ void Init_NRF24L01(u8 pip,u8 rf_ch)
     }
     NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH); ;    //写本地地址	
     NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址
-    NRF24L01_EnabelDPL(BIT_PIP0);					//使能通道0自动应答，动态长度
+    NRF24L01_EnabelDPL(BIT_PIP0);									//使能通道0自动应答，动态长度
     NRF24L01_Write_Reg(NRF_WRITE_REG+EN_RXADDR,(0x01<<pip));            //允许接收地址频道0 
     NRF24L01_Write_Reg(NRF_WRITE_REG+SETUP_RETR,(REPEAT_DELAY<<4)|REPEAT_TIME); //设置自动重发间隔时间;最大自动重发次数
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,rf_ch);            //设置信道工作频率，收发必须一致
-    NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,RF_SETUP_DAT);// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
+    NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(RF_DR_2M,RF_PWR_0dBm));// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
 	NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x7c); //配置基本工作模式的参数;PWR_UP=0,EN_CRC,16BIT_CRC,接收模式,不所有中断	
 	
 }
@@ -229,7 +231,10 @@ u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
     SCLK_OUT_0 ;
 	CE_OUT_0;                               //StandBy I模式	
   	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,size);
- 	CE_OUT_1;                               //启动发送 置高CE激发数据发送    
+ 	CE_OUT_1;                               //启动发送 置高CE激发数据发送 
+#ifdef DMA_SPI
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+#endif
 	return 0;//其他原因发送失败
 }
 //启动NRF24L01发送一次数据
@@ -261,8 +266,8 @@ void NRF24L01_RX_Mode(void)
  		debug("RX_Mode\r\n");
         CE_OUT_0; 
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff);	//清除中断标志
-        NRF24L01_Write_Reg(FLUSH_RX,0x00); 		//清除RX_FIFO寄存器
-	NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
+        NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
+		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
        // CE_OUT_1; 
         DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
@@ -290,7 +295,9 @@ void NRF24L01_TX_Mode(void)
 //1打开0关闭电源
 void NRF24L01_PWR(u8 state)
 {
-	
+#ifdef DMA_SPI
+CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
+#endif
 	CE_OUT_0; 
     u8 config = NRF24L01_Read_Reg(CONFIG);
     if(state)
@@ -299,24 +306,6 @@ void NRF24L01_PWR(u8 state)
 		CE_OUT_1;
 	}	
     else NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
-}
-
-//设置接收频率
-void NRF24L01_SetRXHZ(u8 hz)
-{
-  CE_OUT_0; 
-  NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,hz);
-  CE_OUT_1;
-
- // NRF24L01_RX_Mode();                         //配置接收模式        
-}
-
-//设置发送频率
-void NRF24L01_SetTXHZ(u8 hz)
-{ 
-  CE_OUT_0; 
-  NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,hz);
-  CE_OUT_1;
 
 }
 
@@ -342,9 +331,16 @@ void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip)
 u8 NRF24L01_GetStatus(void)
 {
   	u8 status;
-    SCLK_OUT_0;
+    	SCLK_OUT_0;
  	CSN_OUT_0;                              // 使能SPI传输		
   	status = SPI2_ReadWriteByte(NOP);       // 读取寄存器内容
   	CSN_OUT_1;                              // 禁止SPI传输
 	return status;
+}
+
+//设置射频数据率，发射功率
+void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr)
+{
+    	CE_OUT_0; 
+	NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(dr,pwr));
 }

@@ -93,7 +93,22 @@
 #define RF_SETUP_DAT    0x0e	//设置发射速率为2MHZ，发射功率为最大值0dB
 #endif
 
+//射频数据率-SI24
+#define	RF_DR_1M	0	
+#define	RF_DR_2M	0x01
+#define	RF_DR_250K	0x02
 
+//射频发送功率-SI24
+#define	RF_PWR_7dBm		0x07
+#define	RF_PWR_4dBm		0x06
+#define	RF_PWR_3dBm		0x05
+#define	RF_PWR_1dBm		0x04
+#define	RF_PWR_0dBm		0x03
+#define	RF_PWR_sub_4dBm		0x02
+#define	RF_PWR_sub_6dBm		0x01
+#define	RF_PWR_sub_12dBm	0x00
+
+#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|((dr&0x02)<<5)))
 
 /*以下宏定义为了移植方便而定义*/		
 
@@ -107,6 +122,8 @@
 #define MOSI_PIN                GPIOA,GPIO_Pin_3        //SPI主机输出从机输入端
 #define MISO_PIN                GPIOA,GPIO_Pin_2        //SPI主机输出从机输出端
 #define SCLK_PIN                GPIOC,GPIO_Pin_6        //SPI时钟端
+
+
 
 
 #define		NRF_GPIO_OUTPUTMODE		GPIO_Mode_Out_PP_Low_Fast
@@ -133,8 +150,8 @@
 #define CSN_OUT_1       GPIO_SET(NRF24L01_CSN_PIN)
 #endif
 
-#define REPEAT_TIME     5      //重发次数
-#define	REPEAT_DELAY	5		//重复间隔，单位250uS
+#define REPEAT_TIME     15      //重发次数
+#define	REPEAT_DELAY	15		//重复间隔，单位250uS
 
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
@@ -142,26 +159,26 @@ extern u8  ADDRESS2[RX_ADR_WIDTH];
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-void Init_NRF24L01(u8 pip,u8 rf_ch);             		//初始化
+void Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
 void NRF24L01_RX_Mode(void);					//配置为接收模式
 void NRF24L01_TX_Mode(void);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区
 u8 NRF24L01_Read_Buf(u8 reg, u8 *pBuf, u8 u8s);	                //读数据区		  
-u8 NRF24L01_Read_Reg(u8 reg);					//读寄存器
+u8 NRF24L01_Read_Reg(u8 reg);							//读寄存器
 u8 NRF24L01_Write_Reg(u8 reg, u8 value);		        //写寄存器
-u8 NRF24L01_Check(void);					//检查24L01是否存在
-u8 NRF24L01_TxPacket(u8 *txbuf,u8 size);			//发送一个包的数据
-u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len);			//接收一个包的数据
-void NRF24L01_PWR(u8 state);                            	//1打开0关闭电源
+u8 NRF24L01_Check(void);								//检查24L01是否存在
+u8 NRF24L01_TxPacket(u8 *txbuf,u8 size);				//发送一个包的数据
+u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len);				//接收一个包的数据
+void NRF24L01_PWR(u8 state);                            //1打开0关闭电源
 void FreeNRFGPIO();
 //设置频率
 void NRF24L01_SetRXHZ(u8 hz);
 void NRF24L01_SetTXHZ(u8 hz);
 
 /********************2019-8-16增加函数*********************************/
-
-u8 NRF24L01_GetRXLen(void);								// 获取接收到的长度信息
-void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);	// RX ACK 自动回复，设置通道
+//获取接收到的长度信息
+u8 NRF24L01_GetRXLen(void);
+void NRF24L01_RX_AtuoACKPip(u8 *txbuf,u8 size,u8 pip);// RX ACK 自动回复，设置通道
 
 /********************2019-8-18增加函数*********************************/
 
@@ -173,8 +190,10 @@ void CreatNewAddr(u8* ChipID,u8* newAddr);				// 用ID号生产新的收发地址
 void Get_ChipID(u8 *ChipID);
 /********************2019年10月4日增加函数*********************************/
 void NRF24L01_ResetAddr(u8* add);	//重设地址
+void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr);//设置射频数据率，发射功率
 
 #endif
+
 
 
 

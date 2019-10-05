@@ -326,9 +326,9 @@ void MotorControl()
 				}
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
 				//OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
-				OS_AddFunction(taskMotor,MotorSTOP,4);
+				//OS_AddFunction(taskMotor,MotorSTOP,4);
 				
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
+				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 			}
 			else
@@ -359,8 +359,8 @@ void MotorControl()
 				}
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
 				
-				OS_AddFunction(taskMotor,MotorSTOP,4);
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
+				//OS_AddFunction(taskMotor,MotorSTOP,4);
+				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);								// 添加到任务队列
 			}	
 			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0 ) // 窗限位动作
@@ -373,7 +373,7 @@ void MotorControl()
 					debug("关窗限位\r\n");
 					OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;	// 反转1.5秒
-					OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
+					//OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
 					OS_AddFunction(taskMotor,WindowStateBC1,4);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
 					key_Z.counter = 0;
@@ -391,14 +391,14 @@ void MotorControl()
 					debug("开窗限位\r\n");
 					OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);		// 反转1.5秒
-					OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
+					//OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
 					OS_AddFunction(taskMotor,WindowStateBC2,4);				// 关窗标志置位
 					motorStruct.flag_BC2 = 0;	
 					key_Y.counter = 0;
 					motorStruct.hasrun = dm_counter;
 				}
 				
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
 				OS_AddTask(tasklink,taskMotor);							// 添加到任务队列
 			}		
 			//YS达到阀值，关窗
@@ -411,8 +411,8 @@ void MotorControl()
 					OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
 					OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,YS_MotorProtect);	// 执行关窗
 					//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-					OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
-					OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
+					//OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
+					OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
 					OS_AddTask(tasklink,taskMotor);							// 添加到任务队列
 					if(key_AM.val == on)
 					{
@@ -428,8 +428,8 @@ void MotorControl()
 				//OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);		// 执行关窗
 				//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-				OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务				
+				//OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
+				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务				
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列			
 			}
 			else
@@ -441,8 +441,8 @@ void MotorControl()
 				//motorStruct.needrun = shut_time;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 			//	OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-				OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务	
+			//	OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
+				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
 				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
 			}
 		}		

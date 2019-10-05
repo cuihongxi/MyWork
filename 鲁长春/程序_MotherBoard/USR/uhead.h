@@ -88,6 +88,24 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		ERROR_CHARG		(0x04)	// 充电保护
 #define		ERROR_BH		(0x10)	// BH没有波形
 
+//nrf 命令 
+#define		CMD_DM		0X5A
+#define		CMD_AM		0X3A
+#define		CMD_Y30		0X2A
+#define		CMD_Z		0X1A
+#define		CMD_Y		0X0A
+
+#define		MES_AM_ON	0X01
+#define		MES_AM_OFF	0X02
+#define		MES_Y30_3_1	0X03
+#define		MES_Y30_3_2	0X04
+#define		MES_Y30_3_3	0X05
+#define		MES_Z_3_1	0X06
+#define		MES_Z_3_2	0X07
+#define		MES_Z_3_3	0X08
+#define		MES_Y_3_1	0X09
+#define		MES_Y_3_2	0X0A
+#define		MES_Y_3_3	0X0B
 
 #endif
 

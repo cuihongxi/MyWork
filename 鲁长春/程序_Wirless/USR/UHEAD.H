@@ -43,6 +43,26 @@
 #define delay_us(x)     LSI_delayus(x)
 
 
+//nrf √¸¡Ó 
+#define		CMD_DM		0X5A
+#define		CMD_AM		0X3A
+#define		CMD_Y30		0X2A
+#define		CMD_Z		0X1A
+#define		CMD_Y		0X0A
+
+#define		MES_AM_ON	0X01
+#define		MES_AM_OFF	0X02
+#define		MES_Y30_3_1	0X03
+#define		MES_Y30_3_2	0X04
+#define		MES_Y30_3_3	0X05
+#define		MES_Z_3_1	0X06
+#define		MES_Z_3_2	0X07
+#define		MES_Z_3_3	0X08
+#define		MES_Y_3_1	0X09
+#define		MES_Y_3_2	0X0A
+#define		MES_Y_3_3	0X0B
+
+
 void LSI_delayus(unsigned int  nCount);         //16M æß’Ò ±  —” ± 1∏ˆŒ¢√Ó
 void LSI_delayms(unsigned int  nCount);         //16M æß’Ò ±   —” ± 1∏ˆ∫¡√Î
 
