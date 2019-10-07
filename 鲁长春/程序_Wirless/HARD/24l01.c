@@ -49,7 +49,7 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[0] = *(__IO u8 *)(0X4926); 
 	ChipID[1] = *(__IO u8 *)(0X4927); 
 	ChipID[2] = *(__IO u8 *)(0X4928);
-    ChipID[3] = *(__IO u8 *)(0X4929);
+    	ChipID[3] = *(__IO u8 *)(0X4929);
 	ChipID[4] = *(__IO u8 *)(0X492A); 
 	ChipID[5] = *(__IO u8 *)(0X492B); 
 	ChipID[6] = *(__IO u8 *)(0X492C);
@@ -60,6 +60,13 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[11] = *(__IO u8 *)(0X4931); 
 }
 
+//依据唯一ID，产生一个新地址
+void NRF_CreatNewAddr(u8* addr)
+{
+    u8 chipID[12]= {0};
+    Get_ChipID(chipID);
+    CreatNewAddr(chipID,addr);
+}
 /*****************SPI时序函数******************************************/
 u8 SPI2_ReadWriteByte(unsigned char date)
 {

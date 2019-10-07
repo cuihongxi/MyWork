@@ -191,6 +191,9 @@ void Get_ChipID(u8 *ChipID);
 void NRF24L01_ResetAddr(u8* add);	//重设地址
 void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr);//设置射频数据率，发射功率
 
+/********************2019年10月6日增加函数*********************************/
+void NRF_CreatNewAddr(u8* addr);//依据唯一ID，产生一个新地址
+
 #endif
 
 

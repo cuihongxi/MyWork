@@ -1,6 +1,6 @@
 #include "stmflash.h"
 #include "stm8l15x_flash.h"
-#include "keyboard.h"
+
 
 extern 	u8		flag_motorIO;
 extern 	u32		dm_counter;
@@ -13,6 +13,7 @@ void FlashData_Init()
 	if(FLASH_ReadByte(EEPROM_FLASH_INIT) != FLASH_INIT_DATA)	//如果没有被初始化就初始化FLASH
 	{
 		FLASH_ProgramByte(EEPROM_FLASH_INIT,FLASH_INIT_DATA);	
+		
 		FLASH_ProgramWord(ADDR_DM,5000);				//默认5s
 //		FLASH_ProgramByte(ADDR_AM_VAL,0);				//默认关闭，AM
 		FLASH_ProgramByte(ADDR_motorIO,0);				//马达引脚调换

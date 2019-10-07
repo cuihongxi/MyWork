@@ -165,6 +165,8 @@ void main()
 	
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	NRFpowon.start = 1;
+		NRF_CreatNewAddr(ADDRESS2);
+	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
 	while(1)
 	{         
             	halt(); //ֹͣģʽ	

@@ -22,7 +22,7 @@
         <option>
           <name>GenCodeModel</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenDataModel</name>
@@ -75,11 +75,11 @@
         <option>
           <name>GenLibOutFormatter</name>
           <version>0</version>
-          <state>0</state>
+          <state>7</state>
         </option>
         <option>
           <name>GenLibOutFormatterDescription</name>
-          <state>Automatic choice of formatter.</state>
+          <state>No specifier a or A, no specifier n, no float, no flags.</state>
         </option>
         <option>
           <name>GenStackSize</name>
@@ -1607,6 +1607,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\PWM.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
     </file>
   </group>
   <group>

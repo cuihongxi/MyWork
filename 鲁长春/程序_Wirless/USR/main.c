@@ -38,27 +38,27 @@ void RCC_Config()
     CLK->CKDIVR  &= 0XE7;   
     CLK->CKDIVR &= 0xF8;    
     CLK->ICKCR |= CLK_ICKCR_HSION;     
- //   CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM4,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_I2C1,DISABLE);    
- //   CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_USART1,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_BEEP,DISABLE);    
-    CLK_PeripheralClockConfig(CLK_Peripheral_DAC,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_ADC1,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM1,DISABLE);    
-    CLK_PeripheralClockConfig(CLK_Peripheral_RTC,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_LCD,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_DMA1,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_COMP,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_BOOTROM,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_AES,DISABLE);    
-    CLK_PeripheralClockConfig(CLK_Peripheral_TIM5,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_SPI2,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_USART2,DISABLE);    
-    CLK_PeripheralClockConfig(CLK_Peripheral_USART3,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_BOOTROM,DISABLE);
-    CLK_PeripheralClockConfig(CLK_Peripheral_CSSLSE,DISABLE); 
+// //   CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_TIM4,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_I2C1,DISABLE);    
+// //   CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_USART1,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_BEEP,DISABLE);    
+//    CLK_PeripheralClockConfig(CLK_Peripheral_DAC,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_ADC1,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_TIM1,DISABLE);    
+//    CLK_PeripheralClockConfig(CLK_Peripheral_RTC,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_LCD,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_DMA1,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_COMP,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_BOOTROM,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_AES,DISABLE);    
+//    CLK_PeripheralClockConfig(CLK_Peripheral_TIM5,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_SPI2,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_USART2,DISABLE);    
+//    CLK_PeripheralClockConfig(CLK_Peripheral_USART3,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_BOOTROM,DISABLE);
+//    CLK_PeripheralClockConfig(CLK_Peripheral_CSSLSE,DISABLE); 
 }
 
 void FreeGPIO_Config()
@@ -110,7 +110,7 @@ void TIM3_INIT()
 //让系统休眠
 void Make_SysSleep()
 {
-    debug(" Sleep \r\n");
+    	debug(" Sleep \r\n");
 	TIM3_Cmd(DISABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
 	systime = 0;
@@ -158,7 +158,9 @@ void main()
 	Init_TOUCHGPIO();
 	PWM_Init();			//呼吸灯，PWM初始化
 	TIM3_INIT();			//定时器3,1ms
-
+	
+	NRF_CreatNewAddr(ADDRESS2);
+	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
     while(1)
     {    
 	if(flag_wake)
