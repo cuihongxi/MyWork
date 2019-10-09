@@ -22,6 +22,7 @@ void BH_FL_GPIO_Init()
 
 	disableInterrupts();
 	EXTI_SetPinSensitivity(EXTI_Pin_6,EXTI_Trigger_Falling);
+	EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
     	enableInterrupts();					// 使能中断
 }
 
@@ -146,6 +147,7 @@ void BH_Check()
 				debug("马达.hasrun --\r\n");
 			}
 			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
+			if(motorStruct.erro & ERROR_BH) motorStruct.erro &= ~ERROR_BH;
 			if(flag_BHProtectStep == 1 )flag_BHProtectStep = 0;	// 恢复故障
 		}
 		
@@ -158,7 +160,8 @@ void BH_Check()
 INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
 {
 	FL_Check();	
-	BH_Check();
+	
 	//debug("EXTI6_IRQHandler\r\n");
     	EXTI_ClearITPendingBit (EXTI_IT_Pin6);
 }
+

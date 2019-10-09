@@ -320,6 +320,8 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
        
 }
 
+void BH_Check();
+
 INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 {
     if(key_val == KEY_VAL_NULL)
@@ -337,6 +339,8 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 			//debug("key_val = %d\r\n",key_val);
 		}	
     }
+    
+    BH_Check();//BH¼ì²â
 //	debug("EXTI7_IRQHandler\r\n");
 	EXTI_ClearITPendingBit (EXTI_IT_Pin7);
 }

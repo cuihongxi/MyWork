@@ -10,6 +10,7 @@
 #include "NRF24L01_AUTO_ACK.H"
 #include "keyboard.h"
 #include "pwm.h"
+#include "stmflash.h"
 
 #define		PRESS_Y30	0X01
 #define		PRESS_MOTZ	0X02
@@ -21,13 +22,14 @@ Nrf24l01_PTXStr ptx = {0};
 u8 rxbuf[5] = {0};
 
 u8 		keyval = 0;
-u8 		flag_pwm = 0;		//触摸PWM开启标志
+u8 		flag_pwm = 0;		// 触摸PWM开启标志
 u8 		pwm = 1;
-u8 		pwm_dir = 0;			//0 自减，1自增
+u8 		pwm_dir = 0;		// 0 自减，1自增
 u8 		flag_wake = 1;
 u32 		systime = 0;
 u8 		pressKey = 0;
 u32 		presstime = 0;
+u8		is_DM = 0;		// 保存是否配对信息
 
 extern 		u32 		DM_time;
 
@@ -243,15 +245,15 @@ INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
 {      
     systime ++;
     if(pressKey)		if(systime > presstime) pressKey = 0;
- //   if(systime > TIM_MAXDELAY)	flag_delay = 0;
-   // debug(".");
+
   //呼吸灯PWM
   if(flag_pwm )
   {
-	//zled_counter ++;
-	//if(zled_counter>15)
+	static u8 zled_counter = 0;
+	zled_counter ++;
+	if(zled_counter>15)
 	{
-		//zled_counter = 0;
+		zled_counter = 0;
 		if(pwm_dir)
 		{
 			pwm ++;
@@ -265,19 +267,16 @@ INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
 		{
 			pwm --;
 			if(pwm == 1) flag_pwm = 0;
-		}
-		//debug("pwm = %d\r\n",pwm);
+		} 
 		PWM_SetDutyCycle(pwm);
 	}
 	 //没有触摸，关闭呼吸灯
 	  if((GPIO_READ(TOUCH_IO) == RESET) && pwm == 100) 
 	  {
 	  	PWM_Status(PWM_OFF);
-		//zled_counter = 0;
+		zled_counter = 0;
 		pwm = 1;
 		flag_pwm = 0;
-//		TIM3_Cmd(DISABLE);
-//		CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,DISABLE);
 	  }
   }
   

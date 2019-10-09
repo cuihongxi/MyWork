@@ -40,6 +40,7 @@ typedef struct
 	int		hasrun ;	// 记录马达目前的位置，关窗位置为0，开窗BC2为 dm_counter
 	int 		needrun;	// 需要走的步数
     	State_Dir   	dir;          	// 马达方向
+	State_Dir	dirBack;	// 记录马达方向，停止除外	
 	State_Dir   	command;	// 指令
 	u8 		flag_BC;	// BC到位检测标志
 	u8 		flag_BC1 ;	// BC1关窗标志
@@ -69,5 +70,5 @@ void CheckBC1BC2();					// BC1,BC2
 void Motor_STOP();
 void Motor_Z();
 WindowState CheckWindowState();
-
+void Motor_RunBack();
 #endif

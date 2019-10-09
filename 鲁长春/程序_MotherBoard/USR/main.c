@@ -35,7 +35,7 @@ extern keyStr 		key_Y30;
 extern keyStr 		key_DM;
 extern u8 		flag_duima  		;	//对码状态
 extern u8 		flag_duima_clear  	;	//清除对码
-
+void Motor_Forward();
 //低时钟和GPIO初始化
 void CLK_GPIO_Init()
 {
@@ -125,8 +125,7 @@ void main()
 	//delay_ms(1000);					// 等待系统稳定
 	UART_INIT(115200);
 	prx.txbuf[0] =39; 					//收到回复信息，填充‘9’
-	LEN_RED_Close();
-	LEN_GREEN_Close();
+
 	FlashData_Init();
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);			// 创建马达运行任务
@@ -163,10 +162,20 @@ void main()
 	CheckWindowState();							// 读一下窗的位置
 	Key_GPIO_Init();							// 触摸按键初始化
 	
-	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	NRFpowon.start = 1;
-		NRF_CreatNewAddr(ADDRESS2);
+	//InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+	//NRFpowon.start = 1;
+	//NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+	
+//	LEN_RED_Open();
+//	LEN_GREEN_Open();
+//	Motor_Forward();
+//	delay_ms(1000);
+//	GPIO_ResetBits(MX830Motor_GPIO_FI);
+//	GPIO_ResetBits(MX830Motor_GPIO_BI);	
+//	LEN_RED_Close();
+//	LEN_GREEN_Close();
+	
 	while(1)
 	{         
             	halt(); //停止模式	
@@ -216,10 +225,13 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	
 	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)// 马达运行计时	
 	{
+	    	static u8 ledsharp = 254;
 		motorStruct.counter += IRQ_PERIOD;		// 马达运行超过阀值，停转
 		counter_BH += IRQ_PERIOD;			// BH超过阀值没有触发，停转
 		if(motorStruct.counter > MOTOR_F_SAFE) motorStruct.erro |= ERROR_MOTOR;
 		if(counter_BH > BH_SAFE) motorStruct.erro |= ERROR_BH;
+		LedSharpInIT(&ledsharp,(bool)TRUE,systime,100,1000);	// 设置时，LED闪烁控制
+		if(ledsharp == 0)ledsharp = 254;
 	}
 	
 	Juge_counter(&jugeYS,TIM__YS_D);			// YS

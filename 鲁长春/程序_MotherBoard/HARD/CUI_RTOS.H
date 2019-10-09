@@ -91,18 +91,18 @@ struct _TaskStr{
 #define	OS_ITOPEN()		enableInterrupts();
 
 /*函数*/
-u32 OS_TimerFunc(TimerLinkStr* timer);							// 定时器内函数
-TaskStr* OS_CreatTask(TimerLinkStr* timerlink);					// 创建一个任务，绑定定时器
+u32 OS_TimerFunc(TimerLinkStr* timer);					// 定时器内函数
+TaskStr* OS_CreatTask(TimerLinkStr* timerlink);				// 创建一个任务，绑定定时器
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time);			// 添加函数到任务,有顺序
-void OsSectionFun(TaskStr* task);								// 运行实例函数
+void OsSectionFun(TaskStr* task);					// 运行实例函数
 void OS_AddTask(TaskLinkStr* tasklink, TaskStr* task);			// 添加任务到任务队列
 void OS_AddCycleFunction(TaskStr* task,TYPE_NUMBER num);		// 添加循环函数到任务
-void OS_Task_Run(TaskLinkStr* tasklink);						// 任务队列运行
-u32 GetSysTime(TimerLinkStr* timerlink);						// 获取系统时间
-void OS_DeleteTask(void);										// 从任务列表删除任务用，时间应该为0
+void OS_Task_Run(TaskLinkStr* tasklink);				// 任务队列运行
+u32 GetSysTime(TimerLinkStr* timerlink);				// 获取系统时间
+void OS_DeleteTask(void);						// 从任务列表删除任务用，时间应该为0
 void OS_AddJudegeFunction(TaskStr* task,osfun fun,u32 time,jugefun funJuge);// 添加条件判断函数到任务\
 																定时器中判断条件函数如果为真则计时结束，跳转任务
 
-bool OsJudge_TaskIsNull(TaskStr* task);							// 判断任务是否为空，是返回真，否则返回假
+bool OsJudge_TaskIsNull(TaskStr* task);					// 判断任务是否为空，是返回真，否则返回假
 
 #endif

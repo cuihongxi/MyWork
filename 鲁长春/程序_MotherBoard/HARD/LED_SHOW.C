@@ -42,11 +42,13 @@ void LedSharpInIT(u8* time,bool success,u32 systime,u32 ontime,u32 offtime)
 		{
 		    if(*time & 0x01)
 		    {
+			//debug("LEN_GREEN_Close \r\n");
 			LEN_GREEN_Close();
 			sys = systime + offtime;
 		    }
 		    else 
 		    {
+			//debug("LEN_GREEN_Open \r\n");
 			LEN_GREEN_Open();
 			sys = systime + ontime;
 		    }

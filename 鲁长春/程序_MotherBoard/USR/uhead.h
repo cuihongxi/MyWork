@@ -37,7 +37,7 @@
 	debug("\r\nstart:\r\n");\
 }while(0)
 #else
-#define	UART_INIT(baud) RST->CR = 0x00;	//»Ö¸´RST½ÅÎª¸´Î»½Å
+#define	UART_INIT(baud) RST->CR = 0xD0;	//»Ö¸´RST½ÅÎª¸´Î»½Å
 #define debug(...)   
 #endif
 

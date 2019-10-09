@@ -6,8 +6,8 @@
 #define		FLASH_INIT_DATA		0x12			// 初始化值
 
 
-#define		NO_DM			0XFF	// 没有配对
-#define		YES_DM			0	// 已配对
+#define		NO_DM			0	// 没有配对
+#define		YES_DM			1	// 已配对
 #define         ADDR_DM    		0x1000  // 保存是否配对信息
 
 

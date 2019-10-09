@@ -86,33 +86,33 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 		{
 			//debug("马达换向\r\n");  
 			motorStruct->dir = motorStruct->command;
-			//if(motorStruct->dir != STOP) 待解决，旋转60秒后怎么复位？
-				motorStruct->counter = 0;
+			motorStruct->counter = 0;
+		
+			switch(motorStruct->dir)
+			{
+				case FORWARD    :     
+						debug("dir = FORWARD\r\n");           
+						Motor_Forward();
+						motorStruct->dirBack = FORWARD;
+				  break;
+				case BACK       :        
+						debug("dir = BACK\r\n"); 
+						Motor_Back();
+						motorStruct->dirBack = BACK;
+				  break;
+				case STOP       :  
+				  {       
+						debug("dir = STOP\r\n");
+						GPIO_ResetBits(MX830Motor_GPIO_FI);
+						GPIO_ResetBits(MX830Motor_GPIO_BI);
+				  }          
+				  break;
+				case HOLD       :  
+				  GPIO_SetBits(MX830Motor_GPIO_FI); 
+				  GPIO_SetBits(MX830Motor_GPIO_BI);
+				  break;
+			}
 		}
-		switch(motorStruct->dir)
-		{
-			case FORWARD    :     
-					debug("dir = FORWARD\r\n");           
-					Motor_Forward();
-			  	//	BH_CheckStart();
-			  break;
-			case BACK       :        
-			debug("dir = BACK\r\n"); 
-					Motor_Back();
-				//	BH_CheckStart();
-			  break;
-			case STOP       :  
-			  {       
-					debug("dir = STOP\r\n");
-					GPIO_ResetBits(MX830Motor_GPIO_FI);
-					GPIO_ResetBits(MX830Motor_GPIO_BI);
-			  }          
-			  break;
-			case HOLD       :  
-			  GPIO_SetBits(MX830Motor_GPIO_FI); 
-			  GPIO_SetBits(MX830Motor_GPIO_BI);
-			  break;
-		}		
 		motorStruct->command = MOTOR_NULL;
 	}
 
@@ -138,10 +138,16 @@ void MotorBACK_BC2()
 	motorStruct.command = FORWARD;
 	MX830Motor_StateDir(&motorStruct);
 }
+
+void LEN_GREEN_Close();
+
 void MotorSTOP()
-{
+{	
+// 	Motor_RunBack(); //回退到BH1,BH2高电平的位置再停止
+//	while(GPIO_READ(GPIO_BH) == RESET || GPIO_READ(GPIO_BH2) == RESET);
 	motorStruct.command = STOP;
 	MX830Motor_StateDir(&motorStruct);
+	LEN_GREEN_Close();			//马达行走时闪烁LED，停止时关闭
 }
 
 void Motor_Z()
@@ -158,7 +164,7 @@ void Motor_Y()
 
 void Motor_RunBack()
 {
-	if(motorStruct.dir == FORWARD) motorStruct.command = BACK;
+	if(motorStruct.dirBack == FORWARD) motorStruct.command = BACK;
 	else motorStruct.command = FORWARD;
 	counter_BH = 0;
 	MX830Motor_StateDir(&motorStruct);
@@ -174,12 +180,6 @@ void ShutDownWindow()
 	Motor_Z();
 }
 
-
-//bool MotorProtectWithY30()	//电机转动保护，充电保护，BH方波保护，Y30延时
-//{
-//	return (bool)((motorStruct.counter > MOTOR_F_SAFE) \
-//		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start);
-//}
 
 bool MotorSysProtect0()		//最高优先级保护：电机转动保护，电压过低
 {
@@ -212,8 +212,6 @@ void Motor_AutoRun()
 
 bool MotorProtectAM()	//AM模式下，除了Y30电机转动保护，充电保护，BH方波保护，达到AM位置
 {
-//	return (bool)((motorStruct.counter > MOTOR_F_SAFE) \
-//		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || motorStruct.hasrun >= shut_time);
 	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time) || key_AM.val == on);	
 
 }
@@ -239,6 +237,11 @@ void WindowStateBC2()
 {
 	windowstate = to_BC2;
 }
+
+void ResetBHErro()
+{
+	motorStruct.erro &= ~ERROR_BH;
+}
 //马达运动
 void MotorControl()
 {
@@ -251,8 +254,6 @@ void MotorControl()
 	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动,除去BH无方波
 	if(MotorSysProtect0())
 	{
-		//motorStruct.command = STOP;	//正反转保护时间判断
-		//MX830Motor_StateDir(&motorStruct);
 		motorStruct.flag_BC1 = 0;
 		motorStruct.flag_BC2 = 0;
 		if(flag_motor_erro == 0)
@@ -266,30 +267,28 @@ void MotorControl()
 		flag_motor_erro = 0;
 		//所有情况下马达正转至38BC1高电平，延时1秒（可调）后反转1.5秒（可调）停转；\
 		反转至38BC2高电平，延时1秒正转1.5秒停转。
-		if((taskMotor->state == Stop)) // taskMotor->state == Wait || 
+		if((taskMotor->state == Stop))
 		{
-			if((motorStruct.erro & ERROR_BH)&& flag_BHProtectStep == 0)							// 方波超时保护
+			if((motorStruct.erro & ERROR_BH)&& flag_BHProtectStep == 0 && flag_no30 == 0)				// 方波超时保护
 			{
 			    	
 				debug("方波超时保护\r\n");
 				flag_BHProtectStep = 1;													//如果出现BH，则会在中断中清零
 				counter_BH = 0;
-				motorStruct.erro &= ~ERROR_BH;
 				//按马达当前转向，反向旋转4S，再继续原来转向
-//				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_BH0,MotorSysProtect0);	// 反向旋转4S
-				OS_AddJudegeFunction(taskMotor,Motor_RunBack,10,MotorSysProtect0);		//恢复原来的转向
-				OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
+				OS_AddJudegeFunction(taskMotor,Motor_RunBack,10,MotorSysProtect0);	//恢复原来的转向
+				OS_AddFunction(taskMotor,ResetBHErro,10);	
+				OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}
-			else if((motorStruct.erro & ERROR_BH) && flag_BHProtectStep == 1)						//再次出现无方波
+			else if((motorStruct.erro & ERROR_BH) && flag_BHProtectStep == 1)		//再次出现无方波
 			{
 				debug("再次出现无方波\r\n");
-				motorStruct.command = STOP;	
-				// 30分钟不响应YSFL信号
-				flag_no30 = 1;
+				MotorSTOP();
+				flag_no30 = 1;		// 30分钟不响应YSFL信号
 				FL_CheckStop();
-				// threshold_30 = GetSysTime(&timer2) + TIM_30;
 				ys_timer30 = TIM_30;
 				YS_30.start = 1;	//此参数终止YS检测
 				YS_30.counter = 0;
@@ -300,13 +299,10 @@ void MotorControl()
 			 if(flag_KEY_Z)//按键<Z
 			{
 				flag_KEY_Z = 0;
-				debug("key_Z.val = %d\r\n",key_Z.val);
-				//OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
+				debug("key_Z.val = %d\r\n",key_Z.val);					// 移除任务
 				switch(key_Z.val)
 				{
 					case off:
-						//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-
 					break;
 					case on:
 						motorStruct.needrun = - dm_counter;			// 执行<z
@@ -324,12 +320,9 @@ void MotorControl()
 					break;
 				    
 				}
-				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
-				//OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
-				//OS_AddFunction(taskMotor,MotorSTOP,4);
-				
-				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
+				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);										
+				OS_AddFunction(taskMotor,MotorSTOP,0);		// 移除任务	
+				OS_AddTask(tasklink,taskMotor);			// 添加到任务队列
 			}
 			else
 			if(flag_KEY_Y)//按键>Y
@@ -339,7 +332,6 @@ void MotorControl()
 				switch(key_Y.val)
 				{
 					case off:
-						//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
 					break;
 					case on:
 						motorStruct.needrun = 2*dm_counter;			// 执行>Y
@@ -354,44 +346,37 @@ void MotorControl()
 						debug("KEY_Y :three\r\n");
 						motorStruct.needrun = dm_counter*2/3;
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
-					break;
-					
-				}
-				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);						
-				
-				//OS_AddFunction(taskMotor,MotorSTOP,4);
-				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
-				OS_AddTask(tasklink,taskMotor);								// 添加到任务队列
+					break;	
+				}					
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}	
 			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0 ) // 窗限位动作
 			{
 				debug("窗限位动作:");
 				motorStruct.flag_BC = 1;
-			//	OS_AddFunction(taskMotor,OS_DeleteTask,0);				// 移除任务
-				if(motorStruct.flag_BC1)								// 关窗限位
+				if(motorStruct.flag_BC1)						// 关窗限位
 				{
 					debug("关窗限位\r\n");
 					OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;	// 反转1.5秒
-					//OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
 					OS_AddFunction(taskMotor,WindowStateBC1,4);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
 					key_Z.counter = 0;
 					motorStruct.hasrun = 0;
-					if(shut_time != 0)		//计算关窗用的时间
+					if(shut_time != 0)	//计算关窗用的时间
 					{
 						//没有FLYS时，启动定时器计时，延时打开窗
 						flag_YS_isno = 1;
 					}
-					jugeYS.switchon = 0;		//不进行Y30按键检测
+					jugeYS.switchon = 0;	//不进行Y30按键检测
 					flag_flag_YS_SHUT = 0;
 				}else
 				if(motorStruct.flag_BC2)
 				{
 					debug("开窗限位\r\n");
 					OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);		// 反转1.5秒
-					//OS_AddFunction(taskMotor,MotorSTOP,4);					// 停止
+					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 反转1.5秒
 					OS_AddFunction(taskMotor,WindowStateBC2,4);				// 关窗标志置位
 					motorStruct.flag_BC2 = 0;	
 					key_Y.counter = 0;
@@ -408,15 +393,13 @@ void MotorControl()
 				{
 					flag_flag_YS_SHUT = 1;
 					debug("\r\nYS达到阀值，关窗\r\n");
-					OS_AddFunction(taskMotor,OS_DeleteTask,0);					// 移除任务
-					OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,YS_MotorProtect);	// 执行关窗
-					//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-					//OS_AddFunction(taskMotor,MotorSTOP,4);						// 停止
+					OS_AddFunction(taskMotor,OS_DeleteTask,0);				// 移除任务
+					OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,YS_MotorProtect);// 执行关窗
 					OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
-					OS_AddTask(tasklink,taskMotor);							// 添加到任务队列
+					OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 					if(key_AM.val == on)
 					{
-						shut_time = motorStruct.hasrun;	//AM下自动记录关窗时间	
+						shut_time = motorStruct.hasrun;	// AM下自动记录关窗时间	
 						debug("\r\nshut_time = %lu\r\n",shut_time);
 					}					
 				}
@@ -425,29 +408,21 @@ void MotorControl()
 			{
 				debug("FL达到阀值，关窗\r\n");
 				flag_FL_SHUT = 0;
-				//OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);		// 执行关窗
-				//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-				//OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
-				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务				
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列			
+				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);// 执行关窗
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务				
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列			
 			}
 			else
-			if(jugeYS_No.switchon)											//无YS,FL开窗
+			if(jugeYS_No.switchon)								//无YS,FL开窗
 			{
 				debug("无YS开窗\r\n");
 				jugeYS_No.switchon = 0;
-			//	OS_AddFunction(taskMotor,OS_DeleteTask,0);						// 移除任务
-				//motorStruct.needrun = shut_time;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
-			//	OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);
-			//	OS_AddFunction(taskMotor,MotorSTOP,4);							// 停止
-				OS_AddFunction(taskMotor,MotorSTOP,0);						// 移除任务	
-				OS_AddTask(tasklink,taskMotor);									// 添加到任务队列
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}
 		}		
 	}
-	//MX830Motor_StateDir(&motorStruct);	 									// 马达根据命令运动
 }
 
 //BC1,BC2
@@ -486,13 +461,10 @@ void CheckBC1BC2()
 		} 
 	}
 
-//	if((windowstate == to_BC1 && motorStruct.dir == FORWARD) ||(windowstate == to_BC2 && motorStruct.dir == BACK))
-//		windowstate = open;
-	// if(motorStruct.flag_BC && OsJudge_TaskIsNull(taskMotor)) motorStruct.flag_BC = 0;	// 没有任务
 	if(motorStruct.flag_BC && taskMotor->state == Stop)
 	{
 	    	debug("motorStruct.flag_BC = 0\r\n");
-		motorStruct.flag_BC = 0;	// 没有任务
+		motorStruct.flag_BC = 0;	
 	} 
 
 }

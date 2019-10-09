@@ -164,7 +164,7 @@ void Key_ScanLeave()
 		debug(" POW_CA :%d\r\n",flag_funPOW_CA);
 		//NRF信号强度设定
 		if(flag_funPOW_CA){ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
-		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_0dBm);}
+		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
 		keyval = KEY_VAL_NULL;
 	    }
 	    
@@ -182,6 +182,7 @@ void Key_ScanLeave()
 	    if((systime - DM_time)< 2000)
 	    {
 		debug(" :DM \r\n");
+		
 	    }
 	    if((systime - DM_time) > 6000)debug(" :clear DM \r\n");
 	    DM_time = 0;
