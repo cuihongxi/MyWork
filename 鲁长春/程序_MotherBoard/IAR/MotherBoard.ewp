@@ -491,7 +491,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>03-&#x4eAe;&#x706D;&#x65F6;&#x95F4;.hex</state>
+          <state>04-&#x4e0A;&#x7535;&#x65F6;&#x81eA;&#x52A8;&#x5173;&#x7A97;.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -662,7 +662,10 @@
         </option>
         <option>
           <name>IlinkAdditionalLibs</name>
-          <state></state>
+          <state>$PROJ_DIR$\..\library\libmalloc.a</state>
+          <state>$PROJ_DIR$\..\library\libCUI_RTOS.a</state>
+          <state>$PROJ_DIR$\..\library\libmnrf24l01.a</state>
+          <state>$PROJ_DIR$\..\library\libSingleList.a</state>
         </option>
         <option>
           <name>IlinkOverrideProgramEntryLabel</name>
@@ -784,11 +787,11 @@
         </option>
         <option>
           <name>IarchiveOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>###Unitialized###</state>
+          <state>E:\MyWork\MyWork\&#x9C81;&#x957F;&#x6625;\&#x7A0B;&#x5e8F;_MotherBoard\IAR\Debug\Exe\libSingleList.a</state>
         </option>
       </data>
     </settings>
@@ -813,7 +816,7 @@
         <debug>0</debug>
         <option>
           <name>GenDeviceSelectMenu</name>
-          <state></state>
+          <state>UnspecifiedSTM8	STM8 - Unspecified</state>
         </option>
         <option>
           <name>GenCodeModel</name>
@@ -857,7 +860,7 @@
         </option>
         <option>
           <name>GenRTConfigPath</name>
-          <state></state>
+          <state>$TOOLKIT_DIR$\LIB\dlstm8smn.h</state>
         </option>
         <option>
           <name>GenLibInFormatter</name>
@@ -952,7 +955,7 @@
         </option>
         <option>
           <name>IccOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>IccOptAllowList</name>
@@ -965,7 +968,7 @@
         </option>
         <option>
           <name>IccOutputFile</name>
-          <state></state>
+          <state>$FILE_BNAME$.o</state>
         </option>
         <option>
           <name>IccCodeModel</name>
@@ -1339,7 +1342,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>###Unitialized###</state>
+          <state>MotherBoard.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>
@@ -1597,28 +1600,16 @@
       <name>$PROJ_DIR$\..\USR\UDATA.H</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\USR\UHEAD.H</name>
+      <name>$PROJ_DIR$\..\USR\uhead.h</name>
     </file>
   </group>
   <group>
     <name>HARD</name>
     <file>
-      <name>$PROJ_DIR$\..\HARD\24l01.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\BAT.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_MALLOC0.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_MALLOC1.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_RTOS.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\FL.C</name>
@@ -1634,15 +1625,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\NRF24L01_AUTO_ACK.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\SingleCycList.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\SingleList.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\stmflash.c</name>

@@ -12,12 +12,12 @@
 #include "lowpower.h"
 #include "stm8l15x_rtc.h"
 //#include "stm8l15x_tim2.h"
-#include "CUI_RTOS.H"
+//#include "CUI_RTOS.H"
 #include "keyboard.h"
 #include "BAT.H"
 #include "FL.H"
 #include "stmflash.h"
-
+//#include "mylib.a"
 
 
 

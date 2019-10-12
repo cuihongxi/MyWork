@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "CUI_RTOS.H"
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
 u8 			txbuf[5] 	= {0};				// nrf发送缓存
 u8 			rxbuf[10] 	= {0};				// nrf接收缓存
@@ -76,11 +76,7 @@ void Make_SysSleep()
 void BeepStart();
 void BeepStop()
 {
-//	#if BEEP_SW > 0
-//	GPIO_RESET(GPIO_BEEP);
-//	#else
 	GPIO_SET(GPIO_BEEP);
-//	#endif
 }
 
 void FunInMain()
@@ -139,14 +135,16 @@ void main()
 	//检测一次电池电压
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
-	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);	
+	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
+	
+	//马达反转到限位
+	motorStruct.command = FORWARD;
+	MX830Motor_StateDir(&motorStruct);
+	while(GPIO_READ(GPIO_38KHZ_BC1) != RESET);	// 等待GPIO_38KHZ_BC1出现低电平
+		
 	//上电检测DM电平，来判断马达的最大行程时间	
 	if(GPIO_READ(GPIO_DM) == RESET)
 	{
-		//马达反转到限位
-		motorStruct.command = FORWARD;
-		MX830Motor_StateDir(&motorStruct);
-		while(GPIO_READ(GPIO_38KHZ_BC1) != RESET);	// 等待GPIO_38KHZ_BC1出现低电平
 		flag_openDM = 1;
 		motorStruct.hasrun = 0;
 		motorStruct.command = BACK;
@@ -160,27 +158,11 @@ void main()
 	}
 	
 	CheckWindowState();							// 读一下窗的位置
-	Key_GPIO_Init();							// 触摸按键初始化
-	
-	//InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
-	//NRFpowon.start = 1;
-	//NRF_CreatNewAddr(ADDRESS2);
-	//debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
-	
-//	LEN_RED_Open();
-//	LEN_GREEN_Open();
-//	Motor_Forward();
-//	delay_ms(1000);
-//	GPIO_ResetBits(MX830Motor_GPIO_FI);
-//	GPIO_ResetBits(MX830Motor_GPIO_BI);	
-//	LEN_RED_Close();
-//	LEN_GREEN_Close();
+	Key_GPIO_Init();							// 触摸按键初始化	
 	
 	while(1)
 	{         
-            	halt(); //停止模式	
-		//KeyScanControl();				// 按键扫描
-		
+            	halt(); //停止模式		
 		KeyFun();					// 按键处理
 		
 		OS_Task_Run(tasklink);				// 执行任务链表中的任务
@@ -188,23 +170,7 @@ void main()
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		
 		
-		
-//		if(flag_duima)		//对码状态
-//		{
-//			
-//		}
-		/*nrf接收函数*/
-//		if(prx.hasrxlen != 0)
-//		{
-//			debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-//			for(u8 i=0;i<prx.hasrxlen;i++)
-//			  {
-//				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-//			  }		
-//			debug("\r\n##################################\r\n");
-//			if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
-//			prx.hasrxlen = 0;
-//		}
+
 	}
 }
 
@@ -235,7 +201,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		counter_BH += IRQ_PERIOD;			// BH超过阀值没有触发，停转
 		if(motorStruct.counter > MOTOR_F_SAFE) motorStruct.erro |= ERROR_MOTOR;
 		if(counter_BH > BH_SAFE) motorStruct.erro |= ERROR_BH;
-		LedSharpInIT(&ledsharp,(bool)TRUE,systime,100,100);	// 设置时，LED闪烁控制
+		LedSharpInIT(&ledsharp,(bool)TRUE,systime,TIM_MOTORLED_SHARP_ON,TIM_MOTORLED_SHARP_OFF);// LED闪烁控制
 		if(ledsharp == 0)ledsharp = 254;
 	}
 	
@@ -249,8 +215,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	}
 	
 	if(Juge_counter(&beep,130)) BeepStop();			// 按键蜂鸣器BEEP
-	
-	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,100);	// 设置时，LED闪烁控制
+	LedSharpInIT(&ledSharpTimes,is_suc,systime,TIM_LED_SHARP_ON,TIM_LED_SHARP_OFF);	// 设置时，LED闪烁控制
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	 
 	

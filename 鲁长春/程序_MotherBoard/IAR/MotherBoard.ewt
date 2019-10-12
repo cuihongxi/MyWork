@@ -1946,28 +1946,16 @@
       <name>$PROJ_DIR$\..\USR\UDATA.H</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\USR\UHEAD.H</name>
+      <name>$PROJ_DIR$\..\USR\uhead.h</name>
     </file>
   </group>
   <group>
     <name>HARD</name>
     <file>
-      <name>$PROJ_DIR$\..\HARD\24l01.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\BAT.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_MALLOC0.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_MALLOC1.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\CUI_RTOS.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\FL.C</name>
@@ -1983,15 +1971,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\NRF24L01_AUTO_ACK.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\SingleCycList.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\SingleList.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\stmflash.c</name>

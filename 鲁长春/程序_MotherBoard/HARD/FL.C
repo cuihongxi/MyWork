@@ -1,6 +1,7 @@
 #include "FL.H"
 #include "lowpower.h"
 #include "MX830Motor.h"
+#include "CUI_RTOS.H"
 
 u8 		flag_BHProtectStep = 0;				// BH方波保护执行的步骤	
 u8 		flag_no30 = 0;					// BH故障，30分钟不响应YSFL

@@ -91,6 +91,7 @@ struct _TaskStr{
 #define	OS_ITOPEN()		enableInterrupts();
 
 /*函数*/
+
 u32 OS_TimerFunc(TimerLinkStr* timer);					// 定时器内函数
 TaskStr* OS_CreatTask(TimerLinkStr* timerlink);				// 创建一个任务，绑定定时器
 void OS_AddFunction(TaskStr* task,osfun fun,u32 time);			// 添加函数到任务,有顺序
