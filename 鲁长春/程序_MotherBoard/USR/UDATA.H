@@ -24,7 +24,7 @@
 #define			TIM_SLEEP		5000	// ms,休眠倒计时时间
 #define			TIM_KEY			500	// ms，连击间隔
 #define         	TIM_CHECKEYS          	2000    // ms,YS检测时间
-#define         	BH_SAFE                 10000    // ms, BH方波检测
+#define         	BH_SAFE                 5000    // ms, BH方波检测
 #define         	TIM_BH0                 4000    // ms, BH反向运动时间
 #define         	TIM_30                  1	// 30分钟不响应
 #define         	TIM_BAT                 5000    // ms ,检测BAT电压周期

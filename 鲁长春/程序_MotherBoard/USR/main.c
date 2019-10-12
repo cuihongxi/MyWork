@@ -54,20 +54,20 @@ void CLK_GPIO_Init()
 //让系统休眠
 void Make_SysSleep()
 {
-	NRF24L01_PWR(0); 
+	NRF24L01_PWR(0); 						// 关闭NRF的电源
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
-	CLK_LSICmd(ENABLE);						//使能LSI
-	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  	//RTC时钟源LSI，
-	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	//等待LSI就绪
+	CLK_LSICmd(ENABLE);						// 使能LSI
+	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  	// RTC时钟源LSI，
+	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	// 等待LSI就绪
 	RTC_WakeUpCmd(DISABLE);
-	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);      	//RTC时钟门控使能
-	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		//19K
+	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);      	// RTC时钟门控使能
+	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
 	
-	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	//开启中断
-	RTC_SetWakeUpCounter(19);                     			//唤醒间隔	1MS
-	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	//唤醒定时器中断使能
-	RTC_WakeUpCmd(ENABLE);                                      	//RTC唤醒使能  
-	PWR_UltraLowPowerCmd(ENABLE); 					//使能电源的低功耗模式
+	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
+	RTC_SetWakeUpCounter(10);                     			// 唤醒间隔	1MS
+	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
+	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  
+	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
 	PWR_FastWakeUpCmd(ENABLE);
 	
 }
@@ -165,7 +165,7 @@ void main()
 	//InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	//NRFpowon.start = 1;
 	//NRF_CreatNewAddr(ADDRESS2);
-	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+	//debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
 	
 //	LEN_RED_Open();
 //	LEN_GREEN_Open();
@@ -180,26 +180,31 @@ void main()
 	{         
             	halt(); //停止模式	
 		//KeyScanControl();				// 按键扫描
-		KeyFun();
-		OS_Task_Run(tasklink);
+		
+		KeyFun();					// 按键处理
+		
+		OS_Task_Run(tasklink);				// 执行任务链表中的任务
+		
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		
-		if(flag_duima)		//对码状态
-		{
-			
-		}
+		
+		
+//		if(flag_duima)		//对码状态
+//		{
+//			
+//		}
 		/*nrf接收函数*/
-		if(prx.hasrxlen != 0)
-		{
-			debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-			for(u8 i=0;i<prx.hasrxlen;i++)
-			  {
-				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-			  }		
-			debug("\r\n##################################\r\n");
-			if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
-			prx.hasrxlen = 0;
-		}
+//		if(prx.hasrxlen != 0)
+//		{
+//			debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
+//			for(u8 i=0;i<prx.hasrxlen;i++)
+//			  {
+//				debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+//			  }		
+//			debug("\r\n##################################\r\n");
+//			if(prx.rxbuf[2] == 95) debug("taskMotor->state = %d\r\n",taskMotor->state);
+//			prx.hasrxlen = 0;
+//		}
 	}
 }
 
@@ -230,7 +235,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 		counter_BH += IRQ_PERIOD;			// BH超过阀值没有触发，停转
 		if(motorStruct.counter > MOTOR_F_SAFE) motorStruct.erro |= ERROR_MOTOR;
 		if(counter_BH > BH_SAFE) motorStruct.erro |= ERROR_BH;
-		LedSharpInIT(&ledsharp,(bool)TRUE,systime,100,1000);	// 设置时，LED闪烁控制
+		LedSharpInIT(&ledsharp,(bool)TRUE,systime,100,100);	// 设置时，LED闪烁控制
 		if(ledsharp == 0)ledsharp = 254;
 	}
 	
@@ -245,7 +250,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 	
 	if(Juge_counter(&beep,130)) BeepStop();			// 按键蜂鸣器BEEP
 	
-	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,500);	// 设置时，LED闪烁控制
+	LedSharpInIT(&ledSharpTimes,is_suc,systime,100,100);	// 设置时，LED闪烁控制
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	 
 	
