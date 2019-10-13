@@ -28,7 +28,9 @@
 #include "mygpio.h"
 #include "mytimer.h"
 #include "myFlash.h"
-	#define	FLASH_SIZE 1500
+#include "myWifi.h"
+#include "AppCallBack.h"
+
 
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set
@@ -92,12 +94,7 @@ user_rf_pre_init(void)
 {
 }
 
-void ICACHE_FLASH_ATTR
-OS_Timer_CB(void)		//  定时器回调函数
-{
-	MYGPIO_Toggle(5);
-	os_printf(".");
-}
+
 
 /******************************************************************************
  * FunctionName : user_init
@@ -108,30 +105,20 @@ OS_Timer_CB(void)		//  定时器回调函数
 void ICACHE_FLASH_ATTR
 user_init(void)
 {
-
-	u8 src_addr[FLASH_SIZE] = {0};
-	u8 src_addr2[FLASH_SIZE] = {0};
-	u16 i=0;
+	RegCBStr cbfun;
 	uart_init(115200,115200);
     os_printf("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
     MYGPIO_SETMODE_OUTPUT(2);
     MYGPIO_SETMODE_OUTPUT(5);
     MYGPIO_SETMODE_INPUT(4);
-   // Mytimer_hw_timer_Init(OS_Timer_CB, 500000);	// 硬件定时器
-	for( i=0;i<FLASH_SIZE;i++)
-	{
-		src_addr[i] = i;
-
-
-	}
-system_soft_wdt_feed();
-	Flash_Write(4000 , src_addr,FLASH_SIZE);
-	system_soft_wdt_feed();
-	Flash_Read(4000, src_addr2,FLASH_SIZE);
-	system_soft_wdt_feed();
-	for( i=0;i<FLASH_SIZE;i++)
-		debug("[%d] = %d ",i,src_addr2[i]);
-	debug("\n");
-	system_soft_wdt_feed();
+    Mytimer_hw_timer_Init(OS_Timer_CB,2000000);
+    ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);//路由器账号密码
+    cbfun.sent_callback = ESP8266_WIFI_Send_Cb;
+    cbfun.recv_callback = ESP8266_WIFI_Recv_Cb;
+    cbfun.connect_callback = ESP8266_TCP_Connect_Cb_JX;
+    cbfun.disconnect_callback = ESP8266_TCP_Disconnect_Cb_JX;
+    cbfun.reconnect_callback = ESP8266_TCP_Break_Cb_JX;
+    ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);	//依据协议注册回调函数
+    ESP8266_SNTP_Init();
 }
 
