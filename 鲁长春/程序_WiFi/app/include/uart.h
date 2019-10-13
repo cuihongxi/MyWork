@@ -45,6 +45,7 @@
 #define UART1   1
 
 
+
 typedef enum {
     FIVE_BITS = 0x0,
     SIX_BITS = 0x1,
@@ -139,18 +140,22 @@ typedef enum {
 } RcvMsgState;
 
 typedef struct {
-    UartBautRate 	     baut_rate;
-    UartBitsNum4Char  data_bits;
-    UartExistParity      exist_parity;
-    UartParityMode 	    parity;    
-    UartStopBitsNum   stop_bits;
-    UartFlowCtrl         flow_ctrl;
-    RcvMsgBuff          rcv_buff;
-    TrxMsgBuff           trx_buff;
-    RcvMsgState        rcv_state;
+    UartBautRate 	     	baut_rate;
+    UartBitsNum4Char  		data_bits;
+    UartExistParity      	exist_parity;
+    UartParityMode 	    	parity;
+    UartStopBitsNum   		stop_bits;
+    UartFlowCtrl         	flow_ctrl;
+    RcvMsgBuff          	rcv_buff;
+    TrxMsgBuff           	trx_buff;
+    RcvMsgState        		rcv_state;
     int                      received;
     int                      buff_uart_no;  //indicate which uart use tx/rx buffer
 } UartDevice;
+
+
+
+
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
 void uart0_sendStr(const char *str);
@@ -162,23 +167,23 @@ void uart0_sendStr(const char *str);
 
 
  struct UartBuffer{
-    uint32     UartBuffSize;
-    uint8     *pUartBuff;
-    uint8     *pInPos;
-    uint8     *pOutPos;
-    STATUS  BuffState;
-    uint16    Space;  //remanent space of the buffer
-    uint8  TcpControl;
+    uint32     	UartBuffSize;
+    uint8     	*pUartBuff;
+    uint8     	*pInPos;
+    uint8     	*pOutPos;
+    STATUS  	BuffState;
+    uint16    	Space;  //remanent space of the buffer
+    uint8  		TcpControl;
     struct  UartBuffer     *  nextBuff;
 };
 
 struct UartRxBuff{
-    uint32     UartRxBuffSize;
-    uint8     *pUartRxBuff;
-    uint8     *pWritePos;
-    uint8     *pReadPos;
-    STATUS RxBuffState;
-    uint32    Space;  //remanent space of the buffer
+    uint32     	UartRxBuffSize;
+    uint8     	*pUartRxBuff;
+    uint8     	*pWritePos;
+    uint8     	*pReadPos;
+    STATUS 		RxBuffState;
+    uint32    	Space;  //remanent space of the buffer
 } ;
 
 typedef enum {
@@ -223,7 +228,24 @@ void UART_ClearIntrStatus(uint8 uart_no,uint32 clr_mask);
 void UART_SetIntrEna(uint8 uart_no,uint32 ena_mask);
 void UART_SetPrintPort(uint8 uart_no);
 bool UART_CheckOutputFinished(uint8 uart_no, uint32 time_out_us);
-//==============================================
+
+
+/*自定义函数*/
+
+
+
+typedef struct rxbuffstr{
+	uint32 buffSize;	// BUFF大小
+	uint32 len;			// 收到数据长度
+	uint8* buff;		// 缓存地址
+	void(*callback)(struct rxbuffstr*);// 回调函数
+}rxBuffStr;	// 接收数据结构
+
+typedef		void(rxcallback)(rxBuffStr*);
+
+
+
+void RxSetCallBack(rxcallback* callback);	// 设置RX回调函数
 
 #endif
 

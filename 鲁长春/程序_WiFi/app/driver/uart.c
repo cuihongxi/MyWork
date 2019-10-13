@@ -21,15 +21,42 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-
+#include "uart.h"
 #include "ets_sys.h"
 #include "osapi.h"
-#include "uart.h"
+
 #include "osapi.h"
 #include "uart_register.h"
 #include "mem.h"
 #include "os_type.h"
 
+/*自己定义的函数*/
+void rxCallBack(rxBuffStr* rxstr);
+#define	RXBUFFSIZE	1024							// 定义接收缓存大小
+u8 rxBuff[RXBUFFSIZE] = {0};						// 接收缓存数组
+rxBuffStr rxstr = {RXBUFFSIZE,0,rxBuff,rxCallBack};	// 定义一个接收缓存结构体
+
+// 获取RxBUFF的收到的数据
+static void uart_rxdat(rxBuffStr* rxstr)
+{
+    uint8 fifo_len = (READ_PERI_REG(UART_STATUS(UART0))>>UART_RXFIFO_CNT_S)&UART_RXFIFO_CNT;
+    uint8 idx=0;
+    rxstr->len = fifo_len;
+    for(idx=0;idx<fifo_len;idx++)
+    	rxstr->buff[idx] = READ_PERI_REG(UART_FIFO(UART0)) & 0xFF;
+    rxstr->buff[idx] = 0;
+}
+// 默认RX回调函数
+void rxCallBack(rxBuffStr* rxstr)
+{
+	os_printf("%s",rxstr->buff);
+}
+
+// 设置RX回调函数
+void RxSetCallBack(rxcallback* callback)
+{
+	rxstr.callback = callback;
+}
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice    UartDev;
@@ -41,7 +68,7 @@ LOCAL struct UartBuffer* pRxBuffer = NULL;
 /*this is a example to process uart data from task,please change the priority to fit your application task if exists*/
 /*it might conflict with your task, if so,please arrange the priority of different task,  or combine it to a different event in the same task. */
 #define uart_recvTaskPrio        0
-#define uart_recvTaskQueueLen    10
+#define uart_recvTaskQueueLen    10		//任务堆栈深度
 os_event_t    uart_recvTaskQueue[uart_recvTaskQueueLen];
 
 #define DBG  
@@ -288,6 +315,8 @@ uart_test_rx()
 }
 #endif
 
+
+
 LOCAL void ICACHE_FLASH_ATTR ///////
 uart_recvTask(os_event_t *events)
 {
@@ -295,13 +324,8 @@ uart_recvTask(os_event_t *events)
     #if  UART_BUFF_EN  
         Uart_rx_buff_enq();
     #else
-        uint8 fifo_len = (READ_PERI_REG(UART_STATUS(UART0))>>UART_RXFIFO_CNT_S)&UART_RXFIFO_CNT;
-        uint8 d_tmp = 0;
-        uint8 idx=0;
-        for(idx=0;idx<fifo_len;idx++) {
-            d_tmp = READ_PERI_REG(UART_FIFO(UART0)) & 0xFF;
-            uart_tx_one_char(UART0, d_tmp);
-        }
+        uart_rxdat(&rxstr);
+        if(rxstr.len){rxstr.callback(&rxstr);rxstr.len = 0;};	// 处理接收的数据
         WRITE_PERI_REG(UART_INT_CLR(UART0), UART_RXFIFO_FULL_INT_CLR|UART_RXFIFO_TOUT_INT_CLR);
         uart_rx_intr_enable(UART0);
     #endif
@@ -318,6 +342,7 @@ uart_recvTask(os_event_t *events)
 void ICACHE_FLASH_ATTR
 uart_init(UartBautRate uart0_br, UartBautRate uart1_br)
 {
+	// 创建串口任务
     /*this is a example to process uart data from task,please change the priority to fit your application task if exists*/
     system_os_task(uart_recvTask, uart_recvTaskPrio, uart_recvTaskQueue, uart_recvTaskQueueLen);  //demo with a task to process the uart data
     
@@ -511,6 +536,7 @@ void Uart_rx_buff_enq()
     uint8 fifo_data;
     #if 1
     fifo_len = (READ_PERI_REG(UART_STATUS(UART0))>>UART_RXFIFO_CNT_S)&UART_RXFIFO_CNT;
+    os_printf("fifo_len = %d\n",fifo_len);
     if(fifo_len >= pRxBuffer->Space){
         os_printf("buf full!!!\n\r");            
     }else{

@@ -95,7 +95,13 @@ user_rf_pre_init(void)
 }
 
 
-
+//接收回调函数
+#include "netcmd.h"
+void RxOverCallBack(rxBuffStr* rxstr)
+{
+	os_printf("len:%d, rxstr:%s\n",rxstr->len,rxstr->buff);
+	RunNetCmd(rxstr->buff);			// 根据串口命令执行不同的网络命令
+}
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
@@ -106,7 +112,8 @@ void ICACHE_FLASH_ATTR
 user_init(void)
 {
 	RegCBStr cbfun;
-	uart_init(115200,115200);
+	uart_init(115200,115200);		//定义了两个串口的波特率和串口接收函数
+	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
     os_printf("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
     MYGPIO_SETMODE_OUTPUT(2);
     MYGPIO_SETMODE_OUTPUT(5);
@@ -119,6 +126,7 @@ user_init(void)
     cbfun.disconnect_callback = ESP8266_TCP_Disconnect_Cb_JX;
     cbfun.reconnect_callback = ESP8266_TCP_Break_Cb_JX;
     ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);	//依据协议注册回调函数
-    ESP8266_SNTP_Init();
+
+
 }
 

@@ -8,7 +8,7 @@
 void ICACHE_FLASH_ATTR
 ESP8266_WIFI_Send_Cb(void *arg)
 {
-	os_printf("Send ok\n");
+	debug("Send ok\n");
 }
 
 
@@ -17,41 +17,39 @@ ESP8266_WIFI_Send_Cb(void *arg)
 void ICACHE_FLASH_ATTR ESP8266_TCP_Disconnect_Cb_JX(void *arg)
 {
 
-	os_printf("\nESP8266_TCP_Disconnect_OK\n");
+	debug("\nESP8266_TCP_Disconnect_OK\n");
 }
 
 // TCP连接异常断开时的回调函数
 //====================================================================
 void ICACHE_FLASH_ATTR ESP8266_TCP_Break_Cb_JX(void *arg,sint8 err)
 {
-	os_printf("\nESP8266_TCP_Break! 重新连接TCP-server ^！\n");
+	debug("\nESP8266_TCP_Break! 重新连接TCP-server ^！\n");
 	espconn_connect(&ST_NetCon);	// 连接TCP-server
 }
 
 //收到数据的回调函数
 void ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
 {
-	os_printf("Receive ok :\n");
+
 	// 根据数据设置LED的亮/灭
-	if(pdata[0] == 'k' || pdata[0] == 'K')	LED_ON();			// 首字母为'k'/'K'，灯亮
-	else if(pdata[0] == 'g' || pdata[0] == 'G')	LED_OFF();		// 首字母为'g'/'G'，灯灭
-//	ESP8266_Get_ConInfo((struct espconn *)arg,&ST_NetCon);
-//	ESP8266_SendMessage((struct espconn *)arg,
-//			*ESP8266_REMOTE_IP(arg),
-//			((struct espconn *)arg)->proto.udp->remote_port,
-//			"HELLO -!  ESP8266_WIFI_Recv_OK");
-	os_printf("%s\n",pdata);
-	os_printf("Receive end\n");
+//	if(pdata[0] == 'k' || pdata[0] == 'K')	LED_ON();			// 首字母为'k'/'K'，灯亮
+//	else if(pdata[0] == 'g' || pdata[0] == 'G')	LED_OFF();		// 首字母为'g'/'G'，灯灭
+	debug("\r\n %d.%d.%d.%d:%d	：",\
+			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
+			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
+	debug("%s\n",pdata);
+
 }
 
 // TCP连接建立成功的回调函数
 //====================================================================================================================
 void ICACHE_FLASH_ATTR ESP8266_TCP_Connect_Cb_JX(void *arg)
 {
-	os_printf("\n--------------- ESP8266_TCP_Connect_OK ---------------\n");
+	debug("\n--------------- ESP8266_TCP_Connect_OK ---------------\n");
 	ESP8266_Get_ConInfo(arg,&ST_NetCon);
-
-	os_printf("\r\n remote_ip = %d.%d.%d.%d\r\n",\
+	// 打印连接的远端IP
+	debug("\r\n remote_ip = %d.%d.%d.%d\r\n",\
 			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3]);
 	//ESP8266_SendMessage(&ST_NetCon,*ESP8266_REMOTE_IP(&ST_NetCon),80,HTTP_Message_485Comm);//发送消息
@@ -66,27 +64,24 @@ void ICACHE_FLASH_ATTR DNS_Over_Cb_JX(const char * name, ip_addr_t *ipaddr, void
 	//………………………………………………………………………………
 	if(ipaddr == NULL)		// 域名解析失败
 	{
-		os_printf("\r\n---- DomainName Analyse Failed ----\r\n");
+		debug("\r\n---- 域名解析失败 ----\r\n");
 		return;
 	}
 
 	//……………………………………………………………………………………………………………
 	else if (ipaddr != NULL && ipaddr->addr != 0)		// 域名解析成功
 	{
-		os_printf("\r\n---- DomainName Analyse Succeed ----\r\n");
-		os_printf("---> name :%s\n",name);
+		debug("\r\n---- 域名解析成功 ----\r\n");
+		debug("---> name :%s\n",name);
 
 		*ESP8266_REMOTE_IP(T_arg) = ipaddr->addr;// 将解析到的服务器IP地址设为TCP连接的远端IP地址
-		os_printf("\r\n local_ip = %d.%d.%d.%d\r\n",\
-				((struct espconn *)arg)->proto.tcp->local_ip[0],	((struct espconn *)arg)->proto.tcp->local_ip[1],\
-		((struct espconn *)arg)->proto.tcp->local_ip[2],((struct espconn *)arg)->proto.tcp->local_ip[3]);
-		os_printf("\r\n remote_ip = %d.%d.%d.%d\r\n",\
+		debug("\r\n remote_ip = %d.%d.%d.%d : %d\r\n",\
 				ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
-				ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3]);
+				ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
 
 		// 连接 TCP server
 		//----------------------------------------------------------
-		ESP8266_STA_TCPClient_NetCon_ByInt(arg,*ESP8266_REMOTE_IP(arg),80);
+		ESP8266_STA_TCPClient_NetCon_ByInt(arg,*ESP8266_REMOTE_IP(&ST_NetCon),ST_NetCon.proto.tcp->remote_port);
 
 	}
 }
@@ -98,28 +93,28 @@ void ICACHE_FLASH_ATTR DNS_Over_Cb_JX(const char * name, ip_addr_t *ipaddr, void
 void ICACHE_FLASH_ATTR
 smartconfig_done(sc_status status, void *pdata)
 {
-	os_printf("\r\n------ smartconfig_done ------\r\n");	// ESP8266网络状态改变
+	debug("\r\n------ smartconfig_done ------\r\n");	// ESP8266网络状态改变
 
     switch(status)
     {
         case SC_STATUS_WAIT:						// 初始值, CmartConfig等待
-            os_printf("\r\nSC_STATUS_WAIT\r\n");
+            debug("\r\nSC_STATUS_WAIT\r\n");
         break;
         case SC_STATUS_FIND_CHANNEL:				// 发现【WIFI信号】（8266在这种状态下等待配网）
-            os_printf("\r\nSC_STATUS_FIND_CHANNEL\r\n");
-    		os_printf("\r\n---- Please Use WeChat to SmartConfig ------\r\n\r\n");
+            debug("\r\nSC_STATUS_FIND_CHANNEL\r\n");
+    		debug("\r\n---- Please Use WeChat to SmartConfig ------\r\n\r\n");
     	break;
         case SC_STATUS_GETTING_SSID_PSWD: 			// 正在获取【SSID】【PSWD】（8266正在抓取并解密【SSID+PSWD】）
-            os_printf("\r\nSC_STATUS_GETTING_SSID_PSWD\r\n");
+            debug("\r\nSC_STATUS_GETTING_SSID_PSWD\r\n");
 			sc_type *type = pdata;					// 获取【SmartConfig类型】指针
 
             if (*type == SC_TYPE_ESPTOUCH)			// 配网方式 == 【AIRKISS】||【ESPTOUCH_AIRKISS】
-            	os_printf("\r\nSC_TYPE:SC_TYPE_ESPTOUCH\r\n");
+            	debug("\r\nSC_TYPE:SC_TYPE_ESPTOUCH\r\n");
             else
-            	os_printf("\r\nSC_TYPE:SC_TYPE_AIRKISS\r\n");
+            	debug("\r\nSC_TYPE:SC_TYPE_AIRKISS\r\n");
 	    break;
         case SC_STATUS_LINK:						// 成功获取到【SSID】【PSWD】，保存STA参数，并连接WIFI
-            os_printf("\r\nSC_STATUS_LINK\r\n");
+            debug("\r\nSC_STATUS_LINK\r\n");
             struct station_config *sta_conf = pdata;	// 获取【STA参数】指针
 			ESP8266_STA_Save2Flash(sta_conf ,Sector_STA_INFO); // 将【SSID】【PASS】保存到【外部Flash】中
 
@@ -128,16 +123,16 @@ smartconfig_done(sc_status status, void *pdata)
 	        wifi_station_connect();						// ESP8266连接WIFI
 	    break;
         case SC_STATUS_LINK_OVER: 						// ESP8266作为STA，成功连接到WIFI
-            os_printf("\r\nSC_STATUS_LINK_OVER\r\n");
+            debug("\r\nSC_STATUS_LINK_OVER\r\n");
             smartconfig_stop();		// 停止SmartConfig，释放内存
     		if(wifi_station_get_connect_status() == STATION_GOT_IP )// 显示ESP8266的IP地址
     		{
     			if(ESP8266_Save_LocalIP(&ST_NetCon,STA_MOD) == true)
     			{
-    				os_printf("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
+    				debug("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
     			}
     		}
-			os_printf("\r\n---- ESP8266 Connect to WIFI Successfully ----\r\n");
+			debug("\r\n---- ESP8266 Connect to WIFI Successfully ----\r\n");
 
 			//*****************************************************
 			// WIFI连接成功，执行后续功能。	如：SNTP/UDP/TCP/DNS等
@@ -154,19 +149,21 @@ OS_Timer_CB(void)
 {
 	static u8 flag_sw = 0;
 	struct ip_info infoIP;
+	static u8 flag_time = 0;
 	uint8 S_WIFI_STA_Connect = wifi_station_get_connect_status();
 	if(flag_sw==0)
 	{
-		os_printf("wifi_station_get_connect_status = %d\n",wifi_station_get_connect_status());
+		debug(".");
 		if(S_WIFI_STA_Connect == STATION_GOT_IP )
 		{
 			if(ESP8266_Save_LocalIP(&ST_NetCon,STA_MOD) == true)
 			{
-				os_printf("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
+				debug("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
 			}
 
 		  //  ESP8266_DNS_GetIP(&ST_NetCon,WWW_IP_ADDR,DNS_Over_Cb_JX);//解析DNS获取地址
-			os_printf("--> 成功连接到WIFI 当前时间: %s \n",Get_SNTPTime());
+			debug("--> 成功连接到WIFI\n");
+			ESP8266_SNTP_Init();
 			flag_sw = 1;
 
 		}
@@ -174,8 +171,8 @@ OS_Timer_CB(void)
 				S_WIFI_STA_Connect==STATION_WRONG_PASSWORD 	||		// WIFI密码错误
 				S_WIFI_STA_Connect==STATION_CONNECT_FAIL		)	// 连接WIFI失败
 			{
-				os_printf("\r\n---- S_WIFI_STA_Connect=%d-----------\r\n",S_WIFI_STA_Connect);
-				os_printf("\r\n---- ESP8266 Can't Connect to WIFI-----------\r\n");
+				debug("\r\n---- S_WIFI_STA_Connect=%d-----------\r\n",S_WIFI_STA_Connect);
+				debug("\r\n---- ESP8266 Can't Connect to WIFI-----------\r\n");
 
 				// 微信智能配网设置
 				//…………………………………………………………………………………………………………………………
@@ -188,7 +185,17 @@ OS_Timer_CB(void)
 			}
 
 	}
-
+//	if(flag_time == 0 && flag_sw == 1)
+//	{
+//		if(Get_SNTPTime()!=0)
+//		{
+//			flag_time = 1;
+//			debug(" 当前时间: %s \n",Get_SNTPTime());
+//			//debug("-------------- 连接TCP-Server -------------\n");
+//			//ESP8266_STA_TCPClient_NetCon_ByStr(&ST_NetCon,"192.168.31.67:6666");
+//		}
+//
+//	}
 
 }
 
