@@ -10,6 +10,7 @@
 #include "user_interface.h"
 #include "c_types.h"
 #include "os_type.h"
+#include "mem.h"
 
 #define	DEBUG_LEVEL 1
 
@@ -21,5 +22,10 @@
 	#define  	debug(...)
 	#define		UART_INIT()
 #endif
+
+
+#define		malloc			os_zalloc
+#define		free			os_free
+#define		strlen(a)		os_strlen((const char*)a)		// 获取字符串长度
 
 #endif

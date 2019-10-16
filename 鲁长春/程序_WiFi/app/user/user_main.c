@@ -30,8 +30,9 @@
 #include "myFlash.h"
 #include "myWifi.h"
 #include "AppCallBack.h"
+#include "myMQTT.h"
 
-
+DataMessageStr*  ds = {0};
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set
  * Description  : SDK just reversed 4 sectors, used for rf init data and paramters.
@@ -99,7 +100,7 @@ user_rf_pre_init(void)
 #include "netcmd.h"
 void RxOverCallBack(rxBuffStr* rxstr)
 {
-	os_printf("len:%d, rxstr:%s\n",rxstr->len,rxstr->buff);
+	os_printf("len:%d,RX:%s\n",rxstr->len,rxstr->buff);
 	RunNetCmd(rxstr->buff);			// 根据串口命令执行不同的网络命令
 }
 /******************************************************************************
@@ -127,6 +128,10 @@ user_init(void)
     cbfun.reconnect_callback = ESP8266_TCP_Break_Cb_JX;
     ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);	//依据协议注册回调函数
 
+    SessionStr* ss = myMQTT_CreatNewSessionStr\
+    		("LED0&a1nVPohfr2X","2EECC74A3288B971B2282A5DCA5235FD7698E4D9","a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883);
+    ControlStr* cs = myMQTT_MallocCONNECTMessage(ss);
+    ds = myMQTT_GetControlMessage(cs);
 
 }
 

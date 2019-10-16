@@ -12,6 +12,11 @@
 #define		MESSAGE				"mes:"			// 信息开始的起始头 mes:ni hao a
 #define		DIS_CONNECT			"disconnect"	// 断开与TCP_SERVER的连接
 #define		NET_CONNECT			"net:"			// 通过域名访问网址	net:www.baidu.com
+#define		HTTP_GET			"get:"			// HTTP get 请求
+#define		MQTT_CONNET			"qtc:"			// MQTT CONNECT报文
+#define		MQTT_DISCON			"a_dis"			// MQTT DISCONNECT
+
+
 
 /* 函数 */
 

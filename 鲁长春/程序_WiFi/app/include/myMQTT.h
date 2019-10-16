@@ -19,6 +19,9 @@
 
 #define	 	mymalloc	Clearmalloc		//动态申请并清零内存
 #define	 	mymemcpy	os_memcpy		//内存拷贝
+
+
+
 /*
  *
  *
@@ -26,7 +29,7 @@
     可变报头：协议名长度2字节 + 协议名 + 协议级别 + 连接标志 + 和保持连接
     有效载荷：必须按这个顺序出现：客户端标识符，遗嘱主题，遗嘱消息，用户名，密码
  */
-#define MQTT_Protocol_Level             0x04            //协议级别
+
 /**
  * MQTT控制报文的类型，4~7位 | 0~3位
  */
@@ -68,6 +71,8 @@ typedef enum{
 
 #define ConnectFlags_PassWordFlag       0x40   //密码标志
 #define ConnectFlags_UserNameFlag       0x80   //用户名标志
+
+
 
 /***
  * 固定报头结构体
@@ -124,7 +129,7 @@ typedef struct{
 	u8* passWord;
 	u8  connectFlags;		//连接标志
 	u16 keepAlive;			//保存连接，秒
-	u8* clientId;			//客户端标识符 “0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ”
+	u8* clientId;			//客户端标识符 “0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ” 客户端ID
 	u16 clientIdnum;		//客户端标识符长度
 
 }SessionStr;
@@ -142,6 +147,12 @@ typedef struct{
 #define PUBLISH_QoS1        0X04        //发布消息控制报文,报文的服务质量等级标志,QoS0最多分发一次,QoS1至少发布一次
 #define PUBLISH_QoS0        0X02        //发布消息控制报文,报文的服务质量等级标志
 #define	PUBLISH_RETAIN		0x01		//保留标志,1 服务器保留为问候消息
+
+/*用户默认参数*/
+#define	CONNECT_FLAG_PARA	(ConnectFlags_UserNameFlag|ConnectFlags_PassWordFlag|ConnectFlags_CleanSession)	//连接标志参数默认值
+#define	KEEPALIVE_SEC					60			// 秒，保持连接时长
+#define MQTT_Protocol_Level             0x04        // 协议级别
+
 /**
  * 函数
  */
@@ -151,6 +162,9 @@ u8* IntTo128(u32 num ,u8* array);   							// 变换成128进制存储
 SessionStr* myMQTT_CreatNewSessionStr(const char* name,const char* password,const char* dns,u16 port);
 ControlStr* myMQTT_MallocCONNECTMessage(SessionStr* ss);		// 创建连接报文CONNECT
 DataMessageStr*  myMQTT_GetControlMessage(ControlStr* message);	// 组织发送控制报文数据
+
+void myMQTT_Disconnect();	// 断开连接
+void myMQTT_Ping();			// 心跳包，PING包,服务器回复HEX:D0 00
 
 
 #endif

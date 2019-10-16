@@ -1,5 +1,5 @@
 #include "myMQTT.h"
-
+#include "myWifi.h"
 /**
  * 变换成128进制存储
  * 返回结束指针
@@ -92,9 +92,9 @@ SessionStr* myMQTT_CreatNewSessionStr(const char* name,const char* password,cons
 	ss->port = port;
 	ss->usrName = (u8*)name;
 	ss->passWord = (u8*)password;
-	ss->keepAlive = 0x40;
-	ss->clientId = CreatClientID(32);
-	ss->connectFlags = 0xc2;					//用户名密码+清除会话
+	ss->keepAlive = KEEPALIVE_SEC;
+	ss->clientId = "LED0|securemode=3,signmethod=hmacsha1|";//CreatClientID(32);
+	ss->connectFlags = CONNECT_FLAG_PARA;					//用户名密码+清除会话
 	ss->protocolLevel = MQTT_Protocol_Level;
 
 	return ss;
@@ -205,3 +205,22 @@ DataMessageStr*  myMQTT_GetControlMessage(ControlStr* message)
 	return dataMessage;
 }
 
+// 断开连接
+void myMQTT_Disconnect()
+{
+	u8 discmd[2] = {0xe0,00};
+	espconn_send(&ST_NetCon,discmd,2);
+}
+
+// 心跳包，PING包
+void myMQTT_Ping()
+{
+	u8 pincmd[2] = {0xc0,00};
+	espconn_send(&ST_NetCon,pincmd,2);
+}
+
+// 订阅主题报文
+void myMQTT_Subscrible()
+{
+
+}

@@ -32,7 +32,7 @@
 
 /*自己定义的函数*/
 void rxCallBack(rxBuffStr* rxstr);
-#define	RXBUFFSIZE	1024							// 定义接收缓存大小
+#define	RXBUFFSIZE	0x800							// 定义接收缓存大小
 u8 rxBuff[RXBUFFSIZE] = {0};						// 接收缓存数组
 rxBuffStr rxstr = {RXBUFFSIZE,0,rxBuff,rxCallBack};	// 定义一个接收缓存结构体
 

@@ -31,15 +31,16 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Break_Cb_JX(void *arg,sint8 err)
 //收到数据的回调函数
 void ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
 {
-
+	u8 i = 0;
 	// 根据数据设置LED的亮/灭
 //	if(pdata[0] == 'k' || pdata[0] == 'K')	LED_ON();			// 首字母为'k'/'K'，灯亮
 //	else if(pdata[0] == 'g' || pdata[0] == 'G')	LED_OFF();		// 首字母为'g'/'G'，灯灭
-	debug("\r\n %d.%d.%d.%d:%d	：",\
+	debug("\r\n %d.%d.%d.%d:%d ->HEX:",\
 			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
-	debug("%s\n",pdata);
-
+	for(i = 0;i<len;i++)
+		debug(" %X ",pdata[i]);
+	debug("\n");
 }
 
 // TCP连接建立成功的回调函数

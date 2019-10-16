@@ -1,10 +1,13 @@
 #include "netcmd.h"
 #include "myWifi.h"
 #include "AppCallBack.h"
+#include "myHTTP.h"
+#include "myMQTT.h"
+extern DataMessageStr*  ds;
 //字符串去掉空格和回车，生成新的字符串
 void Str_DelSpace(char* str)
 {
-	char dat[20] = {0};
+	char dat[256] = {0};
 	u8 i = 0;
 	u8 j = 0;
 	while(str[i] != 0)
@@ -75,10 +78,24 @@ void RunNetCmd(char* str)
 		Str_DelSpace(str);								// 去掉空格和回车
 		ST_NetCon.proto.tcp->remote_port = GetNetPort(str);// 获取端口号
 		GetNetIPAddr(str);								// 截取网址
-
 		ESP8266_DNS_GetIP(&ST_NetCon,str,DNS_Over_Cb_JX);//解析DNS获取地址
 	}
-	debug("wifi str:	%s\n",str);
+	if(CampareStrInHeadWithSpace(str,HTTP_GET)){		// HTTP get 请求
+		Str_DelSpace(str);								// 去掉空格和回车
+		myHTTP_GET(str);								// HTTP GET命令获取资源
+	}
+
+	if(CampareStrInHeadWithSpace(str,MQTT_CONNET)){		// MQTT CONNECT报文
+
+		espconn_send(&ST_NetCon,ds->pdat,ds->length);
+	}
+
+	if(CampareStrInHeadWithSpace(str,MQTT_DISCON)){		// MQTT 断开连接
+
+		myMQTT_Disconnect();	// 断开连接
+	}
+
+
 }
 
 
