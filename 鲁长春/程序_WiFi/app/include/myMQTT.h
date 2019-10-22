@@ -18,7 +18,7 @@
 
 
 #define	 	mymalloc	Clearmalloc		//动态申请并清零内存
-#define	 	mymemcpy	os_memcpy		//内存拷贝
+
 
 
 
@@ -34,22 +34,22 @@
  * MQTT控制报文的类型，4~7位 | 0~3位
  */
 typedef enum{
-    Reserved = 0,   //保留                                            有效载荷           报文标识符字段
-    CONNECT = 1<<4,        //客户端请求连接服务端                         需要               不需要        
-    CONNACK = 2<<4,        //服务端到客户端,连接报文确认                  不需要              不需要
-    PUBLISH = 3<<4,        //两个方向都允许,发布消息                       可选             需要（如果QoS > 0）
-    PUBACK = 4<<4,         //两个方向都允许,QOS1消息发布收到确认           不需要              需要
-    PUBREC = 5<<4,         //两个方向都允许,发布收到(保证交付第一步)        不需要              需要
-    PUBREL = (6<<4)|0x02,  //两个方向都允许,发布释放(保证交付第2步)         不需要              需要
-    PUBCOMP = 7<<4,        //两个方向都允许,QOS2消息发布完成(保证交付第3步)  不需要              需要
-    SUBSCRIBE = (8<<4)|0x02,//客户端到服务端,客户端订阅请求                  需要               需要
-    SUBACK = 9<<4,         //服务端到客户端,订阅请求报文确认                 需要                需要
-    UNSUBSCRIBE = (10<<4)|0x02, //客户端到服务端,客户端取消订阅请求          需要                需要
-    UNSUBACK = 11<<4,       //服务端到客户端,取消订阅报文确认                不需要              需要
-    PINGREQ = 12<<4,        //客户端到服务端,心跳请求                       不需要              不需要
-    PINGRESP = 13<<4,       //服务端到客户端,心跳响应                       不需要              不需要
-    DISCONNECT = 14<<4,     //客户端到服务端,客户端断开连接                  不需要              不需要
-    Reserved15 = 15<<4,     //保留
+    Reserved = 0,   			//保留                                            					有效载荷           	报文标识符字段
+    CONNECT = 1<<4,        		//客户端请求连接服务端                        				 需要               	不需要
+    CONNACK = 2<<4,        		//服务端到客户端,连接报文确认                  			不需要              	不需要
+    PUBLISH = 3<<4,        		//两个方向都允许,发布消息                       			可选             	需要（如果QoS > 0）
+    PUBACK = 4<<4,         		//两个方向都允许,QOS1消息发布收到确认       		不需要              	需要
+    PUBREC = 5<<4,         		//两个方向都允许,发布收到(保证交付第一步)        不需要              	需要
+    PUBREL = (6<<4)|0x02,  		//两个方向都允许,发布释放(保证交付第2步)         不需要             	 需要
+    PUBCOMP = 7<<4,        		//两个方向都允许,QOS2消息发布完成(保证交付第3步)  不需要             	 需要
+    SUBSCRIBE = (8<<4)|0x02,	//客户端到服务端,客户端订阅请求                  		 	 需要               	需要
+    SUBACK = 9<<4,         		//服务端到客户端,订阅请求报文确认                			 需要               	 需要
+    UNSUBSCRIBE = (10<<4)|0x02, //客户端到服务端,客户端取消订阅请求          			需要                	需要
+    UNSUBACK = 11<<4,       	//服务端到客户端,取消订阅报文确认                			不需要             	 需要
+    PINGREQ = 12<<4,        	//客户端到服务端,心跳请求                       			不需要              	不需要
+    PINGRESP = 13<<4,       	//服务端到客户端,心跳响应                       			不需要              	不需要
+    DISCONNECT = 14<<4,     	//客户端到服务端,客户端断开连接                  			不需要              	不需要
+    Reserved15 = 15<<4,     	//保留
 
 }myMQTT_ControlType;
 
@@ -71,7 +71,13 @@ typedef enum{
 
 #define ConnectFlags_PassWordFlag       0x40   //密码标志
 #define ConnectFlags_UserNameFlag       0x80   //用户名标志
-
+// 连接返回码
+#define		CONNACK_OK						0	// 连接OK
+#define		CONNACK_ERROR_PL				1	// 不支持的协议版本
+#define		CONNACK_ERROR_CLIENTID			2	// 不合格的客户端标识符
+#define		CONNACK_ERROR_SERVICE			3	// 服务器不可用
+#define		CONNACK_ERROR_USERNAME			4	// 用户名或密码错误
+#define		CONNACK_ERROR_AUTH				5	// 客户端未被授权
 
 
 /***
@@ -86,8 +92,8 @@ typedef struct{
  * 可变报头结构体
  */
 typedef struct{
-	u8* pdat;			//指向可变报头数据
-	u32 length;			//可变报头长度
+	u8* pdat;				//指向可变报头数据
+	u32 length;				//可变报头长度
 }VariableHeaderStr;
 
 /***
@@ -102,9 +108,9 @@ typedef struct{
  * 控制报文结构体
  */
 typedef struct{
-	FixedHeaderStr 		fixHeader;
-	VariableHeaderStr 	variableHeader;
-	PayloadStr 			payload;
+	FixedHeaderStr 		fixHeader;				// 固定报头：报文类型 + 剩余长度
+	VariableHeaderStr 	variableHeader;			// 可变报头
+	PayloadStr 			payload;				// 有效载荷
 
 }ControlStr;
 
@@ -121,16 +127,28 @@ typedef struct{
 /**
  * 会话结构体
  */
-typedef struct{
-	u8* wwwDNS;				//网址
-	u16 port;				//端口号
-	u8  protocolLevel ;		//协议级别
-	u8* usrName;
-	u8* passWord;
-	u8  connectFlags;		//连接标志
-	u16 keepAlive;			//保存连接，秒
-	u8* clientId;			//客户端标识符 “0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ” 客户端ID
-	u16 clientIdnum;		//客户端标识符长度
+typedef struct _SessionStr{
+	char* 					url;				// 网址
+	u16 					port;				// 端口号
+	u8  					protocolLevel ;		//协议级别
+	char*  					usrName;
+	char*  					passWord;
+	u8  					connectFlags;		//连接标志
+	u16 					keepAlivetime;			//保存连接，秒
+	char*  					clientId;			//客户端标识符 , 客户端ID
+	myMQTT_ControlType 		messageType;		//报文类型
+
+	void(*Connect)(struct _SessionStr*)		;			// 连接报文
+	void(*Disconnect)(struct _SessionStr*)	;			// 断开连接报文
+	void(*Ping)(struct _SessionStr*)		;			// PING报文
+	void(*Subscribe)(struct _SessionStr*)	;			// 订阅主题
+	void(*Unsub)(struct _SessionStr*)		;			// 取消订阅
+	void(*Publish)(struct _SessionStr*)		;			// 发布消息
+	void(*Puback)(struct _SessionStr*)		;			// 发布确认
+	void(*KeepAlive)(void)					;			// Ping包
+	void(*DisConnect)(void)					;			// 与服务器断开连接
+	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
+	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
 
 }SessionStr;
 
@@ -148,23 +166,40 @@ typedef struct{
 #define PUBLISH_QoS0        0X02        //发布消息控制报文,报文的服务质量等级标志
 #define	PUBLISH_RETAIN		0x01		//保留标志,1 服务器保留为问候消息
 
+
+
+
 /*用户默认参数*/
 #define	CONNECT_FLAG_PARA	(ConnectFlags_UserNameFlag|ConnectFlags_PassWordFlag|ConnectFlags_CleanSession)	//连接标志参数默认值
 #define	KEEPALIVE_SEC					60			// 秒，保持连接时长
 #define MQTT_Protocol_Level             0x04        // 协议级别
 
+
+
 /**
  * 函数
  */
-u8* IntTo128(u32 num ,u8* array);   							// 变换成128进制存储
+u8* IntTo128(u32 num ,u8* array);   											// 变换成128进制存储
 
-// 创建一个新会话
-SessionStr* myMQTT_CreatNewSessionStr(const char* name,const char* password,const char* dns,u16 port);
-ControlStr* myMQTT_MallocCONNECTMessage(SessionStr* ss);		// 创建连接报文CONNECT
-DataMessageStr*  myMQTT_GetControlMessage(ControlStr* message);	// 组织发送控制报文数据
+void myMQTT_Disconnect();	// 断开链接
+void myMQTT_Ping();			// 心跳包，PING包
 
-void myMQTT_Disconnect();	// 断开连接
-void myMQTT_Ping();			// 心跳包，PING包,服务器回复HEX:D0 00
+ControlStr*  		myMQTT_CreatMessage(SessionStr* ss);						// 创建报文
+void  				FixConnectVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充CONNECT报文可变报头
+void  				FixConnectPayload(ControlStr* cs,SessionStr* ss);			// 填充CONNECT报文有效载荷
+DataMessageStr*  	myMQTT_CreatControlMessage(ControlStr* message);			// 组织发送控制报文数据
+
+// CONNECT报文，服务器回复回调函数
+void Connack_OkCB();
+void Connack_ErrorPLCB();
+void Connack_ErrorClientID();
+void Connack_ErrorServiceCB();
+void Connack_ErrorUserNameCB();
+void Connack_ErrorAuthCB();
+
+// 服务器回复回调函数
+void  myMQTT_ServerReplyCB(SessionStr* ss, char * pdata, unsigned short len);
+
 
 
 #endif

@@ -72,6 +72,7 @@ u32* ESP8266_LOCAL_IP(struct espconn *arg);		// 本地IP
 
 void ICACHE_FLASH_ATTR
 ESP8266_SendMessage_B(struct espconn *arg,const char* str);//已建立连接后wifi发送消息
+void ESP8266_SendtoService(uint8 *psent, uint16 length);
 
 #endif
 

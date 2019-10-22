@@ -11,7 +11,7 @@
 
 
 
-#define		Sector_STA_INFO		0x80			// 【STA参数】保存扇区
+#define		Sector_STA_INFO		0			// 【STA参数】保存扇区
 
 #define	LED_ON()		MYGPIO_RESET(2)
 #define	LED_OFF()		MYGPIO_SET(2)

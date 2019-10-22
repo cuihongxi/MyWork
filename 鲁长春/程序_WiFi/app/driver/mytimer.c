@@ -31,12 +31,12 @@ in non autoload mode:
                         10 ~ 0x7fffff;
 * Returns      : NONE
 *******************************************************************************/
-void  hw_timer_arm(u32 val)
+void   hw_timer_arm(u32 val)
 {
     RTC_REG_WRITE(FRC1_LOAD_ADDRESS, US_TO_RTC_TIMER_TICKS(val));
 }
 
-static void (* user_hw_timer_cb)(void) = NULL;
+static void  (* user_hw_timer_cb)(void) = NULL;
 /******************************************************************************
 * FunctionName : hw_timer_set_func
 * Description  : set the func, when trigger timer is up.
@@ -44,19 +44,19 @@ static void (* user_hw_timer_cb)(void) = NULL;
                         timer callback function,
 * Returns      : NONE
 *******************************************************************************/
-void  hw_timer_set_func(void (* user_hw_timer_cb_set)(void))
+void   hw_timer_set_func(void (* user_hw_timer_cb_set)(void))
 {
     user_hw_timer_cb = user_hw_timer_cb_set;
 }
 
-static void hw_timer_isr_cb(void *arg)
+static void  hw_timer_isr_cb(void *arg)
 {
     if (user_hw_timer_cb != NULL) {
         (*(user_hw_timer_cb))();
     }
 }
 
-static void hw_timer_nmi_cb(void)
+static void  hw_timer_nmi_cb(void)
 {
     if (user_hw_timer_cb != NULL) {
         (*(user_hw_timer_cb))();
@@ -75,7 +75,7 @@ u8 req:
                         1,  autoload mode,
 * Returns      : NONE
 *******************************************************************************/
-void ICACHE_FLASH_ATTR hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
+void  hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
 {
     if (req == 1) {
         RTC_REG_WRITE(FRC1_CTRL_ADDRESS,
@@ -101,7 +101,7 @@ void ICACHE_FLASH_ATTR hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
  */
 
 
-void Mytimer_hw_timer_Init(hw_timer_cb_fun* fun, u32 time_us)
+void  Mytimer_hw_timer_Init(hw_timer_cb_fun* fun, u32 time_us)
 {
     hw_timer_init(FRC1_SOURCE,1);
     hw_timer_set_func(fun);
@@ -129,7 +129,7 @@ ESP8266_SNTP_Init(void)
 }
 
 //
-char* ICACHE_FLASH_ATTR
+char*
 Get_SNTPTime()
 {
 	char * Str_RealTime = 0;			//

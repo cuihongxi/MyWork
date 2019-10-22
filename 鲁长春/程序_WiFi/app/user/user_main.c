@@ -25,14 +25,15 @@
 
 #include "uhead.h"
 #include "delay.h"
-#include "mygpio.h"
+//#include "mygpio.h"
 #include "mytimer.h"
 #include "myFlash.h"
 #include "myWifi.h"
 #include "AppCallBack.h"
 #include "myMQTT.h"
+#include "aliyunMQTT.h"
 
-DataMessageStr*  ds = {0};
+SessionStr* ss = 0;
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set
  * Description  : SDK just reversed 4 sectors, used for rf init data and paramters.
@@ -100,7 +101,7 @@ user_rf_pre_init(void)
 #include "netcmd.h"
 void RxOverCallBack(rxBuffStr* rxstr)
 {
-	os_printf("len:%d,RX:%s\n",rxstr->len,rxstr->buff);
+	os_printf("串口收到数据：len:%d,RX:%s\n",rxstr->len,rxstr->buff);
 	RunNetCmd(rxstr->buff);			// 根据串口命令执行不同的网络命令
 }
 /******************************************************************************
@@ -115,23 +116,21 @@ user_init(void)
 	RegCBStr cbfun;
 	uart_init(115200,115200);		//定义了两个串口的波特率和串口接收函数
 	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
-    os_printf("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
-    MYGPIO_SETMODE_OUTPUT(2);
-    MYGPIO_SETMODE_OUTPUT(5);
-    MYGPIO_SETMODE_INPUT(4);
-    Mytimer_hw_timer_Init(OS_Timer_CB,2000000);
-    ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);//路由器账号密码
+    debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
+	//    MYGPIO_SETMODE_OUTPUT(2);
+	//    MYGPIO_SETMODE_OUTPUT(5);
+	//    MYGPIO_SETMODE_INPUT(4);
+    Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
+    ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);	// 路由器账号密码
     cbfun.sent_callback = ESP8266_WIFI_Send_Cb;
     cbfun.recv_callback = ESP8266_WIFI_Recv_Cb;
     cbfun.connect_callback = ESP8266_TCP_Connect_Cb_JX;
     cbfun.disconnect_callback = ESP8266_TCP_Disconnect_Cb_JX;
     cbfun.reconnect_callback = ESP8266_TCP_Break_Cb_JX;
-    ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);	//依据协议注册回调函数
+    ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);			// 依据协议注册回调函数
 
-    SessionStr* ss = myMQTT_CreatNewSessionStr\
-    		("LED0&a1nVPohfr2X","2EECC74A3288B971B2282A5DCA5235FD7698E4D9","a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883);
-    ControlStr* cs = myMQTT_MallocCONNECTMessage(ss);
-    ds = myMQTT_GetControlMessage(cs);
+    ss =  (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,"a1nVPohfr2X","LED0",\
+    		"AryIsyPotIS0giPat7wusZOEHJ0n90OI","afadfafdfewfr32q",0);
 
 }
 

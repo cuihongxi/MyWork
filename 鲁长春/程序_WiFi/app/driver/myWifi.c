@@ -1,4 +1,5 @@
 #include "myWifi.h"
+#include "myflash.h"
 
 struct espconn ST_NetCon = {0};
 /***
@@ -233,7 +234,8 @@ void ICACHE_FLASH_ATTR
 ESP8266_STA_Init_FromFlash(struct espconn* ST_NetCon,u32 flashsector)
 {
 	struct station_config STA_Config = {0} ;
-	spi_flash_read(flashsector*4096,(uint32 *)&STA_Config, 96);	// (SSID/PASS)
+	//spi_flash_read(flashsector*4096,(uint32 *)&STA_Config, 96);	// (SSID/PASS)
+	Flash_Read(flashsector, (u8*)&STA_Config,96);
 	STA_Config.ssid[31] = 0;		// SSID'\0'
 	STA_Config.password[63] = 0;	// APSS'\0'
 	wifi_set_opmode(STATION_MODE);				//
@@ -352,8 +354,13 @@ ESP8266_LOCAL_IP(struct espconn *arg)
 //HTTP GET
 //---------
 
-void ESP8266_Http_Get(struct espconn *ST_NetCon,const char* mes)
+void  ESP8266_Http_Get(struct espconn *ST_NetCon,const char* mes)
 {
 
 //	ESP8266_SendMessage(ST_NetCon,*ESP8266_REMOTE_IP(&ST_NetCon),80,mes);//
+}
+
+void ESP8266_SendtoService(uint8 *psent, uint16 length)
+{
+	espconn_send(&ST_NetCon,psent,length);
 }

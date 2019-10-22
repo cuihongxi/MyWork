@@ -1,6 +1,9 @@
 #include "AppCallBack.h"
 #include "myWifi.h"
 #include "myGPIO.H"
+#include "myMQTT.h"
+
+extern SessionStr* ss;
 
 /**
  * 发送成功回调函数
@@ -14,7 +17,7 @@ ESP8266_WIFI_Send_Cb(void *arg)
 
 // TCP连接断开成功的回调函数
 //================================================================
-void ICACHE_FLASH_ATTR ESP8266_TCP_Disconnect_Cb_JX(void *arg)
+void ICACHE_FLASH_ATTR  ESP8266_TCP_Disconnect_Cb_JX(void *arg)
 {
 
 	debug("\nESP8266_TCP_Disconnect_OK\n");
@@ -22,25 +25,24 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Disconnect_Cb_JX(void *arg)
 
 // TCP连接异常断开时的回调函数
 //====================================================================
-void ICACHE_FLASH_ATTR ESP8266_TCP_Break_Cb_JX(void *arg,sint8 err)
+void ICACHE_FLASH_ATTR  ESP8266_TCP_Break_Cb_JX(void *arg,sint8 err)
 {
-	debug("\nESP8266_TCP_Break! 重新连接TCP-server ^！\n");
+	debug("\nESP8266_TCP_Break! Err : %d重新连接TCP-server ^！\n",err);
 	espconn_connect(&ST_NetCon);	// 连接TCP-server
 }
 
 //收到数据的回调函数
-void ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
+void  ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
 {
 	u8 i = 0;
-	// 根据数据设置LED的亮/灭
-//	if(pdata[0] == 'k' || pdata[0] == 'K')	LED_ON();			// 首字母为'k'/'K'，灯亮
-//	else if(pdata[0] == 'g' || pdata[0] == 'G')	LED_OFF();		// 首字母为'g'/'G'，灯灭
 	debug("\r\n %d.%d.%d.%d:%d ->HEX:",\
 			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
 	for(i = 0;i<len;i++)
 		debug(" %X ",pdata[i]);
 	debug("\n");
+
+	myMQTT_ServerReplyCB(ss,pdata,len);		// MQTT处理服务器回复报文
 }
 
 // TCP连接建立成功的回调函数
@@ -59,7 +61,7 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Connect_Cb_JX(void *arg)
 
 // DNS_域名解析结束_回调函数【参数1：域名字符串指针 / 参数2：IP地址结构体指针 / 参数3：网络连接结构体指针】
 //=========================================================================================================
-void ICACHE_FLASH_ATTR DNS_Over_Cb_JX(const char * name, ip_addr_t *ipaddr, void *arg)
+void  DNS_Over_Cb_JX(const char * name, ip_addr_t *ipaddr, void *arg)
 {
 	struct espconn * T_arg = (struct espconn *)arg;	// 缓存网络连接结构体指针
 	//………………………………………………………………………………
@@ -117,7 +119,8 @@ smartconfig_done(sc_status status, void *pdata)
         case SC_STATUS_LINK:						// 成功获取到【SSID】【PSWD】，保存STA参数，并连接WIFI
             debug("\r\nSC_STATUS_LINK\r\n");
             struct station_config *sta_conf = pdata;	// 获取【STA参数】指针
-			ESP8266_STA_Save2Flash(sta_conf ,Sector_STA_INFO); // 将【SSID】【PASS】保存到【外部Flash】中
+			//ESP8266_STA_Save2Flash(sta_conf ,Sector_STA_INFO); // 将【SSID】【PASS】保存到【外部Flash】中
+			 Flash_Write(Sector_STA_INFO, (u8*) sta_conf,96);
 
 			wifi_station_set_config(sta_conf);			// 设置STA参数【Flash】
 	        wifi_station_disconnect();					// 断开STA连接
@@ -152,6 +155,7 @@ OS_Timer_CB(void)
 	struct ip_info infoIP;
 	static u8 flag_time = 0;
 	uint8 S_WIFI_STA_Connect = wifi_station_get_connect_status();
+	//if(S_WIFI_STA_Connect != STATION_GOT_IP ) flag_time = 0;
 	if(flag_sw==0)
 	{
 		debug(".");
@@ -175,7 +179,7 @@ OS_Timer_CB(void)
 				debug("\r\n---- S_WIFI_STA_Connect=%d-----------\r\n",S_WIFI_STA_Connect);
 				debug("\r\n---- ESP8266 Can't Connect to WIFI-----------\r\n");
 
-				// 微信智能配网设置
+				// 微信智能配网设置f
 				//…………………………………………………………………………………………………………………………
 				//wifi_set_opmode(STATION_MODE);			// 设为STA模式						//【第①步】
 

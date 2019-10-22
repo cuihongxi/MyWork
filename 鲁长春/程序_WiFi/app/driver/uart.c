@@ -32,12 +32,12 @@
 
 /*自己定义的函数*/
 void rxCallBack(rxBuffStr* rxstr);
-#define	RXBUFFSIZE	0x800							// 定义接收缓存大小
+#define	RXBUFFSIZE	0x400							// 定义接收缓存大小
 u8 rxBuff[RXBUFFSIZE] = {0};						// 接收缓存数组
 rxBuffStr rxstr = {RXBUFFSIZE,0,rxBuff,rxCallBack};	// 定义一个接收缓存结构体
 
 // 获取RxBUFF的收到的数据
-static void uart_rxdat(rxBuffStr* rxstr)
+static void ICACHE_FLASH_ATTR uart_rxdat(rxBuffStr* rxstr)
 {
     uint8 fifo_len = (READ_PERI_REG(UART_STATUS(UART0))>>UART_RXFIFO_CNT_S)&UART_RXFIFO_CNT;
     uint8 idx=0;
@@ -47,13 +47,13 @@ static void uart_rxdat(rxBuffStr* rxstr)
     rxstr->buff[idx] = 0;
 }
 // 默认RX回调函数
-void rxCallBack(rxBuffStr* rxstr)
+void ICACHE_FLASH_ATTR rxCallBack(rxBuffStr* rxstr)
 {
 	os_printf("%s",rxstr->buff);
 }
 
 // 设置RX回调函数
-void RxSetCallBack(rxcallback* callback)
+void ICACHE_FLASH_ATTR RxSetCallBack(rxcallback* callback)
 {
 	rxstr.callback = callback;
 }
@@ -245,7 +245,7 @@ void at_port_print(const char *str) __attribute__((alias("uart0_sendStr")));
  * Parameters   : void *para - point to ETS_UART_INTR_ATTACH's arg
  * Returns      : NONE
 *******************************************************************************/
-LOCAL void
+LOCAL void ICACHE_FLASH_ATTR
 uart0_rx_intr_handler(void *para)
 {
     /* uart0 and uart1 intr combine togther, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
