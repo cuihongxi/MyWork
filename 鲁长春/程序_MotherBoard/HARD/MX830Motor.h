@@ -14,7 +14,7 @@
 #include "CUI_RTOS.H"
 
 #define  MX830Motor_GPIO_FI     GPIOC,GPIO_Pin_2
-#define  MX830Motor_GPIO_BI     GPIOA,GPIO_Pin_1
+#define  MX830Motor_GPIO_BI     GPIOD,GPIO_Pin_5
 
 
 

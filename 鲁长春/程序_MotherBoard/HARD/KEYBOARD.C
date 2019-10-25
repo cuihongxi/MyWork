@@ -5,7 +5,7 @@
 #include "ADC_CHECK.H"
 #include "stmflash.h"
 #include "24l01.h"
-
+#include "MX830Motor.h"
 u8 		flag_exti	= 0;
 u8 		key_val 	= 0;
 keyStr 		key_Z 		= {0};
@@ -43,6 +43,8 @@ extern	u32			beepdelayon;
 extern	u32			beepdelayoff;
 extern	u8  			ADDRESS1[TX_ADR_WIDTH];
 extern	u8  			ADDRESS2[RX_ADR_WIDTH];
+extern	u8			flag_BH;
+
 void BeepStart()
 {
 	beep.start = 1;
@@ -61,6 +63,7 @@ void Key_ScanLeave()
     {
 	if(GPIO_READ(GPIO_Y30) ==RESET)
 	{
+	   
 		if((systime - Y30_Risingtime) > TIM_Y30_DELAY)
 		{	
 			if(key_Y30.val == off)
@@ -102,6 +105,7 @@ void Key_ScanLeave()
     {
 	if(GPIO_READ(GPIO_AM) == RESET)
 	{
+	    // debug("systime  = %lu,AM_Risingtime = %lu\r\n",systime , AM_Risingtime);
 		if((systime - AM_Risingtime) > TIM_Y30_DELAY)
 		{
 			if(key_AM.val == off)
@@ -245,15 +249,17 @@ void KeyFun()
 	{
 		switch(key_val)
 		{
-			case KEY_VAL_DER_Z:	flag_KEY_Z = 1;BeepStart();;
+		    case KEY_VAL_DER_Z:	if(windowstate != to_BC1)flag_KEY_Z = 1;BeepStart();;
 				break;
-			case KEY_VAL_DER_Y:	flag_KEY_Y = 1;BeepStart();;
+			case KEY_VAL_DER_Y:	if(windowstate != to_BC2)flag_KEY_Y = 1;BeepStart();;
 				break;
 			case KEY_VAL_DM:	BeepStart();
 				if(key_DM.val == six)	//对话马达转向
 				{
 						flag_motorIO = ~flag_motorIO;
 						FLASH_ProgramByte(ADDR_motorIO,flag_motorIO);
+						flag_BH = ~flag_BH;
+						FLASH_ProgramByte(ADDR_flag_BH,flag_BH);	// BH正方向
 						key_DM.val = off;
 						debug("马达对换引脚\r\n");
 				}
@@ -301,6 +307,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 			//ScanKey(&key_AM);
 		    	AM_Risingtime = systime;
 			key_val = KEY_VAL_AM;
+			//debug("key_val = KEY_VAL_AM，%lu\r\n",AM_Risingtime);
 		}else
 		if(GPIO_READ(GPIO_Y30) == RESET)
 		{

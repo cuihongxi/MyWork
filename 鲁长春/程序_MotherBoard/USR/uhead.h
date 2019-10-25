@@ -30,23 +30,19 @@
 #include "stdio.h"
 #define  debug(...) 		printf(__VA_ARGS__)
 #define	UART_INIT(baud)	do{\
-	RST->CR = 0xD0;\
 	SWAPPER_UART_PA2_PC3();	\
 	CLK_PeripheralClockConfig (CLK_Peripheral_USART1,ENABLE);\
 	USART_Init(USART1,baud, USART_WordLength_8b,USART_StopBits_1,USART_Parity_No,USART_Mode_Tx);\
 	debug("\r\nstart:\r\n");\
 }while(0)
 #else
-#define	UART_INIT(baud) RST->CR = 0xD0;	//»Ö¸´RST½ÅÎª¸´Î»½Å
+#define	UART_INIT(baud)
 #define debug(...)   
 #endif
 
-#define BEEP_SW 0
-#if BEEP_SW > 0
-#define		GPIO_BEEP			GPIOA,GPIO_Pin_0		// ·äÃùÆ÷
-#else
-#define		GPIO_BEEP			GPIOC,GPIO_Pin_0		// ·äÃùÆ÷
-#endif
+
+#define		GPIO_BEEP			GPIOB,GPIO_Pin_6		// ·äÃùÆ÷
+
 
 #ifndef 	TRUE
 #define		TRUE	1

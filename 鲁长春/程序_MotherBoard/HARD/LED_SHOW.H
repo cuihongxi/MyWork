@@ -6,7 +6,7 @@
 ********************************************************************************/
 #include "uhead.h"
 
-#define         LED_GREEN          GPIOB,GPIO_Pin_5          //бл╣ф
+#define         LED_GREEN          GPIOB,GPIO_Pin_4          //бл╣ф
 #define         LED_RED            GPIOD,GPIO_Pin_1         //╨Л╣ф
 
 typedef enum{

@@ -51,11 +51,13 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	if((bat->state != state) && (taskBatControl->state == Stop)) // taskBatControl->state == Wait ||
 	{
 		bat->state = state;
+		LEN_GREEN_Close();
+		LEN_RED_Close();
 		OS_AddFunction(taskBatControl,OS_DeleteTask,0);				// 移除任务
 		if(state == BAT_STATE_GREEN)
 		{
 			debug("bat->val ＞ 8.4V时绿灯常亮\r\n");												
-			OS_AddFunction(taskBatControl,LEN_GREEN_Open,4);		// ＞8.4V时绿灯常亮。
+			OS_AddFunction(taskBatControl,LEN_GREEN_Open,IRQ_PERIOD);		// ＞8.4V时绿灯常亮。
 			OS_AddFunction(taskBatControl,OS_DeleteTask,0);	
 		}		
 		else if(state == BAT_STATE_GREENSHARP3)					// ＞7.4V绿灯闪亮3次
@@ -72,7 +74,7 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,200,BatState);
 			OS_AddCycleFunction(taskBatControl,3);				//重复3次
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,3000,BatState);
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,2800,BatState);
 			
 		}else if(state == BAT_STATE_38BC1)	// ＜7.2V马达无条件正转至38BC1高电平\
 												红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警。
@@ -82,7 +84,7 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
 			OS_AddCycleFunction(taskBatControl,3);							// 重复30次
 			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,5000,BatState);					
+			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,4800,BatState);					
 		}else								// 当电压＜6.9V时系统不再响应反转信号，\
 												红色LED每秒1次闪亮报警30秒。
 		{

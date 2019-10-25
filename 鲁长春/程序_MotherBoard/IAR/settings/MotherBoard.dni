@@ -9,22 +9,11 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=811417073
+Checksum=-1481232564
 [CallStack]
 ShowArgs=0
 [Disassembly]
 MixedMode=1
-[DataSample]
-LogEnabled=0
-GraphEnabled=0
-ShowTimeLog=1
-[Log file]
-LoggingEnabled=_ 0
-LogFile=_ ""
-Category=_ 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
 [InterruptLog]
 LogEnabled=0
 GraphEnabled=0
@@ -54,6 +43,17 @@ Enabled=0
 ShowSource=1
 [Simulator]
 Freq=16000000
+[DataSample]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Breakpoints]
 Count=0
 [Aliases]

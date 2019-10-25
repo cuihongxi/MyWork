@@ -14,15 +14,15 @@
 #define			TIM_BAT_CHECKH		10000	// ms,大于VALVE_BAT_CHECK电压，检测间隔
 #define			TIM_BAT_CHECKL		2000	// ms,小于VALVE_BAT_CHECK电压，检测间隔
 
-#define			TIM_MOTOR_Z		1000	// ms,马达到达BC1,或BC2时继续向前的时间，单位ms
-#define			TIM_MOTOR_F		1000	// ms,马达停转时反转时间，解锁离合，单位ms
+#define			TIM_MOTOR_Z		400	// ms,马达到达BC1,或BC2时继续向前的时间，单位ms
+#define			TIM_MOTOR_F		400	// ms,马达停转时反转时间，解锁离合，单位ms
 #define         	VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
 #define         	TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
 #define         	TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
 #define         	VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
 #define         	MOTOR_F_SAFE            60000   // ms,正转保护
 #define			TIM_SLEEP		5000	// ms,休眠倒计时时间
-#define			TIM_KEY			500	// ms，连击间隔
+#define			TIM_KEY			1000	// ms，连击间隔
 #define         	TIM_CHECKEYS          	2000    // ms,YS检测时间
 #define         	BH_SAFE                 5000    // ms, BH方波检测
 #define         	TIM_BH0                 4000    // ms, BH反向运动时间
@@ -39,10 +39,13 @@
 #define			TIM_DM_CLEARL		6000	// ms, 清除对码值下限
 #define			TIM_DM_CLEARH		12000	// ms, 清除对码值上限
 #define			TIM_BH_FILTER		50	// ms, BH滤波时间
-#define			TIM_FL_FILTER		1	// ms, FL滤波时间
+#define			TIM_FL_FILTER		20	// ms, FL滤波时间
 #define			TIM_LED_SHARP_ON	100	//ms，设置参数LED闪烁亮的时间
 #define			TIM_LED_SHARP_OFF	100	//ms，设置参数LED闪烁灭的时间
 #define			TIM_MOTORLED_SHARP_ON	100	//ms，马达运行LED闪烁亮的时间
 #define			TIM_MOTORLED_SHARP_OFF	100	//ms，马达运行LED闪烁灭的时间
+
+#define			STEP_MOTO		10	// 每按一次，马达行走的步数
+#define			TIM_MOTO_HOLD		500	// 马达刹车时间
 
 #endif

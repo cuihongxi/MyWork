@@ -15,7 +15,7 @@ void FlashData_Init()
 		FLASH_ProgramByte(EEPROM_FLASH_INIT,FLASH_INIT_DATA);	
 		FLASH_ProgramWord(ADDR_DM,5000);				//默认5s
 //		FLASH_ProgramByte(ADDR_AM_VAL,0);				//默认关闭，AM
-		FLASH_ProgramByte(ADDR_motorIO,0);				//马达引脚调换
+		FLASH_ProgramByte(ADDR_motorIO,1);				//马达引脚调换
 		FLASH_ProgramByte(ADDR_flag_BH,0);				// BH正方向
 	}
 	dm_counter = FLASH_ReadWord(ADDR_DM);	

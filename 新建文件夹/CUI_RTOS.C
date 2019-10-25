@@ -5,7 +5,7 @@
 //获取系统时间
 u32 GetSysTime(TimerLinkStr* timerlink)
 {
-	return timerlink->counter * IRQ_PERIOD;
+	return timerlink->counter;
 }
 
 //释放内存

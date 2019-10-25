@@ -2,6 +2,7 @@
 #include "lowpower.h"
 #include "MX830Motor.h"
 #include "CUI_RTOS.H"
+#include "LED_SHOW.H"
 
 u8 		flag_BHProtectStep = 0;				// BH方波保护执行的步骤	
 u8 		flag_no30 = 0;					// BH故障，30分钟不响应YSFL
@@ -12,9 +13,10 @@ u8		flag_FL_SHUT 	= 0;
 BH_dir		motor_BHdir 	= BH_Open;
 u8		flag_BH 	= 0;				//双BH 正方向标志
 u8		flag_FLCheckState = 0;				//fl检测开始还是停止
-
+JugeCStr	jugeWindows = {0};				
+JugeCStr	jugeBHLED = {0};
 extern	TimerLinkStr 	timer2 ;				// 任务的定时器
-extern	u8 		flag_openDM;
+extern	u8 		flag_BHLED;
 
 void BH_FL_GPIO_Init()
 {
@@ -124,26 +126,26 @@ void BH_Check()
 {
 	if(GPIO_READ(GPIO_BH) == RESET)
 	{
-		//debug("GPIO_BH = 0\r\n");
+		
 		//滤波		
 		static u32 	counterFileter_BH = 0;
 		u32 counter = GetSysTime(&timer2);
 		if(counter > counterFileter_BH)
 		{
-			
-			if(flag_openDM)	//确定flag_BH极性
-			{
-				if(GPIO_READ(GPIO_BH2)) flag_BH = 0;
-				else flag_BH = 1;
-			}
-			
+			LEN_GREEN_Open();
+			jugeBHLED.start = 1;
+			jugeBHLED.counter = 0;
+			jugeWindows.start = 1;
+			jugeWindows.counter = 0;
 			if(BH_GetDir() == BH_Open) 
 			{
 				motorStruct.hasrun ++;
+				
 				debug("马达.hasrun ++\r\n");
 			}
 			else 
 			{
+			   
 				motorStruct.hasrun --;
 				debug("马达.hasrun --\r\n");
 			}

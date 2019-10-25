@@ -17,7 +17,7 @@
 
 #define		MAX_NUMBER		0XFF		// 任务的最大循环次数，等于就无限循环
 #define		TYPE_NUMBER		u8			// 数据类型
-#define		IRQ_PERIOD		1			// ms
+#define		IRQ_PERIOD		20			// ms
 
 //任务链表
 typedef struct{
