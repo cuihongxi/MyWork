@@ -68,13 +68,13 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 		if(state == BAT_STATE_CHARGE_H)
 		{
 			debug("电池充电充满\r\n");												
-			OS_AddFunction(taskBatControl,LEN_RED_Open,IRQ_PERIOD);		
+			OS_AddFunction(taskBatControl,LEN_GREEN_Open,IRQ_PERIOD);		
 			OS_AddFunction(taskBatControl,OS_DeleteTask,0);	
 		}else		
 		if(state == BAT_STATE_CHARGE_L)
 		{
 			debug("电池正在充电\r\n");												
-			OS_AddFunction(taskBatControl,LEN_GREEN_Open,IRQ_PERIOD);		
+			OS_AddFunction(taskBatControl,LEN_RED_Open ,IRQ_PERIOD);		
 			OS_AddFunction(taskBatControl,OS_DeleteTask,0);	
 		}
 		else
