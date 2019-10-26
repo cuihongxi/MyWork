@@ -168,6 +168,14 @@ void Motor_RunBack()
 	MX830Motor_StateDir(&motorStruct);
 }
 
+void Motor_RunFORWARD()
+{
+	if(motorStruct.dirBack == FORWARD) motorStruct.command = FORWARD;
+	else motorStruct.command = BACK ;
+	counter_BH = 0;
+	MX830Motor_StateDir(&motorStruct);
+}
+
 void OpenWindow()
 {
 	Motor_Y();
@@ -182,6 +190,10 @@ void ShutDownWindow()
 bool MotorSysProtect0()		//最高优先级保护：电机转动保护，电压过低
 {
 	return (bool)(motorStruct.erro & 0x0f);	// 除掉BH方波保护
+}
+bool MotorBHAppear()
+{
+	return(bool)(MotorSysProtect0()|| motorStruct.erro&ERROR_BH == 0 );
 }
 
 bool MotorSysProtect1()		// 次优先级保护：电机转动保护，电压过低，BH方波保护
@@ -204,7 +216,7 @@ bool MotorProtectKey()		// 按键优先级保护: 电机转动保护，电压过低，BH方波保护,ZY
 bool MotorProtectHold()		// 按键优先级保护: 电机转动保护，电压过低，BH方波保护,ZY按键,BC1,BC2限位
 {
 	return (bool)(MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y\
-	    ||(motorStruct.flag_BC1)||(motorStruct.flag_BC2));
+	    ||(motorStruct.flag_BC1)||(motorStruct.flag_BC2)|| motorStruct.erro&ERROR_BH);
 }
 void Motor_AutoRun()
 {
@@ -243,6 +255,7 @@ void WindowStateBC2()
 
 void ResetBHErro()
 {
+    	counter_BH = 0;
 	motorStruct.erro &= ~ERROR_BH;
 }
 void MotorHold()
@@ -256,10 +269,7 @@ void MotorHold()
 void MotorControl()
 {
 	static u8 flag_motor_erro = 0;
-	if( GPIO_READ(CHARGE_PRO_PIN) != RESET)		//充电状态
-	{
-		motorStruct.erro |= ERROR_CHARG;
-	}else 	motorStruct.erro &= ~ERROR_CHARG;
+
 	    
 	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动,除去BH无方波
 	if(MotorSysProtect0())
@@ -284,8 +294,8 @@ void MotorControl()
 				flag_BHProtectStep = 1;													//如果出现BH，则会在中断中清零
 				counter_BH = 0;
 				//按马达当前转向，反向旋转4S，再继续原来转向
-				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_BH0,MotorSysProtect0);	// 反向旋转4S
-				OS_AddJudegeFunction(taskMotor,Motor_RunBack,IRQ_PERIOD,MotorSysProtect0);	//恢复原来的转向
+				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_BH0,MotorBHAppear);	// 反向旋转4S
+				OS_AddJudegeFunction(taskMotor,Motor_RunBack,IRQ_PERIOD,MotorBHAppear);	//恢复原来的转向
 				OS_AddFunction(taskMotor,ResetBHErro,IRQ_PERIOD);	
 				OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
@@ -295,6 +305,7 @@ void MotorControl()
 			else if((motorStruct.erro & ERROR_BH) && flag_BHProtectStep == 1)		//再次出现无方波
 			{
 				debug("再次出现无方波\r\n");
+				
 				MotorSTOP();
 				flag_no30 = 1;		// 30分钟不响应YSFL信号
 				FL_CheckStop();

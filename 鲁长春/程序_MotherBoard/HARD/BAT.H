@@ -16,12 +16,12 @@
 
 
 #define		BAT_STATE_GREEN				1
-#define		BAT_STATE_GREENSHARP3		2
+#define		BAT_STATE_GREENSHARP3			2
 #define		BAT_STATE_REDSHARP3			3
 #define		BAT_STATE_38BC1				4
 #define		BAT_STATE_NoBACK			5
-
-
+#define		BAT_STATE_CHARGE_H			6	//³äÂúµç
+#define		BAT_STATE_CHARGE_L			7	//³äµç
 
 typedef struct{
 	float val;
