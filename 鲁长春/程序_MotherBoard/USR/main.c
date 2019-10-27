@@ -1,5 +1,7 @@
 #include "main.h"
 #include "CUI_RTOS.H"
+#include "ADC_CHECK.H"
+#include "BAT.H"
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
 u8 			txbuf[5] 	= {0};				// nrf发送缓存
 u8 			rxbuf[10] 	= {0};				// nrf接收缓存
@@ -50,7 +52,7 @@ void CLK_GPIO_Init()
    	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_DM,	GPIO_Mode_In_PU_No_IT);
-	GPIO_Init(GPIO_BEEP,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_Init(GPIO_BEEP,GPIO_Mode_Out_OD_HiZ_Slow);
 }
 
 
@@ -191,7 +193,7 @@ void main()
 {
 
   	CLK_GPIO_Init();					// 低功耗时钟和GPIO初始化,2MHZ
-	delay_ms(1000);						// 等待系统稳定
+	//delay_ms(1000);						// 等待系统稳定
 	UART_INIT(115200);
 	prx.txbuf[0] =39; 					//收到回复信息，填充‘9’
 
@@ -231,6 +233,17 @@ void main()
 			    GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_Out_PP_Low_Slow);
 			    GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_Out_PP_Low_Slow);
 			}
+		}
+		if( GPIO_READ(CHARGE_PRO_PIN) != RESET)		//充电状态
+		{
+		    while( GPIO_READ(CHARGE_PRO_PIN) != RESET)
+		    {
+		    	float val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
+			if(val >= VALVE_BAT_CHARGE){LEN_RED_Close();LEN_GREEN_Open();}
+			else {LEN_GREEN_Close();LEN_RED_Open();}
+			delay_ms(100);		    
+		    }
+		   WWDG_SWReset();	// 复位
 		}
 	}
 }

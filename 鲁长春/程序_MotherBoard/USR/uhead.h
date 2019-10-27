@@ -52,7 +52,6 @@
 #define		FALSE	0
 #endif
 
-
 #define delay_ms(x)     	LSI_delayms(x/8)
 #define delay_us(x)     	LSI_delayus(x/8)
 

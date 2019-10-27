@@ -11,6 +11,7 @@
 #include "24l01.h"
 #include "lowpower.h"
 #include "stm8l15x_rtc.h"
+#include "stm8l15x_wwdg.h"
 //#include "stm8l15x_tim2.h"
 //#include "CUI_RTOS.H"
 #include "keyboard.h"

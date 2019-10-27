@@ -13,7 +13,7 @@
 #include "UHEAD.H"
 #include "CUI_RTOS.H"
 #include "stm8l15x_adc.h"
-
+#include "ADC_CHECK.H"
 
 #define		BAT_STATE_GREEN				1
 #define		BAT_STATE_GREENSHARP3			2
@@ -37,5 +37,5 @@ extern u8 flag_checkBat;
 //电源管理
 void BatControl();
 void ReSetLedCheck();
-
+uint16_t Get_BAT_ADC_Dat(hardChannel hard_channel);
 #endif
