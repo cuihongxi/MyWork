@@ -218,6 +218,8 @@ u32 ScanKey(keyStr* key)
 		{
 			key->counter = time;
 			key->val = on;
+			if(key == &key_Z)key_Y.counter = 0;
+			if(key == &key_Y)key_Z.counter = 0;
 			debug("key on\r\n");
 		}	
 		else
