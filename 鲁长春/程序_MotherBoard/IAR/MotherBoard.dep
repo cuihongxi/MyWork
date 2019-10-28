@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>38387412</fileChecksum>
+  <fileChecksum>3017117080</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -244,6 +244,7 @@
       <file>$PROJ_DIR$\Debug\Obj\stm8l15x_i2c.o</file>
       <file>$PROJ_DIR$\Debug\Obj\stm8l15x_gpio.pbi</file>
       <file>$TOOLKIT_DIR$\inc\c\xencoding_limits.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\08-&#x5173;&#x7A97;.hex</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
@@ -280,7 +281,7 @@
         </tool>
         <tool>
           <name>OBJCOPY</name>
-          <file> 201</file>
+          <file> 238</file>
         </tool>
       </outputs>
       <inputs>
