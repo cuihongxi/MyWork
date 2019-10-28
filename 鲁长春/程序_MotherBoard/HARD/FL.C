@@ -10,13 +10,14 @@ u32 		fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u32 		counter_BH	= 0;				//BH计数
 u8		flag_FLreasion 	= 0;				// FL的原因关窗
 u8		flag_FL_SHUT 	= 0;
-BH_dir		motor_BHdir 	= BH_Open;
+BH_dir		motor_BHdir 	=  BH_Stop;			//记录窗户运动方向
 u8		flag_BH 	= 0;				//双BH 正方向标志
 u8		flag_FLCheckState = 0;				//fl检测开始还是停止
 JugeCStr	jugeWindows = {0};				
 JugeCStr	jugeBHLED = {0};
 extern	TimerLinkStr 	timer2 ;				// 任务的定时器
 extern	u8 		flag_BHLED;
+extern	u8		flag_bat2BC1;
 
 void BH_FL_GPIO_Init()
 {
@@ -105,13 +106,14 @@ BH_dir BH_GetDir()
 {
 	if(flag_BH)
 	{
-		if(GPIO_READ(GPIO_BH2)) return BH_Close ;
-		else return BH_Open;		
+	    	if(GPIO_READ(GPIO_BH2)) return BH_Open;
+		else return BH_Close;	
+	
 	}else
 	{
-		if(GPIO_READ(GPIO_BH2)) return BH_Open;
-		else return BH_Close;	
-	}
+		if(GPIO_READ(GPIO_BH2)) return BH_Close ;
+		else return BH_Open;		
+		}
 
 }
 
@@ -137,12 +139,30 @@ void BH_Check()
 			jugeBHLED.counter = 0;
 			jugeWindows.start = 1;
 			jugeWindows.counter = 0;
-			if(BH_GetDir() == BH_Open) 
+			motor_BHdir = BH_GetDir();
+			if(motor_BHdir == BH_Open) 
 			{
 				motorStruct.hasrun ++;
-				
+
 				debug("马达.hasrun ++\r\n");
-			}
+				if(windowstate == to_BC1)	//检测手动开窗
+				{
+					static u8 i = 1;
+					static int j = 0;
+					if(i)
+					{
+						i = 0;
+						j = motorStruct.hasrun;
+					}
+					if((motorStruct.hasrun - j)>1)
+					{
+						j = 0;i = 1;
+						debug("手动开窗\r\n");
+						flag_bat2BC1 = 0;
+						windowstate = open;				    
+					}
+				}			
+				}
 			else 
 			{
 			   

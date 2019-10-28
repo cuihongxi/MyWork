@@ -14,6 +14,7 @@
 
 
 typedef enum{
+    BH_Stop,
 	BH_Open,
 	BH_Close
 }BH_dir;

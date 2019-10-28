@@ -335,8 +335,8 @@ void MotorControl()
 				YS_30.start = 1;	//此参数终止YS检测
 				YS_30.counter = 0;
 				motorStruct.erro &= ~ERROR_BH;
-			OS_AddJudegeFunction(taskMotor,AlarmMotor,TIM_ALARM_BH,Juge_y30_end);	
-			OS_AddTask(tasklink,taskMotor);
+				OS_AddJudegeFunction(taskMotor,AlarmMotor,TIM_ALARM_BH,Juge_y30_end);	
+				OS_AddTask(tasklink,taskMotor);
 			}else
 			 if(flag_KEY_Z)//按键<Z
 			{
@@ -408,7 +408,7 @@ void MotorControl()
 				if(motorStruct.flag_BC1)						// 关窗限位
 				{
 					debug("关窗限位\r\n");
-					OS_AddJudegeFunction(taskMotor,MotorForword_BC1,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
+					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;	// 反转1.5秒
 					OS_AddFunction(taskMotor,WindowStateBC1,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
@@ -426,7 +426,7 @@ void MotorControl()
 				if(motorStruct.flag_BC2)
 				{
 					debug("开窗限位\r\n");
-					OS_AddJudegeFunction(taskMotor,MotorForword_BC2,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
+					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 反转1.5秒
 					OS_AddFunction(taskMotor,WindowStateBC2,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC2 = 0;	
