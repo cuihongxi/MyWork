@@ -6,7 +6,7 @@
 #include "FL.H"
 #include "stmflash.h"
 #include "BAT.H"
-
+#include "LED_SHOW.H"
 Motor_Struct    	motorStruct 	= {0};      	// 马达状态结构体
 TaskStr* 		taskMotor 	= {0};		// 马达运动任务
 u32 			shut_time 	= 0;		// 之前的版本是保存关窗的时间，现在改为保存窗的BH位置：hasrun
@@ -14,6 +14,7 @@ u8			flag_motorIO 	= 0;		// 马达引脚调换标志
 u8			flag_YS_isno 	= 0;		// FLYS无检测
 WindowState		windowstate 	= open;
 u8 			flag_flag_YS_SHUT = 0;
+u8			flag_bat2BC1 	= 0;		// 执行无条件关窗的标志位
 
 extern	TaskLinkStr* 	tasklink;		// 任务列表
 extern	u8 		flag_KEY_Z;		// 传递给马达函数，让他根据val做出动作
@@ -31,6 +32,7 @@ extern 	u8 		flag_FL_SHUT;
 extern	BATStr 		bat;			// 电池管理
 extern	u8		ys_timer30;		// YS不响应计时
 extern	JugeCStr 	YS_30;
+extern	TaskStr* 	taskAlarm; 
 /**************************************
 *@brief
 *@note 
@@ -265,12 +267,24 @@ void MotorHold()
 	motorStruct.command = HOLD;
 	MX830Motor_StateDir(&motorStruct);	
 }
+
+bool Juge_y30_end()
+{
+	return (bool)(YS_30.start == 0);
+}
+void AlarmMotor()
+{
+	OS_AddJudegeFunction(taskAlarm,LEN_REDBEEP_Open,100,Juge_y30_end);	
+	OS_AddJudegeFunction(taskAlarm,LEN_REDBEEP_Close,100,Juge_y30_end);	
+	OS_AddJudegeFunction(taskAlarm,LEN_GREENBEEP_Open,100,Juge_y30_end);	
+	OS_AddJudegeFunction(taskAlarm,LEN_GREENBEEP_Close,100,Juge_y30_end);	
+	OS_AddCycleFunction(taskAlarm,6);
+	OS_AddTask(tasklink,taskAlarm);
+}
 //马达运动
 void MotorControl()
 {
-	static u8 flag_motor_erro = 0;
-
-	    
+	static u8 flag_motor_erro = 0; 
 	//充电状态禁止转动，超过转动时限，BAT电压过低禁止转动,除去BH无方波
 	if(MotorSysProtect0())
 	{
@@ -279,7 +293,13 @@ void MotorControl()
 		if(flag_motor_erro == 0)
 		{
 			flag_motor_erro = 1;
-			debug("充电状态禁止转动，超过转动时限，BAT电压过低禁止转动\r\n");
+			debug("超过转动时限，BAT电压过低禁止转动\r\n");
+			if(motorStruct.erro&ERROR_MOTOR)
+			{
+				OS_AddJudegeFunction(taskMotor,AlarmMotor,TIM_ALARM_BH,Juge_y30_end);	
+				OS_AddTask(tasklink,taskMotor);			
+			}
+
 		}
 	}
 	else
@@ -307,18 +327,21 @@ void MotorControl()
 				debug("再次出现无方波\r\n");
 				
 				MotorSTOP();
-				flag_no30 = 1;		// 30分钟不响应YSFL信号
+				flag_BHProtectStep = 0;	
+				counter_BH = 0;
 				FL_CheckStop();
+				flag_no30 = 1;		// 30分钟不响应YSFL信号
 				ys_timer30 = TIM_30;
 				YS_30.start = 1;	//此参数终止YS检测
 				YS_30.counter = 0;
-				flag_BHProtectStep = 0;
-				counter_BH = 0;
 				motorStruct.erro &= ~ERROR_BH;
+			OS_AddJudegeFunction(taskMotor,AlarmMotor,TIM_ALARM_BH,Juge_y30_end);	
+			OS_AddTask(tasklink,taskMotor);
 			}else
 			 if(flag_KEY_Z)//按键<Z
 			{
 				flag_KEY_Z = 0;	
+				flag_bat2BC1 = 0;
 				debug("key_Z.val = %d\r\n",key_Z.val);					// 移除任务
 				switch(key_Z.val)
 				{
@@ -351,6 +374,7 @@ void MotorControl()
 			if(flag_KEY_Y)//按键>Y
 			{
 				flag_KEY_Y = 0;
+				flag_bat2BC1 = 0;
 				debug("key_Y.val = %d\r\n",key_Y.val);
 				switch(key_Y.val)
 				{
@@ -447,10 +471,21 @@ void MotorControl()
 			{
 				debug("无YS开窗\r\n");
 				jugeYS_No.switchon = 0;
+				flag_bat2BC1 = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
+			}
+			else if(bat.state == BAT_STATE_38BC1 && flag_bat2BC1 == 0)
+			{
+				debug("电池电压低，无条件关窗\r\n");
+				flag_bat2BC1 = 1;
+				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);// 执行关窗
+				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务				
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列			
+				
 			}
 		}		
 	}

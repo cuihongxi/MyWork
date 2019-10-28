@@ -17,6 +17,7 @@ TaskStr* 		taskBatControl 	= {0};
 TaskStr* 		taskYS		= {0};				// YS测量任务
 TaskStr* 		taskKeyScan	= {0};				// KEY 扫描
 TaskStr* 		taskInMain   	={0};
+TaskStr* 		taskAlarm   	={0};
 
 JugeCStr 		beep 		= {0};
 JugeCStr 		NRFpowon 	= {0};
@@ -202,7 +203,9 @@ void main()
 	taskMotor = OS_CreatTask(&timer2);			// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);				// 创建YS测量任务 ，每2秒检测一次
 	taskKeyScan = OS_CreatTask(&timer2);			// 创建按键扫描任务
+	taskAlarm =  OS_CreatTask(&timer2);	
 	taskInMain = OS_CreatTask(&timer2);			// 创建主函数运行任务
+	
 	OS_AddFunction(taskInMain,FunInMain,40);	
 	OS_AddTask(tasklink,taskInMain);
 	Make_SysSleep();					// 系统进入休眠状态

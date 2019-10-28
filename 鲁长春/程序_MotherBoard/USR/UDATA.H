@@ -6,9 +6,9 @@
 *Explain:       所有需要修改的参数在这里修改
 *
 ********************************************************************************/
-#define			VALVE_BAT_GREEN		8.4	// v,＞8.4V时绿灯常亮。
+#define			VALVE_BAT_GREEN		8.3	// v,＞8.3V时绿灯常亮。
 #define			VALVE_BAT_SHARP3	7.4	// v,＞7.4V绿灯闪亮3次；＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
-#define         	VALVE_BAT_Motor         7.2     // v,电池马达关窗阀值，低于该值动作
+#define         	VALVE_BAT_Motor         6.8     // v,电池马达关窗阀值，低于该值动作
 #define         	VALVE_BAT_NoBACK        4.9    	// v,不再响应反转信号
 #define			VALVE_BAT_CHECK		7.4	// v,大于此电压，间隔TIM_BAT_CHECKH检测一次，小于则间隔TIM_BAT_CHECKL检测一次
 #define			TIM_BAT_CHECKH		10000	// ms,大于VALVE_BAT_CHECK电压，检测间隔
@@ -48,5 +48,5 @@
 
 #define			STEP_MOTO		10	// 每按一次，马达行走的步数
 #define			TIM_MOTO_HOLD		500	// ms,马达刹车时间
-
+#define			TIM_ALARM_BH		10000	// ms,BH无方波和马达超时报警间隔
 #endif

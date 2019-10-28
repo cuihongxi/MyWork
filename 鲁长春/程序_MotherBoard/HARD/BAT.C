@@ -3,8 +3,12 @@
 #include "ADC_CHECK.H"
 #include "LED_SHOW.H"
 #include "MX830Motor.h"
+
+
 extern	BATStr bat;						// 电池管理
 u8 state = 0;
+
+
 
 bool BatState()
 {
@@ -94,27 +98,27 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 		}else if(state == BAT_STATE_REDSHARP3) 	//＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
 		{
 			debug("bat->val ＜ 7.4V红灯闪亮3次,后转为每3秒闪亮一次红灯欠压指示\r\n");
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,200,BatState);
-			OS_AddCycleFunction(taskBatControl,3);				//重复3次
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,2800,BatState);
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Close,200,BatState);
+			OS_AddCycleFunction(taskBatControl,5);				//重复3次
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Close,2800,BatState);
 			
 		}else if(state == BAT_STATE_38BC1)	// ＜7.2V马达无条件正转至38BC1高电平\
 												红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警。
 		{
 			debug("bat->val ＜ 7.2V 红色LED每秒1次闪亮报警30秒，后转为每5秒一次欠压报警\r\n");
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Close,800,BatState);				
 			OS_AddCycleFunction(taskBatControl,3);							// 重复30次
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,4800,BatState);					
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Close,4800,BatState);					
 		}else								// 当电压＜6.9V时系统不再响应反转信号，\
 												红色LED每秒1次闪亮报警30秒。
 		{
 			debug("bat->val ＜6.9V 红色LED每秒1次闪亮报警30秒\r\n");			
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Open,200,BatState);	
-			OS_AddJudegeFunction(taskBatControl,LEN_RED_Close,800,BatState);				
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Open,200,BatState);	
+			OS_AddJudegeFunction(taskBatControl,LEN_REDBEEP_Close,800,BatState);				
 			OS_AddCycleFunction(taskBatControl,30);
 		}
 		OS_AddTask(tasklink,taskBatControl);// 添加电池电量检测任务

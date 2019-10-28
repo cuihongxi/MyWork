@@ -1,6 +1,9 @@
 #include "UHEAD.H"
 #include "LED_SHOW.H"
 
+void BeepStart();
+void BeepStop();
+
 //双色LED初始化
 void LED_GPIO_Init()
 {
@@ -28,6 +31,30 @@ void LEN_GREEN_Open()
 void LEN_GREEN_Close()
 {
 	GPIO_SET(LED_GREEN);
+}
+
+void LEN_REDBEEP_Open()
+{
+	LEN_RED_Open();
+	BeepStart();
+}
+
+void LEN_REDBEEP_Close()
+{
+	LEN_RED_Close();
+	 BeepStop();
+}
+
+void LEN_GREENBEEP_Open()
+{
+	LEN_GREEN_Open();
+	BeepStart();
+}
+
+void LEN_GREENBEEP_Close()
+{
+	LEN_GREEN_Close();
+	 BeepStop();
 }
 
 //中断中快闪
