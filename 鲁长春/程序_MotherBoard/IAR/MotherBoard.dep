@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>698443861</fileChecksum>
+  <fileChecksum>809868614</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -247,6 +247,7 @@
       <file>$PROJ_DIR$\..\HARD\24l01.c</file>
       <file>$PROJ_DIR$\Debug\Exe\09-IRQ&#x4e0A;&#x62C9;&#xFF0C;&#x5176;&#x4eD6;&#x6D6e;&#x7A7A;.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\09-IRQ,CSN&#x4e0A;&#x62C9;&#xFF0C;&#x5176;&#x4eD6;&#x4e0B;&#x62C9;.hex</file>
+      <file>$PROJ_DIR$\Debug\Exe\09-&#x8131;&#x6263;.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\09-&#x65e0;&#x7eBF;&#x6A21;&#x5757;&#x7AeF;&#x53e3;&#x8BBe;&#x7F6e;.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\09-&#x5173;&#x95eD;&#x4e32;&#x53e3;.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\09-&#x8C03;&#x6574;&#x56De;&#x8F6C;&#x65F6;&#x95F4;.hex</file>
@@ -425,7 +426,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 132 197 91 0 157 41 87 99 86 83 223 144 216 185 2 118 45 154 162 233 33 51 141 54 113 186 232 19 88 29 215 103 192 158 183 156 196 175 30 189 25 139 168 172 218 199 47 166 66 89 146 114 127 50</file>
+          <file> 144 197 83 91 86 223 216 87 99 0 157 132 41 185 2 118 45 154 162 233 33 51 141 54 113 186 232 19 88 29 215 103 192 158 183 156 196 175 30 189 25 139 168 172 218 199 47 166 66 89 146 114 127 50</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
@@ -961,7 +962,7 @@
         </tool>
         <tool>
           <name>OBJCOPY</name>
-          <file> 248</file>
+          <file> 241</file>
         </tool>
       </outputs>
       <inputs>

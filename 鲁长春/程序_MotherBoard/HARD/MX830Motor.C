@@ -413,11 +413,10 @@ void MotorControl()
 			{
 				debug("窗限位动作:");
 				motorStruct.flag_BC = 1;
+				//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 				if(motorStruct.flag_BC1)						// 关窗限位
 				{
-					debug("关窗限位\r\n");
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);;	// 反转1.5秒
+					debug("关窗限位~\r\n");
 					OS_AddFunction(taskMotor,WindowStateBC1,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
 					key_Z.counter = 0;
@@ -434,17 +433,17 @@ void MotorControl()
 				if(motorStruct.flag_BC2)
 				{
 					debug("开窗限位\r\n");
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
-					OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 反转1.5秒
 					OS_AddFunction(taskMotor,WindowStateBC2,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC2 = 0;	
 					key_Y.counter = 0;
 					motorStruct.hasrun = 0;
 					motorStruct.needrun = 0;
 				}
-				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);	
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
+				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 脱扣
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
-				OS_AddTask(tasklink,taskMotor);							// 添加到任务队列
+				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}		
 			//YS达到阀值，关窗
 			else if(jugeYS.switchon && (YS_30.start==0))
