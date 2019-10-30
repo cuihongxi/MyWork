@@ -22,7 +22,7 @@
         <option>
           <name>GenCodeModel</name>
           <version>0</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>GenDataModel</name>
@@ -66,11 +66,11 @@
         <option>
           <name>GenLibInFormatter</name>
           <version>0</version>
-          <state>6</state>
+          <state>0</state>
         </option>
         <option>
           <name>GenLibInFormatterDescription</name>
-          <state>No specifier n, no float, no scan set, no assignment suppressing, without multibytes.</state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GenLibOutFormatter</name>
@@ -114,11 +114,11 @@
         <option>
           <name>GenMathFunctionVariant</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GenMathFunctionDescription</name>
-          <state>Default variants of cos, sin, tan, log, log10, pow, and exp.</state>
+          <state>Smaller size, higher execution speed, less precision, smaller input range.</state>
         </option>
       </data>
     </settings>
@@ -1598,6 +1598,12 @@
     <name>HARD</name>
     <file>
       <name>$PROJ_DIR$\..\HARD\24l01.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\HARD\BAT.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\KEYBOARD.C</name>

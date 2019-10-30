@@ -15,7 +15,6 @@
 #define			TIM_BAT_CHECKL		2000	// ms,小于VALVE_BAT_CHECK电压，检测间隔
 #define			VALVE_BAT_CHARGE	8.3	// v,充电大于则蓝灯常量
 
-//#define			TIM_MOTOR_Z		500	// ms,马达到达BC1,或BC2时继续向前的时间，单位ms
 #define			TIM_MOTOR_F		500	// ms,马达停转时反转时间，解锁离合，单位ms
 #define         	VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
 #define         	TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
@@ -49,4 +48,5 @@
 #define			STEP_MOTO		10	// 每按一次，马达行走的步数
 #define			TIM_MOTO_HOLD		500	// ms,马达刹车时间
 #define			TIM_ALARM_BH		10000	// ms,BH无方波和马达超时报警间隔
+#define			TIM_SHACHE		500	// ms,刹车时间
 #endif

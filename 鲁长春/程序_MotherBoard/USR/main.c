@@ -147,20 +147,16 @@ void FunInSleap()
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	 
 	
-	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,400)) 				//nrf间隔打开电源,ms
 	{
 		//debug("NRFpowon\r\n");
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
 		NRF24L01_PWR(1);
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
 		NRFpowoff.start = 1;
 	}
 	if(Juge_counter(&NRFpowoff,40)) 
 	{
 	//	debug("NRFpowoff\r\n");
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
 		NRF24L01_PWR(0);
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
 		NRFpowon.start = 1;
 	}
 	if(Juge_counter(&jugeWindows,TIM__YS_D))
@@ -216,7 +212,14 @@ void main()
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 
 	Key_GPIO_Init();							// 触摸按键初始化	
-	NRF24L01_GPIO_Lowpower();
+
+//	NRF24L01_GPIO_Lowpower();
+	
+	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+	NRFpowon.start = 1;
+	NRF_CreatNewAddr(ADDRESS2);
+	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+NRF24L01_GPIO_Lowpower();
 	while(1)
 	{         
             	halt(); 					// 停止模式
@@ -256,10 +259,8 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 		
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
-	{
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
+	{		
 		prx.IRQCallBack(&prx);
-		CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
 	}
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }

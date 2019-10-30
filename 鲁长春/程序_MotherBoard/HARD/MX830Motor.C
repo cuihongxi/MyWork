@@ -262,7 +262,8 @@ void ResetBHErro()
 }
 void MotorHold()
 {
- 	Motor_RunBack(); //回退到BH1,BH2高电平的位置再停止
+    
+ 	if((GPIO_READ(GPIO_BH) == RESET || GPIO_READ(GPIO_BH2) == RESET)) Motor_RunBack(); //回退到BH1,BH2高电平的位置再停止
 	while((GPIO_READ(GPIO_BH) == RESET || GPIO_READ(GPIO_BH2) == RESET)&& ((MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y)==FALSE));
 	motorStruct.command = HOLD;
 	MX830Motor_StateDir(&motorStruct);	
@@ -373,7 +374,7 @@ void MotorControl()
 
 			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);										
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
-				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);		// 移除任务	
 				OS_AddTask(tasklink,taskMotor);			// 添加到任务队列
 			}
@@ -405,7 +406,7 @@ void MotorControl()
 		
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);								
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
-				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}	
@@ -439,9 +440,9 @@ void MotorControl()
 					motorStruct.hasrun = 0;
 					motorStruct.needrun = 0;
 				}
-				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 脱扣
-				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}		

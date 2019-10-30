@@ -172,7 +172,7 @@ void Key_ScanLeave()
 	
     if(Read_Valu() == 0x07)
     {       
-	debug("key null\r\n");
+	//debug("key null\r\n");
         
         GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //ºá·¢ 0
         GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //ÁÐ¶ÁÊý 

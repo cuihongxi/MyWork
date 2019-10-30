@@ -154,7 +154,7 @@ void BH_Check()
 						i = 0;
 						j = motorStruct.hasrun;
 					}
-					if((motorStruct.hasrun - j)>1)
+					if((motorStruct.hasrun - j)>0)
 					{
 						j = 0;i = 1;
 						debug("手动开窗\r\n");
@@ -179,7 +179,7 @@ void BH_Check()
 						i = 0;
 						j = motorStruct.hasrun;
 					}
-					if((j - motorStruct.hasrun)>1)
+					if((j - motorStruct.hasrun)>0)
 					{
 						j = 0;i = 1;
 						debug("手动关窗\r\n");

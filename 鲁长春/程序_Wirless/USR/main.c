@@ -11,7 +11,7 @@
 #include "keyboard.h"
 #include "pwm.h"
 #include "stmflash.h"
-
+#include "BAT.H"
 #define		PRESS_Y30	0X01
 #define		PRESS_MOTZ	0X02
 #define		PRESS_MOTY	0X04
@@ -78,12 +78,12 @@ void FreeGPIO_Config()
 void Init_LedGPIO(void)
 {
 	GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
-//	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
 	GPIO_RESET(Z_LED);
-//	GPIO_RESET(T_LED);
+	GPIO_RESET(T_LED);
 	delay_ms(1000);
 	GPIO_SET(Z_LED);
-//	GPIO_SET(T_LED);
+	GPIO_SET(T_LED);
 	  
 }
 
@@ -93,7 +93,7 @@ void Init_TOUCHGPIO(void)
 	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
 	disableInterrupts();
     	EXTI_SelectPort(EXTI_Port_B);
-	EXTI_SetPinSensitivity(EXTI_Pin_1,EXTI_Trigger_Rising);   
+	EXTI_SetPinSensitivity(EXTI_Pin_5,EXTI_Trigger_Rising);   
 	GPIO_RESET(TOUCH_IO);
     	enableInterrupts();                                           //使能中断
 }
@@ -157,12 +157,13 @@ void main()
 	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
 
 	Init_LedGPIO();	
-	Init_TOUCHGPIO();
+//	Init_TOUCHGPIO();
 	PWM_Init();			//呼吸灯，PWM初始化
 	TIM3_INIT();			//定时器3,1ms
 	
-	NRF_CreatNewAddr(ADDRESS2);
+//	NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+
     while(1)
     {    
 	if(flag_wake)
@@ -245,7 +246,7 @@ INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
 {      
     systime ++;
     if(pressKey)		if(systime > presstime) pressKey = 0;
-
+	
   //呼吸灯PWM
   if(flag_pwm )
   {
@@ -283,7 +284,7 @@ INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler,21)
   TIM3_ClearITPendingBit(TIM3_IT_Update);  
 }
 //触摸IO
-INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
+INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
 {
   	if(GPIO_READ(TOUCH_IO) != RESET)	
 	{
@@ -297,7 +298,7 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 		debug("in touch TI \r\n");
 	}
 	
-	EXTI_ClearITPendingBit (EXTI_IT_Pin1);  
+	EXTI_ClearITPendingBit (EXTI_IT_Pin5);  
        
 }
 
