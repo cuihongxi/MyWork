@@ -95,7 +95,15 @@ u8 SPI2_ReadWriteByte(unsigned char date)
 }
 
 
-
+void NRF24L01_GPIO_Lowpower(void)
+{
+    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_No_IT);      		//,当IRQ为低电平时为中断触发
+    GPIO_Init(NRF24L01_CSN_PIN,GPIO_Mode_In_PU_No_IT);     		//SPI片选取消    
+    GPIO_Init(NRF24L01_CE_PIN,GPIO_Mode_Out_PP_Low_Slow);       	//使能24L01
+    GPIO_Init(MOSI_PIN,GPIO_Mode_Out_PP_Low_Slow);    
+    GPIO_Init(MISO_PIN,GPIO_Mode_Out_PP_Low_Slow);
+    GPIO_Init(SCLK_PIN,GPIO_Mode_Out_PP_Low_Slow);	
+}
 	  
 //初始化24L01的IO口
 void NRF24L01_GPIO_Init(void)

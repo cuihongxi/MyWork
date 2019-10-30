@@ -268,6 +268,12 @@ void MotorHold()
 	MX830Motor_StateDir(&motorStruct);	
 }
 
+void MotorHoldNoRunBack()
+{
+	motorStruct.command = HOLD;
+	MX830Motor_StateDir(&motorStruct);
+}
+
 bool Juge_y30_end()
 {
 	return (bool)(YS_30.start == 0);
@@ -367,6 +373,7 @@ void MotorControl()
 
 			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);										
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);		// 移除任务	
 				OS_AddTask(tasklink,taskMotor);			// 添加到任务队列
 			}
@@ -398,6 +405,7 @@ void MotorControl()
 		
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);								
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+				OS_AddFunction(taskMotor,MotorHoldNoRunBack,300);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}	

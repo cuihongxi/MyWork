@@ -194,7 +194,7 @@ void main()
 {
 
   	CLK_GPIO_Init();					// 低功耗时钟和GPIO初始化,2MHZ
-	//delay_ms(1000);						// 等待系统稳定
+	//delay_ms(1000);					// 等待系统稳定
 	UART_INIT(115200);
 	prx.txbuf[0] =39; 					//收到回复信息，填充‘9’
 
@@ -216,7 +216,7 @@ void main()
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 
 	Key_GPIO_Init();							// 触摸按键初始化	
-	
+	NRF24L01_GPIO_Lowpower();
 	while(1)
 	{         
             	halt(); 					// 停止模式

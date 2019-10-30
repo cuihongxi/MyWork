@@ -161,13 +161,31 @@ void BH_Check()
 						flag_bat2BC1 = 0;
 						windowstate = open;				    
 					}
-				}			
+				}
+				
+
 				}
 			else 
 			{
 			   
 				motorStruct.hasrun --;
 				debug("马达.hasrun --\r\n");
+				if(windowstate == to_BC2)	//检测手动关窗
+				{
+					static u8 i = 1;
+					static int j = 0;
+					if(i)
+					{
+						i = 0;
+						j = motorStruct.hasrun;
+					}
+					if((j - motorStruct.hasrun)>1)
+					{
+						j = 0;i = 1;
+						debug("手动关窗\r\n");
+						windowstate = open;				    
+					}
+				}
 			}
 			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
 			if(motorStruct.erro & ERROR_BH) motorStruct.erro &= ~ERROR_BH;
