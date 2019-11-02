@@ -157,7 +157,7 @@ void BH_Check()
 					if((motorStruct.hasrun - j)>0)
 					{
 						j = 0;i = 1;
-						debug("手动开窗\r\n");
+						debug("开窗\r\n");
 						flag_bat2BC1 = 0;
 						windowstate = open;				    
 					}
@@ -182,7 +182,7 @@ void BH_Check()
 					if((j - motorStruct.hasrun)>0)
 					{
 						j = 0;i = 1;
-						debug("手动关窗\r\n");
+						debug("关窗\r\n");
 						windowstate = open;				    
 					}
 				}

@@ -9,7 +9,7 @@
 #include "LED_SHOW.H"
 Motor_Struct    	motorStruct 	= {0};      	// 马达状态结构体
 TaskStr* 		taskMotor 	= {0};		// 马达运动任务
-u32 			shut_time 	= 0;		// 之前的版本是保存关窗的时间，现在改为保存窗的BH位置：hasrun
+int 			shut_time 	= 0;		// 之前的版本是保存关窗的时间，现在改为保存窗的BH位置：hasrun
 u8			flag_motorIO 	= 0;		// 马达引脚调换标志
 u8			flag_YS_isno 	= 0;		// FLYS无检测
 WindowState		windowstate 	= open;
@@ -229,7 +229,7 @@ void Motor_AutoRun()
 
 bool MotorProtectAM()	//AM模式下，除了Y30电机转动保护，充电保护，BH方波保护，达到AM位置
 {
-	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time) || key_AM.val == on);	
+	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time) || key_AM.val == off);	
 
 }
 
@@ -437,8 +437,6 @@ void MotorControl()
 					OS_AddFunction(taskMotor,WindowStateBC2,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC2 = 0;	
 					key_Y.counter = 0;
-					motorStruct.hasrun = 0;
-					motorStruct.needrun = 0;
 				}
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 脱扣
@@ -461,7 +459,7 @@ void MotorControl()
 					if(key_AM.val == on)
 					{
 						shut_time = motorStruct.hasrun;	// AM下自动记录关窗时间	
-						debug("\r\nshut_time = %lu\r\n",shut_time);
+						debug("\r\nshut_time = %d\r\n",shut_time);
 					}					
 				}
 			}else
@@ -478,6 +476,7 @@ void MotorControl()
 			if(jugeYS_No.switchon)								//无YS,FL开窗
 			{
 				debug("无YS开窗\r\n");
+				debug("shut_time = %d,hasrun = %d",shut_time,motorStruct.hasrun);
 				jugeYS_No.switchon = 0;
 				flag_bat2BC1 = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
