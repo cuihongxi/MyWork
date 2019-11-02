@@ -154,7 +154,7 @@ void BH_Check()
 						i = 0;
 						j = motorStruct.hasrun;
 					}
-					if((motorStruct.hasrun - j)>0)
+					if((motorStruct.hasrun - j)==0)
 					{
 						j = 0;i = 1;
 						debug("¿ª´°\r\n");
@@ -179,7 +179,7 @@ void BH_Check()
 						i = 0;
 						j = motorStruct.hasrun;
 					}
-					if((j - motorStruct.hasrun)>0)
+					if((j - motorStruct.hasrun)==0)
 					{
 						j = 0;i = 1;
 						debug("¹Ø´°\r\n");

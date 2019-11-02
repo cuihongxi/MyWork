@@ -147,7 +147,7 @@ void FunInSleap()
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	 
 	
-	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,400)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
