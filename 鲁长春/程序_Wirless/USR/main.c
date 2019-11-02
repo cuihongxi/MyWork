@@ -119,7 +119,6 @@ void Make_SysSleep()
 	NRF24L01_PWR(0); 
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
 	CLK_LSICmd(ENABLE);						// 使能LSI
-	//CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_64);  	// RTC时钟源LSI
 	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	// 等待LSI就绪
 	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
 	PWR_FastWakeUpCmd(ENABLE);
@@ -132,7 +131,6 @@ void MakeSysWakeUp()
 	flag_wake = 1;
 	CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
 	TIM3_Cmd(ENABLE);
-//	systime = 0;
 	debug(" WakeUp \r\n");
 }
 
@@ -161,7 +159,7 @@ void main()
 	PWM_Init();			//呼吸灯，PWM初始化
 	TIM3_INIT();			//定时器3,1ms
 	
-//	NRF_CreatNewAddr(ADDRESS2);
+	NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
 
     while(1)

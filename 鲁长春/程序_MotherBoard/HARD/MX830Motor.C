@@ -15,6 +15,7 @@ u8			flag_YS_isno 	= 0;		// FLYS无检测
 WindowState		windowstate 	= open;
 u8 			flag_flag_YS_SHUT = 0;
 u8			flag_bat2BC1 	= 0;		// 执行无条件关窗的标志位
+u8 			flag_shut_time 	= 0;
 
 extern	TaskLinkStr* 	tasklink;		// 任务列表
 extern	u8 		flag_KEY_Z;		// 传递给马达函数，让他根据val做出动作
@@ -355,7 +356,7 @@ void MotorControl()
 					case off:
 					break;
 					case on:
-						motorStruct.needrun = - 1000;			// 执行<z
+						motorStruct.needrun = motorStruct.hasrun - 1000;			// 执行<z
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 					break;
 					case two:	
@@ -389,7 +390,7 @@ void MotorControl()
 					case off:
 					break;
 					case on:
-						motorStruct.needrun = 1000;			// 执行>Y
+						motorStruct.needrun =motorStruct.hasrun + 1000;			// 执行>Y
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 					break;
 					case two:// 开1/3
@@ -421,11 +422,11 @@ void MotorControl()
 					OS_AddFunction(taskMotor,WindowStateBC1,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_BC1 = 0;	
 					key_Z.counter = 0;
-					motorStruct.hasrun = 0;
-					motorStruct.needrun = 0;
-					if(shut_time != 0)	//计算关窗用的时间
+//					motorStruct.hasrun = 0;
+//					motorStruct.needrun = 0;
+					if(flag_shut_time)	//计算关窗用的时间
 					{
-						//没有FLYS时，启动定时器计时，延时打开窗
+						debug("没有FLYS时，启动定时器计时，延时打开窗~\r\n");//没有FLYS时，启动定时器计时，延时打开窗
 						flag_YS_isno = 1;
 					}
 					jugeYS.switchon = 0;	//不进行Y30按键检测
@@ -458,6 +459,7 @@ void MotorControl()
 					OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 					if(key_AM.val == on)
 					{
+					    	flag_shut_time = 1;
 						shut_time = motorStruct.hasrun;	// AM下自动记录关窗时间	
 						debug("\r\nshut_time = %d\r\n",shut_time);
 					}					
@@ -479,6 +481,7 @@ void MotorControl()
 				debug("shut_time = %d,hasrun = %d",shut_time,motorStruct.hasrun);
 				jugeYS_No.switchon = 0;
 				flag_bat2BC1 = 0;
+				flag_shut_time = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
