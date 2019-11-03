@@ -142,7 +142,7 @@ void Key_ScanLeave()
      
 	if(DM_Risingtime != 0 && GPIO_READ(GPIO_DM))
 	{
-	    debug("systime = %lu\r\n",systime);
+	    	debug("systime = %lu\r\n",systime);
 		if((systime - DM_Risingtime) > TIM_DML && (systime - DM_Risingtime) < TIM_DMH )
 		{
 			flag_duima = 1;	//¶ÔÂë×´Ì¬

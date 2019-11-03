@@ -231,7 +231,8 @@ void Motor_AutoRun()
 
 bool MotorProtectAM()	//AM模式下，除了Y30电机转动保护，充电保护，BH方波保护，达到AM位置
 {
-	return (bool)(MotorSysProtect1() || (motorStruct.hasrun == shut_time) || key_AM.val == off);	
+	return (bool)(MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y|| (motorStruct.hasrun == shut_time)\
+	||key_AM.val == off||(motorStruct.flag_BC2 && motorStruct.dir == BACK));
 
 }
 
@@ -488,7 +489,7 @@ void MotorControl()
 				jugeYS_No.switchon = 0;
 				flag_bat2BC1 = 0;
 				flag_YS_isno = 0;
-				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectKey);	// 执行开窗
+				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
@@ -534,19 +535,19 @@ void CheckBC1BC2()
 		CheckWindowState();
 		if(windowstate == to_BC1 &&  motorStruct.dir == FORWARD) 
 		{
-		    	debug("motorStruct.flag_BC1 = 1\r\n");
+		    	//debug("motorStruct.flag_BC1 = 1\r\n");
 			motorStruct.flag_BC1 = 1;
 		}
 		if(windowstate == to_BC2 && motorStruct.dir == BACK)
 		{
-			debug("motorStruct.flag_BC2 = 1\r\n");
+			//debug("motorStruct.flag_BC2 = 1\r\n");
 			motorStruct.flag_BC2 = 1;		
 		} 
 	}
 
 	if(motorStruct.flag_BC && taskMotor->state == Stop)
 	{
-	    	debug("motorStruct.flag_BC = 0\r\n");
+	    	//debug("motorStruct.flag_BC = 0\r\n");
 		motorStruct.flag_BC = 0;	
 	} 
 

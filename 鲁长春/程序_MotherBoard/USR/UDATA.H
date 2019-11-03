@@ -51,5 +51,7 @@
 #define			TIM_SHACHE		500	// ms,刹车时间
 
 #define			USE_NRF			1	// NRF模块 ：0，不使用，1 使用	
+#define 		DEBUG_LEVEL 		1	// 串口调试接口
 
 #endif
+
