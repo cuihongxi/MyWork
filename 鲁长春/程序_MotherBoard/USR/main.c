@@ -138,7 +138,7 @@ void FunInSleap()
 	
 	if(Juge_counter(&YS_30, (u32)60000*ys_timer30))		//YS 30分钟不响应
 	{
-	    	debug("Y30 stop windowstate = %d\r\n",windowstate);
+	    	key_Y30.val = off;
 		if(flag_no30) flag_no30 = 0; 			// 复位由BH无方波引起的延时30分钟
 	}
 	

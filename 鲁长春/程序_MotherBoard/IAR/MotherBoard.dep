@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>3811660444</fileChecksum>
+  <fileChecksum>2303819035</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -241,6 +241,7 @@
       <file>$PROJ_DIR$\..\LIB\inc\stm8l15x.h</file>
       <file>$PROJ_DIR$\..\USR\stm8l15x_it.h</file>
       <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Exe\11.YS_30.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\11.&#x4e32;&#x53e3;&#x8F93;&#x51FA;hex</file>
       <file>$PROJ_DIR$\Debug\Exe\11.2hex</file>
     </outputs>
@@ -401,7 +402,7 @@
         </tool>
         <tool>
           <name>OBJCOPY</name>
-          <file> 236</file>
+          <file> 235</file>
         </tool>
       </outputs>
       <inputs>
@@ -1179,7 +1180,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 2 10 232 196 140 200 189 34 199 62 147 152 102 88 153 122 162 30 168 0 104 20 19 171 148 32 17 43 221 186 123 47 91 53 95 108 24 21 46 37 77 96 57 133 129 85 110 220 182 188 55 59 52 156 136 183 128 28</file>
+          <file> 186 85 171 21 232 2 34 96 199 47 53 95 108 37 133 220 153 122 62 123 91 221 17 24 46 77 57 129 110 182 200 43 30 162 140 168 147 0 104 20 196 19 152 189 148 102 10 32 88 188 55 59 52 156 136 183 128 28</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
