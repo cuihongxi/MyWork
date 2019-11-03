@@ -67,13 +67,13 @@ void ADC_PowerOn()
 //YS检测任务
 void YS_Function()
 {
-    debug("#");
+  
 	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
 	{
 		GPIO_SET(YSD_GPIO);
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		GPIO_RESET(YSD_GPIO);
-		debug(".\r\n");
+		//debug(".\r\n");
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
 			if(jugeYS.switchon == 0 && windowstate != to_BC1)
@@ -102,14 +102,7 @@ void YS_Function()
 
 bool JugeYS()
 {
-//    bool j = (bool)(YS_30.start || ( key_AM.val == off && windowstate == to_BC1) || ( flag_shut_time == 0 && windowstate == to_BC1));
-//	
-//    if(j)
-//    {
-//	debug("中断YS：");
-//    	if(( key_AM.val == off && windowstate == to_BC1)) debug("key_AM.val == off && windowstate == to_BC1\r\n");
-//	if( flag_shut_time == 0 && windowstate == to_BC1)debug("flag_shut_time == 0 && windowstate == to_BC1\r\n");
-//    }	
+
     return (bool)(YS_30.start || ( key_AM.val == off && windowstate == to_BC1) || ( flag_shut_time == 0 && windowstate == to_BC1));
 }
 

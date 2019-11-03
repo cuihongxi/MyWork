@@ -145,8 +145,18 @@ void FunInSleap()
 	if(Juge_counter(&beep,130)) BeepStop();			// 按键蜂鸣器BEEP
 	LedSharpInIT(&ledSharpTimes,is_suc,systime,TIM_LED_SHARP_ON,TIM_LED_SHARP_OFF);	// 设置时，LED闪烁控制
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
-	 
 	
+	if(Juge_counter(&jugeWindows,TIM__YS_D))
+	{
+	    GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_Out_PP_Low_Slow);
+	    GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_Out_PP_Low_Slow);	
+	}
+	if(Juge_counter(&jugeBHLED,TIM__YS_D))    
+	{
+		LEN_GREEN_Close();
+	}
+	
+#if	USE_NRF > 0	
 	if(Juge_counter(&NRFpowon,400)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
@@ -157,15 +167,7 @@ void FunInSleap()
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
 	}
-	if(Juge_counter(&jugeWindows,TIM__YS_D))
-	{
-	    GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_Out_PP_Low_Slow);
-	    GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_Out_PP_Low_Slow);	
-	}
-	if(Juge_counter(&jugeBHLED,TIM__YS_D))    
-	{
-		LEN_GREEN_Close();
-	}
+#endif
 }
 /*nrf接收函数*/
 void NRF_Function()
@@ -211,11 +213,12 @@ void main()
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 
 	Key_GPIO_Init();							// 触摸按键初始化	
-	
+#if	USE_NRF > 0
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 	NRFpowon.start = 1;
 	NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+#endif
 	NRF24L01_GPIO_Lowpower();
 	while(1)
 	{         

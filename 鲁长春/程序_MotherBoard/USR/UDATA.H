@@ -49,4 +49,7 @@
 #define			TIM_MOTO_HOLD		500	// ms,马达刹车时间
 #define			TIM_ALARM_BH		10000	// ms,BH无方波和马达超时报警间隔
 #define			TIM_SHACHE		500	// ms,刹车时间
+
+#define			USE_NRF			0	// NRF模块 ：0，不使用，1 使用	
+
 #endif

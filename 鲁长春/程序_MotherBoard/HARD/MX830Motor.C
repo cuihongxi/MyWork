@@ -488,7 +488,7 @@ void MotorControl()
 				jugeYS_No.switchon = 0;
 				flag_bat2BC1 = 0;
 				flag_YS_isno = 0;
-				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
+				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectKey);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
