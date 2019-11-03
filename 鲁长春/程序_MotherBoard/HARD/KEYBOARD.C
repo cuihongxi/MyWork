@@ -44,6 +44,7 @@ extern	u32			beepdelayoff;
 extern	u8  			ADDRESS1[TX_ADR_WIDTH];
 extern	u8  			ADDRESS2[RX_ADR_WIDTH];
 extern	u8			flag_BH;
+extern 	u8			flag_YS_isno;
 
 void BeepStart()
 {
@@ -120,6 +121,7 @@ void Key_ScanLeave()
 			else 
 			{
 			    	key_AM.val = off;
+				flag_YS_isno = 0;
 				jugeYS_No.start = 0;
 				jugeYS_No.counter =0;
 				jugeYS_No.switchon = 0;

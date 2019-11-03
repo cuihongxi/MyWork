@@ -17,6 +17,7 @@ u8 			flag_flag_YS_SHUT = 0;
 u8			flag_bat2BC1 	= 0;		// 执行无条件关窗的标志位
 u8 			flag_shut_time 	= 0;
 
+
 extern	TaskLinkStr* 	tasklink;		// 任务列表
 extern	u8 		flag_KEY_Z;		// 传递给马达函数，让他根据val做出动作
 extern	u8 		flag_KEY_Y;
@@ -289,6 +290,11 @@ void AlarmMotor()
 	OS_AddCycleFunction(taskAlarm,6);
 	OS_AddTask(tasklink,taskAlarm);
 }
+
+void Resetflag_YS()
+{
+	flag_shut_time = 0;
+}
 //马达运动
 void MotorControl()
 {
@@ -481,9 +487,10 @@ void MotorControl()
 				debug("shut_time = %d,hasrun = %d",shut_time,motorStruct.hasrun);
 				jugeYS_No.switchon = 0;
 				flag_bat2BC1 = 0;
-				flag_shut_time = 0;
+				flag_YS_isno = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}
