@@ -157,7 +157,7 @@ void FunInSleap()
 	}
 	
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,400)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,400000)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
@@ -218,8 +218,10 @@ void main()
 	NRFpowon.start = 1;
 	NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
+	NRF24L01_PWR(0);
 #endif
 	NRF24L01_GPIO_Lowpower();
+	
 	while(1)
 	{         
             	halt(); 					// 停止模式

@@ -14,7 +14,7 @@
 
 
 
-#define DEBUG_LEVEL 1		//调试接口
+#define DEBUG_LEVEL 0		//调试接口
 
 #define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC3
 
