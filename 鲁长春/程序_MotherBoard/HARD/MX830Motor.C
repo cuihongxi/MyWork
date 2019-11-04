@@ -207,7 +207,7 @@ bool MotorSysProtect1()		// ´ÎÓÅÏÈ¼¶±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤
 
 bool FL_MotorProtect()		// FLÔËÐÐ±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤£¬µ½´ïBC1
 {
-	return (bool)(motorStruct.erro || (motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+	return (bool)(motorStruct.erro ||flag_KEY_Z||flag_KEY_Y|| (motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
 }
 
 
@@ -240,7 +240,7 @@ bool MotorProtectAM()	//AMÄ£Ê½ÏÂ£¬³ýÁËY30µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬´ïµ
 bool YS_MotorProtect()	//µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬Y30ÑÓÊ±,¹Ø´°µ½ÏÞÎ»
 {
 	bool juge = (bool)((motorStruct.counter > MOTOR_F_SAFE) \
-		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||(motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||flag_KEY_Z||flag_KEY_Y||(motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
 	if(juge)
 	{
 		jugeYS.switchon = 0;
@@ -459,7 +459,6 @@ void MotorControl()
 				{
 					flag_flag_YS_SHUT = 1;
 					debug("\r\nYS´ïµ½·§Öµ£¬¹Ø´°\r\n");
-					OS_AddFunction(taskMotor,OS_DeleteTask,0);				// ÒÆ³ýÈÎÎñ
 					OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,YS_MotorProtect);// Ö´ÐÐ¹Ø´°
 					OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 					OS_AddFunction(taskMotor,MotorSTOP,0);					// ÒÆ³ýÈÎÎñ
