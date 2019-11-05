@@ -205,6 +205,14 @@ bool MotorSysProtect1()		// 次优先级保护：电机转动保护，电压过低，BH方波保护
 	return (bool)(motorStruct.erro);
 }
 
+bool MotorSysProtectZ()		// 次优先级保护：电机转动保护，电压过低，BH方波保护
+{
+	return (bool)(MotorSysProtect1() || !(motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+}
+bool MotorSysProtectY()		// 次优先级保护：电机转动保护，电压过低，BH方波保护
+{
+	return (bool)(MotorSysProtect1() || !(motorStruct.flag_BC2 && motorStruct.dir == BACK));
+}
 bool FL_MotorProtect()		// FL运行保护：电机转动保护，电压过低，BH方波保护，到达BC1
 {
 	return (bool)(motorStruct.erro ||flag_KEY_Z||flag_KEY_Y|| (motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
@@ -380,7 +388,8 @@ void MotorControl()
 				    
 				}
 
-			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);										
+			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);
+				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectZ);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);		// 移除任务	
@@ -412,7 +421,8 @@ void MotorControl()
 					break;	
 				}					
 		
-				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);								
+				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);
+				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectY);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
