@@ -76,12 +76,12 @@ void YS_Function()
 		//debug(".\r\n");
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
-			if(jugeYS.switchon == 0 && windowstate != to_BC1)
+			if(jugeYS.switchon == 0 && windowstate != SHUTDOWN)
 			{
 				debug(" YSdat = %f\r\n",YSdat);
 				jugeYS.start = 1;	//开着窗
 			}
-			if(key_AM.val == on && windowstate == to_BC1)						//关着窗
+			if(key_AM.val == on && windowstate == SHUTDOWN)						//关着窗
 			{
 				jugeYS_No.counter = 0;	//清空计数
 				jugeYS_No.start = 0;
@@ -93,7 +93,7 @@ void YS_Function()
 			jugeYS.start = 0;
 			jugeYS.counter = 0;
 			jugeYS.switchon = 0;
-			if(key_AM.val == on && windowstate == to_BC1 && jugeYS_No.switchon == 0 && flag_shut_time)//关着窗
+			if(key_AM.val == on && windowstate == SHUTDOWN && jugeYS_No.switchon == 0 && flag_shut_time)//关着窗
 				jugeYS_No.start = 1;	//开始无YS计时。超过阀值，自动开窗
 		}	
 	}
@@ -103,7 +103,7 @@ void YS_Function()
 bool JugeYS()
 {
 
-    return (bool)(YS_30.start || ( key_AM.val == off && windowstate == to_BC1) || ( flag_shut_time == 0 && windowstate == to_BC1));
+    return (bool)(YS_30.start || ( key_AM.val == off && windowstate == SHUTDOWN) || ( flag_shut_time == 0 && windowstate == SHUTDOWN));
 }
 
 
@@ -114,8 +114,8 @@ void YS_Control()
 	static u8 flag_1	= 0;
 	if(taskYS->state == Stop)
 	{
-		if(((windowstate == to_BC1  && key_AM.val == off)|| YS_30.start \
-		    ||(windowstate == to_BC1  && flag_shut_time == 0)) && flag_0 == 0) 	//不检测YS
+		if(((windowstate == SHUTDOWN  && key_AM.val == off)|| YS_30.start \
+		    ||(windowstate == SHUTDOWN  && flag_shut_time == 0)) && flag_0 == 0) 	//不检测YS
 		{
 			debug("\r\nremove YS check-->\r\n");
 			flag_0 = 1;
@@ -126,13 +126,13 @@ void YS_Control()
 			flag_flag_YS_SHUT = 0;
 			GPIO_RESET(YSD_GPIO);										//关闭YS电源				
 		}else
-		if(windowstate != to_BC1 && YS_30.start == 0 && flag_0)
+		if(windowstate != SHUTDOWN && YS_30.start == 0 && flag_0)
 		{
 			debug("flag_0 = 0\r\n");
 			flag_0 = 0;
 		}else
 		
-		if(windowstate != to_BC1 && YS_30.start == 0 && flag_1 == 0 )	// 开着窗或者关着窗并且AM打开并且没有30分钟限制
+		if(windowstate != SHUTDOWN && YS_30.start == 0 && flag_1 == 0 )	// 开着窗或者关着窗并且AM打开并且没有30分钟限制
 		{
 
 			flag_1= 1;

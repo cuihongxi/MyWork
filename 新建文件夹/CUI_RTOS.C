@@ -176,7 +176,7 @@ void OsSectionFun(TaskStr* task)
 	
 	if(task->pthis != 0)
 	{
-		task->pthis->osfun();							// 执行函数
+		task->pthis->osfun();									// 执行函数
 		CUI_RTOS_Delayms(task,task->pthis->time);				// 执行延时
 		return;													// 跳出程序
 	}		
@@ -191,7 +191,6 @@ bool OsJudge_TaskIsNull(TaskStr* task)
 	else return (bool)FALSE;
 }
 
-extern TimerLinkStr 		timer2;
 //任务队列运行
 void OS_Task_Run(TaskLinkStr* tasklink)
 {
@@ -215,9 +214,6 @@ void OS_Task_Run(TaskLinkStr* tasklink)
 		debug("free time = %lu ms\r\n",GetSysTime(&timer2) - time);
 #endif
 	}
-	
-		
-	
 }
 
 
@@ -234,15 +230,13 @@ u32 OS_TimerFunc(TimerLinkStr* timer)
 			if((((judgeFunStr*)(pNext->task->pthis))->jugefun()) != 0) 
 			{
 				((judgeFunStr*)(pNext->task->pthis))->result = (bool)TRUE;
-				//if(Free_taskBefore(pNext->task))
 				OS_AddTask(pNext->tasklink,pNext->task) ;	// 添加任务到队列	
 				SingleList_DeleteNode(timer, pNext);		// 删除定时
 				continue;
 			}
 		}
 		if(pNext->counter <= GetSysTime(timer))
-		{
-		    
+		{    
 			OS_AddTask(pNext->tasklink,pNext->task) ;		// 添加任务到队列	
 			SingleList_DeleteNode(timer, pNext);			// 删除定时
 		}

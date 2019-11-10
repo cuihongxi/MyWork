@@ -20,7 +20,7 @@
 #define         	TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
 #define         	TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
 #define         	VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
-#define         	MOTOR_F_SAFE            60000   // ms,正转保护
+#define         	MOTOR_F_SAFE            10000   // ms,正转保护
 #define			TIM_SLEEP		5000	// ms,休眠倒计时时间
 #define			TIM_KEY			1000	// ms，连击间隔
 #define         	TIM_CHECKEYS          	2000    // ms,YS检测时间

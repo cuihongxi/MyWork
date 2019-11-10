@@ -38,7 +38,7 @@ void  RunNetCmd(char* str)
 
 	if(CampareCMD(str,MQTT_DISCON)){		// MQTT 断开连接
 
-		myMQTT_Disconnect();	// 断开连接
+		ss->DisConnect();// 断开连接
 	}
 
 

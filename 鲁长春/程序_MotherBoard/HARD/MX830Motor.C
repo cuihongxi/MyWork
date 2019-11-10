@@ -50,29 +50,29 @@ void MX830Motor_GPIOInit()
  
 void Motor_Forward()
 {
-	if(flag_motorIO)
-	{
-		GPIO_SetBits(MX830Motor_GPIO_FI);
-		GPIO_ResetBits(MX830Motor_GPIO_BI);
-	}else
-	{
+//	if(flag_motorIO)
+//	{
+//		GPIO_SetBits(MX830Motor_GPIO_FI);
+//		GPIO_ResetBits(MX830Motor_GPIO_BI);
+//	}else
+//	{
 		GPIO_SetBits(MX830Motor_GPIO_BI);
 		GPIO_ResetBits(MX830Motor_GPIO_FI);		
-	}
+//	}
 }
 
 void Motor_Back()
 {					
 
-	if(flag_motorIO)
-	{
-		GPIO_SetBits(MX830Motor_GPIO_BI);
-		GPIO_ResetBits(MX830Motor_GPIO_FI);
-	}else
-	{
+//	if(flag_motorIO)
+//	{
+//		GPIO_SetBits(MX830Motor_GPIO_BI);
+//		GPIO_ResetBits(MX830Motor_GPIO_FI);
+//	}else
+//	{
 		GPIO_SetBits(MX830Motor_GPIO_FI);
 		GPIO_ResetBits(MX830Motor_GPIO_BI);	
-	}					
+//	}					
 }
 /**************************************
 *@brief
@@ -182,12 +182,16 @@ void Motor_RunFORWARD()
 
 void OpenWindow()
 {
+    if(flag_motorIO == 0)
 	Motor_Y();
+    else Motor_Z();
 }
 
 void ShutDownWindow()
 {
+    if(flag_motorIO == 0)
 	Motor_Z();
+    else Motor_Y();
 }
 
 
@@ -204,31 +208,44 @@ bool MotorSysProtect1()		// ´ÎÓÅÏÈ¼¶±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤
 {
 	return (bool)(motorStruct.erro);
 }
+bool BoolShutEdge()
+{
+    if(flag_motorIO == 0)
+	return (bool)BoolShutEdge();
+    else return (bool)(motorStruct.flag_shutdown && motorStruct.dir == BACK);
+}
+
+bool BoolOpenEdge()
+{
+    if(flag_motorIO == 0)
+	return (bool)(motorStruct.flag_opendown && motorStruct.dir == BACK);
+    else return (bool)(motorStruct.flag_opendown && motorStruct.dir == FORWARD);
+}
 
 bool MotorSysProtectZ()		// ´ÎÓÅÏÈ¼¶±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤
 {
-	return (bool)(MotorSysProtect1() || !(motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+	return (bool)(MotorSysProtect1() || !BoolShutEdge());
 }
 bool MotorSysProtectY()		// ´ÎÓÅÏÈ¼¶±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤
 {
-	return (bool)(MotorSysProtect1() || !(motorStruct.flag_BC2 && motorStruct.dir == BACK));
+	return (bool)(MotorSysProtect1() || !BoolOpenEdge());
 }
 bool FL_MotorProtect()		// FLÔËÐÐ±£»¤£ºµç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤£¬µ½´ïBC1
 {
-	return (bool)(motorStruct.erro ||flag_KEY_Z||flag_KEY_Y|| (motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+	return (bool)(motorStruct.erro ||flag_KEY_Z||flag_KEY_Y|| BoolShutEdge());
 }
 
 
 bool MotorProtectKey()		// °´¼üÓÅÏÈ¼¶±£»¤: µç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤,ZY°´¼ü,BC1,BC2ÏÞÎ»
 {
 	return (bool)(MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y|| (motorStruct.hasrun == motorStruct.needrun)\
-	    ||(motorStruct.flag_BC1 && motorStruct.dir == FORWARD)||(motorStruct.flag_BC2 && motorStruct.dir == BACK));
+	    ||BoolShutEdge()||BoolOpenEdge());
 }
 
 bool MotorProtectHold()		// °´¼üÓÅÏÈ¼¶±£»¤: µç»ú×ª¶¯±£»¤£¬µçÑ¹¹ýµÍ£¬BH·½²¨±£»¤,ZY°´¼ü,BC1,BC2ÏÞÎ»
 {
 	return (bool)(MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y\
-	    ||(motorStruct.flag_BC1)||(motorStruct.flag_BC2)|| motorStruct.erro&ERROR_BH);
+	    ||(motorStruct.flag_shutdown)||(motorStruct.flag_opendown)|| motorStruct.erro&ERROR_BH);
 }
 void Motor_AutoRun()
 {
@@ -240,7 +257,7 @@ void Motor_AutoRun()
 bool MotorProtectAM()	//AMÄ£Ê½ÏÂ£¬³ýÁËY30µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬´ïµ½AMÎ»ÖÃ
 {
 	return (bool)(MotorSysProtect1()||flag_KEY_Z||flag_KEY_Y|| (motorStruct.hasrun == shut_time)\
-	||key_AM.val == off||(motorStruct.flag_BC2 && motorStruct.dir == BACK));
+	||key_AM.val == off||BoolOpenEdge());
 
 }
 
@@ -248,7 +265,7 @@ bool MotorProtectAM()	//AMÄ£Ê½ÏÂ£¬³ýÁËY30µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬´ïµ
 bool YS_MotorProtect()	//µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬Y30ÑÓÊ±,¹Ø´°µ½ÏÞÎ»
 {
 	bool juge = (bool)((motorStruct.counter > MOTOR_F_SAFE) \
-		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||flag_KEY_Z||flag_KEY_Y||(motorStruct.flag_BC1 && motorStruct.dir == FORWARD));
+		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||flag_KEY_Z||flag_KEY_Y||BoolShutEdge());
 	if(juge)
 	{
 		jugeYS.switchon = 0;
@@ -257,13 +274,13 @@ bool YS_MotorProtect()	//µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬Y30ÑÓÊ±,¹Ø´°µ½ÏÞÎ»
 	return juge;
 }
 
-void WindowStateBC1()
+void WindowStateShutDown()
 {
-	windowstate = to_BC1;
+	windowstate = SHUTDOWN;
 }
-void WindowStateBC2()
+void WindowStateOpendown()
 {
-	windowstate = to_BC2;
+	windowstate = OPENDOWN;
 }
 
 void ResetBHErro()
@@ -300,6 +317,16 @@ void AlarmMotor()
 	OS_AddTask(tasklink,taskAlarm);
 }
 
+void AlarmMotor2()
+{
+	OS_AddFunction(taskAlarm,LEN_REDBEEP_Open,100);	
+	OS_AddFunction(taskAlarm,LEN_REDBEEP_Close,100);	
+	OS_AddFunction(taskAlarm,LEN_GREENBEEP_Open,100);	
+	OS_AddFunction(taskAlarm,LEN_GREENBEEP_Close,100);	
+	OS_AddCycleFunction(taskAlarm,6);
+	OS_AddTask(tasklink,taskAlarm);
+}
+
 void Resetflag_YS()
 {
 	flag_shut_time = 0;
@@ -311,15 +338,15 @@ void MotorControl()
 	//³äµç×´Ì¬½ûÖ¹×ª¶¯£¬³¬¹ý×ª¶¯Ê±ÏÞ£¬BATµçÑ¹¹ýµÍ½ûÖ¹×ª¶¯,³ýÈ¥BHÎÞ·½²¨
 	if(MotorSysProtect0())
 	{
-		motorStruct.flag_BC1 = 0;
-		motorStruct.flag_BC2 = 0;
+		motorStruct.flag_shutdown = 0;
+		motorStruct.flag_opendown = 0;
 		if(flag_motor_erro == 0)
 		{
 			flag_motor_erro = 1;
 			debug("³¬¹ý×ª¶¯Ê±ÏÞ£¬BATµçÑ¹¹ýµÍ½ûÖ¹×ª¶¯\r\n");
 			if(motorStruct.erro&ERROR_MOTOR)
 			{
-				OS_AddJudegeFunction(taskMotor,AlarmMotor,TIM_ALARM_BH,Juge_y30_end);	
+				OS_AddFunction(taskMotor,AlarmMotor2,TIM_ALARM_BH);	
 				OS_AddTask(tasklink,taskMotor);			
 			}
 
@@ -332,7 +359,6 @@ void MotorControl()
 		{
 			if((motorStruct.erro & ERROR_BH)&& flag_BHProtectStep == 0 && flag_no30 == 0)				// ·½²¨³¬Ê±±£»¤
 			{
-			    	
 				debug("·½²¨³¬Ê±±£»¤\r\n");
 				flag_BHProtectStep = 1;													//Èç¹û³öÏÖBH£¬Ôò»áÔÚÖÐ¶ÏÖÐÇåÁã
 				counter_BH = 0;
@@ -428,16 +454,16 @@ void MotorControl()
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// ÒÆ³ýÈÎÎñ	
 				OS_AddTask(tasklink,taskMotor);						// Ìí¼Óµ½ÈÎÎñ¶ÓÁÐ
 			}	
-			else if((motorStruct.flag_BC1||motorStruct.flag_BC2) && motorStruct.flag_BC == 0 ) // ´°ÏÞÎ»¶¯×÷
+			else if((motorStruct.flag_shutdown||motorStruct.flag_opendown) && motorStruct.flag_BC == 0 ) // ´°ÏÞÎ»¶¯×÷
 			{
 				debug("´°ÏÞÎ»¶¯×÷:");
 				motorStruct.flag_BC = 1;
 				//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// Õý×ª1Ãë
-				if(motorStruct.flag_BC1)						// ¹Ø´°ÏÞÎ»
+				if(motorStruct.flag_shutdown)						// ¹Ø´°ÏÞÎ»
 				{
 					debug("¹Ø´°ÏÞÎ»~\r\n");
-					OS_AddFunction(taskMotor,WindowStateBC1,IRQ_PERIOD);				// ¹Ø´°±êÖ¾ÖÃÎ»
-					motorStruct.flag_BC1 = 0;	
+					OS_AddFunction(taskMotor,WindowStateShutDown,IRQ_PERIOD);				// ¹Ø´°±êÖ¾ÖÃÎ»
+					motorStruct.flag_shutdown = 0;	
 					key_Z.counter = 0;
 //					motorStruct.hasrun = 0;
 //					motorStruct.needrun = 0;
@@ -449,11 +475,11 @@ void MotorControl()
 					jugeYS.switchon = 0;	//²»½øÐÐY30°´¼ü¼ì²â
 					flag_flag_YS_SHUT = 0;
 				}else
-				if(motorStruct.flag_BC2)
+				if(motorStruct.flag_opendown)
 				{
 					debug("¿ª´°ÏÞÎ»\r\n");
-					OS_AddFunction(taskMotor,WindowStateBC2,IRQ_PERIOD);				// ¹Ø´°±êÖ¾ÖÃÎ»
-					motorStruct.flag_BC2 = 0;	
+					OS_AddFunction(taskMotor,WindowStateOpendown,IRQ_PERIOD);				// ¹Ø´°±êÖ¾ÖÃÎ»
+					motorStruct.flag_opendown = 0;	
 					key_Y.counter = 0;
 				}
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// É²³µ
@@ -527,15 +553,28 @@ WindowState CheckWindowState()
 {
 	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
-	if(GPIO_READ(GPIO_38KHZ_BC1) == RESET && motorStruct.dir == FORWARD)
+	if(flag_motorIO == 0)
 	{
-		windowstate = to_BC1;
+		if(GPIO_READ(GPIO_38KHZ_BC1) == RESET && motorStruct.dir == FORWARD)
+		{
+			windowstate = SHUTDOWN;
+		}
+		else if(GPIO_READ(GPIO_38KHZ_BC2) == RESET && motorStruct.dir == BACK)windowstate = OPENDOWN;	
+	}else
+	{
+		if(GPIO_READ(GPIO_38KHZ_BC2) == RESET && motorStruct.dir == BACK)
+		{
+			windowstate = SHUTDOWN;
+		}
+		else if(GPIO_READ(GPIO_38KHZ_BC1) == RESET && motorStruct.dir == FORWARD)windowstate = OPENDOWN;	
 	}
-	else if(GPIO_READ(GPIO_38KHZ_BC2) == RESET && motorStruct.dir == BACK)windowstate = to_BC2;
-	else if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && GPIO_READ(GPIO_38KHZ_BC2) != RESET)
+
+	if(GPIO_READ(GPIO_38KHZ_BC1) != RESET && GPIO_READ(GPIO_38KHZ_BC2) != RESET)
 	{
 		windowstate = open;
 	}
+	
+	
 	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_Out_PP_Low_Slow);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_Out_PP_Low_Slow);
 	return windowstate;
@@ -546,21 +585,21 @@ void CheckBC1BC2()
 	if((motorStruct.dir != STOP) && (motorStruct.flag_BC == 0))	
 	{	
 		CheckWindowState();
-		if(windowstate == to_BC1 &&  motorStruct.dir == FORWARD) 
+		if(flag_motorIO == 0)
 		{
-		    	//debug("motorStruct.flag_BC1 = 1\r\n");
-			motorStruct.flag_BC1 = 1;
+			if(windowstate == SHUTDOWN &&  motorStruct.dir == FORWARD) motorStruct.flag_shutdown = 1;
+			if(windowstate == OPENDOWN && motorStruct.dir == BACK) motorStruct.flag_opendown = 1;	
+		
+		}else
+		{
+			if(windowstate == SHUTDOWN &&  motorStruct.dir == BACK ) motorStruct.flag_shutdown = 1;
+			if(windowstate == OPENDOWN && motorStruct.dir == FORWARD)motorStruct.flag_opendown = 1;					
 		}
-		if(windowstate == to_BC2 && motorStruct.dir == BACK)
-		{
-			//debug("motorStruct.flag_BC2 = 1\r\n");
-			motorStruct.flag_BC2 = 1;		
-		} 
+
 	}
 
 	if(motorStruct.flag_BC && taskMotor->state == Stop)
 	{
-	    	//debug("motorStruct.flag_BC = 0\r\n");
 		motorStruct.flag_BC = 0;	
 	} 
 

@@ -253,9 +253,14 @@ void KeyFun()
 	{
 		switch(key_val)
 		{
-		    case KEY_VAL_DER_Z:	if(windowstate != to_BC1)flag_KEY_Z = 1;BeepStart();;
+		    case KEY_VAL_DER_Z:	
+		  //  debug("flag_motorIO = %d ,windowstate = %d\n",flag_motorIO,windowstate);
+		    if((flag_motorIO == 0 && windowstate != SHUTDOWN) || (flag_motorIO != 0 && windowstate != OPENDOWN))flag_KEY_Z = 1;		    
+		    BeepStart();
 				break;
-			case KEY_VAL_DER_Y:	if(windowstate != to_BC2)flag_KEY_Y = 1;BeepStart();;
+		    case KEY_VAL_DER_Y:
+		    if((flag_motorIO == 0 && windowstate != OPENDOWN) || (flag_motorIO != 0 && windowstate !=SHUTDOWN) )flag_KEY_Y = 1;
+		    BeepStart();
 				break;
 			case KEY_VAL_DM:	BeepStart();
 				if(key_DM.val == six)	//对话马达转向

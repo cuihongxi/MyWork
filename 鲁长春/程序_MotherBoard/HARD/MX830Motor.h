@@ -40,16 +40,16 @@ typedef struct
 	State_Dir	dirBack;	// 记录马达方向，停止除外	
 	State_Dir   	command;	// 指令
 	u8 		flag_BC;	// BC到位检测标志
-	u8 		flag_BC1 ;	// BC1关窗标志
-	u8 		flag_BC2 ;	// BC2开窗标志
+	u8 		flag_shutdown ;	// 关窗标志
+	u8 		flag_opendown ;	// 开窗标志
 	u8		erro ;		// 马达故障
 	
 }Motor_Struct;
 
 typedef enum{
 	open,
-	to_BC1,
-	to_BC2,
+	SHUTDOWN,
+	OPENDOWN,
 }WindowState;
 
 

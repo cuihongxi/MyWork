@@ -160,8 +160,9 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 //初始化配置
 void Init_NRF24L01(u8 pip,u8 rf_ch)
 {
+    u8 i = 10;
     NRF24L01_GPIO_Init();
-     while(NRF24L01_Check())         //检测模块存在,如果不存在就周期1s切换继电器状态,让LED闪烁
+     while(NRF24L01_Check() && i--)         //检测模块存在,如果不存在就周期1s切换继电器状态,让LED闪烁
     {            
         debug("NRF24L01_Check EEROR\r\n"); 
         delay_ms(1000);

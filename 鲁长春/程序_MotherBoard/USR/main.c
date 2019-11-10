@@ -5,7 +5,6 @@
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
 u8 			txbuf[5] 	= {0};				// nrf发送缓存
 u8 			rxbuf[10] 	= {0};				// nrf接收缓存
-//u8 			flag_BHLED 	= 0;				// BH1低电平时LED点亮
 u32 			dm_counter 	= 0;				// 开机检测DM，计数器
 
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
@@ -23,7 +22,6 @@ JugeCStr 		beep 		= {0};
 JugeCStr 		NRFpowon 	= {0};
 JugeCStr 		NRFpowoff 	= {0};
 
-//u16			amtime 		= 0;
 u32 			systime 	= 0;				// 保存系统时间，ms
 u8 			ledSharpTimes 	= 0;				// 控制LED闪烁次数
 bool			is_suc 		= (bool)FALSE;			// 设置是否成功
@@ -221,7 +219,7 @@ void main()
 	NRF24L01_PWR(0);
 #endif
 	NRF24L01_GPIO_Lowpower();
-	
+	CheckWindowState();
 	while(1)
 	{         
             	halt(); 					// 停止模式
@@ -230,6 +228,7 @@ void main()
 		FunInSleap();
 		NRF_Function();
 		OS_Task_Run(tasklink);				// 执行任务链表中的任务
+			
 		if(jugeBHLED.start && GPIO_READ(GPIO_BH)){jugeBHLED.start = 0;LEN_GREEN_Close();} 
 		if(jugeWindows.start && (motorStruct.dir == STOP||motorStruct.dir == NULL))
 		{

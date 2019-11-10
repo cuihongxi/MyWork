@@ -18,6 +18,7 @@ JugeCStr	jugeBHLED = {0};
 extern	TimerLinkStr 	timer2 ;				// 任务的定时器
 extern	u8 		flag_BHLED;
 extern	u8		flag_bat2BC1;
+extern 	u8		flag_motorIO;
 
 void BH_FL_GPIO_Init()
 {
@@ -47,7 +48,7 @@ void FL_CheckStop()
 
 void FL_Control()
 {
-    if(flag_FLCheckState == 0 && windowstate != to_BC1 && motorStruct.dir == STOP &&  flag_no30 == 0)
+    if(flag_FLCheckState == 0 && windowstate != SHUTDOWN && motorStruct.dir == STOP &&  flag_no30 == 0)
     {
 	FL_CheckStart();		
     }
@@ -104,17 +105,18 @@ void BH_CheckStart()
 //在BH下降中断中获得方向
 BH_dir BH_GetDir()
 {
-	if(flag_BH)
-	{
-	    	if(GPIO_READ(GPIO_BH2)) return BH_Open;
-		else return BH_Close;	
-	
-	}else
-	{
-		if(GPIO_READ(GPIO_BH2)) return BH_Close ;
-		else return BH_Open;		
-		}
-
+//	if(flag_BH)
+//	{
+//	    	if(GPIO_READ(GPIO_BH2)) return BH_Open;
+//		else return BH_Close;	
+//	
+//	}else
+//	{
+//		if(GPIO_READ(GPIO_BH2)) return BH_Close ;
+//		else return BH_Open;		
+//	}
+	if(GPIO_READ(GPIO_BH2)) return BH_Close ;
+	else return BH_Open;
 }
 
 void BH_CheckStop()
@@ -145,23 +147,45 @@ void BH_Check()
 				motorStruct.hasrun ++;
 
 				debug("马达.hasrun ++\r\n");
-				if(windowstate == to_BC1)	//检测手动开窗
+				if(flag_motorIO == 0)
 				{
-					static u8 i = 1;
-					static int j = 0;
-					if(i)
+					if(windowstate == SHUTDOWN)	//检测手动开窗
 					{
-						i = 0;
-						j = motorStruct.hasrun;
-					}
-					if((motorStruct.hasrun - j)==0)
+						static u8 i = 1;
+						static int j = 0;
+						if(i)
+						{
+							i = 0;
+							j = motorStruct.hasrun;
+						}
+						if((motorStruct.hasrun - j)==0)
+						{
+							j = 0;i = 1;
+							debug("开窗\r\n");
+							flag_bat2BC1 = 0;
+							windowstate = open;				    
+						}
+					}				
+				}else
+				{
+					if(windowstate == OPENDOWN)	//检测手动关窗
 					{
-						j = 0;i = 1;
-						debug("开窗\r\n");
-						flag_bat2BC1 = 0;
-						windowstate = open;				    
-					}
+						static u8 i = 1;
+						static int j = 0;
+						if(i)
+						{
+							i = 0;
+							j = motorStruct.hasrun;
+						}
+						if((j - motorStruct.hasrun)==0)
+						{
+							j = 0;i = 1;
+							debug("关窗\r\n");
+							windowstate = open;				    
+						}
+					}				
 				}
+	
 				
 
 				}
@@ -170,22 +194,45 @@ void BH_Check()
 			   
 				motorStruct.hasrun --;
 				debug("马达.hasrun --\r\n");
-				if(windowstate == to_BC2)	//检测手动关窗
+				if(flag_motorIO == 0)
 				{
-					static u8 i = 1;
-					static int j = 0;
-					if(i)
+					if(windowstate == OPENDOWN)	//检测手动关窗
 					{
-						i = 0;
-						j = motorStruct.hasrun;
-					}
-					if((j - motorStruct.hasrun)==0)
-					{
-						j = 0;i = 1;
-						debug("关窗\r\n");
-						windowstate = open;				    
-					}
+						static u8 i = 1;
+						static int j = 0;
+						if(i)
+						{
+							i = 0;
+							j = motorStruct.hasrun;
+						}
+						if((j - motorStruct.hasrun)==0)
+						{
+							j = 0;i = 1;
+							debug("关窗\r\n");
+							windowstate = open;				    
+						}
+					}				
+				}else
+				{
+					if(windowstate == SHUTDOWN)	//检测手动开窗
+						{
+							static u8 i = 1;
+							static int j = 0;
+							if(i)
+							{
+								i = 0;
+								j = motorStruct.hasrun;
+							}
+							if((motorStruct.hasrun - j)==0)
+							{
+								j = 0;i = 1;
+								debug("开窗\r\n");
+								flag_bat2BC1 = 0;
+								windowstate = open;				    
+							}
+						}				
 				}
+
 			}
 			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
 			if(motorStruct.erro & ERROR_BH) motorStruct.erro &= ~ERROR_BH;
