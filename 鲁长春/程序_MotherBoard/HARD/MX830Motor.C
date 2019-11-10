@@ -187,6 +187,7 @@ void OpenWindow()
     else Motor_Z();
 }
 
+
 void ShutDownWindow()
 {
     if(flag_motorIO == 0)
@@ -458,15 +459,13 @@ void MotorControl()
 			{
 				debug("窗限位动作:");
 				motorStruct.flag_BC = 1;
-				//OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_Z,MotorSysProtect1);	// 正转1秒
 				if(motorStruct.flag_shutdown)						// 关窗限位
 				{
 					debug("关窗限位~\r\n");
 					OS_AddFunction(taskMotor,WindowStateShutDown,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_shutdown = 0;	
 					key_Z.counter = 0;
-//					motorStruct.hasrun = 0;
-//					motorStruct.needrun = 0;
+
 					if(flag_shut_time)	//计算关窗用的时间
 					{
 						debug("没有FLYS时，启动定时器计时，延时打开窗~\r\n");//没有FLYS时，启动定时器计时，延时打开窗

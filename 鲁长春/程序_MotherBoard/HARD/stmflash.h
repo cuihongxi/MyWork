@@ -3,7 +3,7 @@
 #include "UHEAD.h"
 
 
-#define		FLASH_INIT_DATA		0x13			// 初始化值
+#define		FLASH_INIT_DATA		0x33			// 初始化值
 
 
 #define         ADDR_DM    		0x1000  // 定义保存地址 0x1000开始，dm_counter

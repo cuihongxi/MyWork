@@ -98,7 +98,13 @@ void Key_ScanLeave()
 				key_val = KEY_VAL_NULL;
 				Y30_Risingtime = 0;
 			}
-		}	
+		}
+		else 	//LED显示当前Y30状态
+		{
+			ledSharpTimes = 2;
+			if(key_Y30.val == off)is_suc = (bool)FALSE;
+			else is_suc = (bool)TRUE;
+		}
 	}else Y30_Risingtime = 0;
     }
     
@@ -135,6 +141,12 @@ void Key_ScanLeave()
 			AM_Risingtime = 0;
 			ledSharpTimes = 12;
 			
+		}
+		else 	//LED显示当前AM状态
+		{
+			ledSharpTimes = 2;
+			if(key_AM.val == off)is_suc = (bool)FALSE;
+			else is_suc = (bool)TRUE;
 		}
 	}
 	else AM_Risingtime = 0;
@@ -254,7 +266,7 @@ void KeyFun()
 		switch(key_val)
 		{
 		    case KEY_VAL_DER_Z:	
-		  //  debug("flag_motorIO = %d ,windowstate = %d\n",flag_motorIO,windowstate);
+		    debug("flag_motorIO = %d ,windowstate = %d\n",flag_motorIO,windowstate);
 		    if((flag_motorIO == 0 && windowstate != SHUTDOWN) || (flag_motorIO != 0 && windowstate != OPENDOWN))flag_KEY_Z = 1;		    
 		    BeepStart();
 				break;
