@@ -19,7 +19,7 @@
 #define		PRESS_MOTY	0X04
 
 #define	        TIM_MAXDELAY	1000
-#define         IRQ_PERIOD      20   
+#define         IRQ_PERIOD      1000   
 
 Nrf24l01_PTXStr         ptx = {0};
 
@@ -27,9 +27,9 @@ u8      rxbuf[7] = {0};
 u8      nrfaddr[5];
 u8 	keyval = 0;
 u8 	flag_wake = 1;
-u32 	systime = 0;
+int 	systime = 0;
 u8 	pressKey = 0;
-u32 	presstime = 0;
+int 	presstime = 0;
 u8	is_DM = 0;		// 保存是否配对信息
 
 extern 		u32 		DM_time;
@@ -69,7 +69,7 @@ void Make_SysSleep()
 	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
 	
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
-	RTC_SetWakeUpCounter(380);                     			// 唤醒间隔	20MS
+	RTC_SetWakeUpCounter(19000);                     			// 唤醒间隔	1000mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
 	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  
 	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
@@ -80,7 +80,7 @@ void Make_SysSleep()
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
     u8 txbuf[7] = {0};
-   // NRF24L01_PWR(1);
+    NRF24L01_PWR(1);
     txbuf[0] = addr[0];
     txbuf[1] = addr[1];
     txbuf[2] = addr[2];
@@ -89,7 +89,7 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     txbuf[5] = cmd;
     txbuf[6] = mes;
     NRF_AutoAck_TxPacket(ptx,txbuf,7);
-    NRF24L01_PWR(0);
+  
 }
 
 void main()
@@ -107,11 +107,11 @@ void main()
 	NRF_CreatNewAddr(ADDRESS2);
 	debug("addr:%d,%d,%d,%d,%d",address[0],address[1],address[2],address[3],address[4]);
         NRF24L01_GPIO_Lowpower();
-  //     Make_SysSleep();
-       NRF24L01_PWR(1);
+       Make_SysSleep();
+
     while(1)
     {    
-      //    halt();
+          halt();
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
 	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
@@ -151,8 +151,9 @@ void main()
 		     pressKey = 0;
 		   break;
 			case KEY_VAL_I100:
-                       if(systime<presstime)
+                       if(systime < presstime)
                        {
+                         debug("systime = %d,presstime = %d\n",systime,presstime);
 			switch(pressKey){
                                  case PRESS_Y30:debug("延时90分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_3);
                                  break;

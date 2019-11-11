@@ -10,7 +10,7 @@
 Motor_Struct    	motorStruct 	= {0};      	// 马达状态结构体
 TaskStr* 		taskMotor 	= {0};		// 马达运动任务
 int 			shut_time 	= 0;		// 之前的版本是保存关窗的时间，现在改为保存窗的BH位置：hasrun
-u8			flag_motorIO 	= 0;		// 马达引脚调换标志
+u8			flag_DM 	= 0;		// DM调换标志
 u8			flag_YS_isno 	= 0;		// FLYS无检测
 WindowState		windowstate 	= open;
 u8 			flag_flag_YS_SHUT = 0;
@@ -182,7 +182,7 @@ void Motor_RunFORWARD()
 
 void OpenWindow()
 {
-    if(flag_motorIO == 0)
+    if(flag_DM == 0)
 	Motor_Y();
     else Motor_Z();
 }
@@ -190,7 +190,7 @@ void OpenWindow()
 
 void ShutDownWindow()
 {
-    if(flag_motorIO == 0)
+    if(flag_DM == 0)
 	Motor_Z();
     else Motor_Y();
 }
@@ -211,14 +211,14 @@ bool MotorSysProtect1()		// 次优先级保护：电机转动保护，电压过低，BH方波保护
 }
 bool BoolShutEdge()
 {
-    if(flag_motorIO == 0)
-	return (bool)BoolShutEdge();
+    if(flag_DM == 0)
+	return (bool)(motorStruct.flag_shutdown && motorStruct.dir == FORWARD);
     else return (bool)(motorStruct.flag_shutdown && motorStruct.dir == BACK);
 }
 
 bool BoolOpenEdge()
 {
-    if(flag_motorIO == 0)
+    if(flag_DM == 0)
 	return (bool)(motorStruct.flag_opendown && motorStruct.dir == BACK);
     else return (bool)(motorStruct.flag_opendown && motorStruct.dir == FORWARD);
 }
@@ -552,7 +552,7 @@ WindowState CheckWindowState()
 {
 	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 	GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
-	if(flag_motorIO == 0)
+	if(flag_DM == 0)
 	{
 		if(GPIO_READ(GPIO_38KHZ_BC1) == RESET && motorStruct.dir == FORWARD)
 		{
@@ -584,7 +584,7 @@ void CheckBC1BC2()
 	if((motorStruct.dir != STOP) && (motorStruct.flag_BC == 0))	
 	{	
 		CheckWindowState();
-		if(flag_motorIO == 0)
+		if(flag_DM == 0)
 		{
 			if(windowstate == SHUTDOWN &&  motorStruct.dir == FORWARD) motorStruct.flag_shutdown = 1;
 			if(windowstate == OPENDOWN && motorStruct.dir == BACK) motorStruct.flag_opendown = 1;	

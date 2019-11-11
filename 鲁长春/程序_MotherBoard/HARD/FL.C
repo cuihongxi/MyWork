@@ -18,7 +18,7 @@ JugeCStr	jugeBHLED = {0};
 extern	TimerLinkStr 	timer2 ;				// 任务的定时器
 extern	u8 		flag_BHLED;
 extern	u8		flag_bat2BC1;
-extern 	u8		flag_motorIO;
+extern 	u8		flag_DM;
 
 void BH_FL_GPIO_Init()
 {
@@ -105,20 +105,9 @@ void BH_CheckStart()
 //在BH下降中断中获得方向
 BH_dir BH_GetDir()
 {
-//	if(flag_BH)
-//	{
-//	    	if(GPIO_READ(GPIO_BH2)) return BH_Open;
-//		else return BH_Close;	
-//	
-//	}else
-//	{
-//		if(GPIO_READ(GPIO_BH2)) return BH_Close ;
-//		else return BH_Open;		
-//	}
 	if(GPIO_READ(GPIO_BH2)) return BH_Close ;
 	else return BH_Open;
 }
-
 void BH_CheckStop()
 {
 	debug("BH_CheckStop\r\n");
@@ -147,7 +136,7 @@ void BH_Check()
 				motorStruct.hasrun ++;
 
 				debug("马达.hasrun ++\r\n");
-				if(flag_motorIO == 0)
+				if(flag_DM == 0)
 				{
 					if(windowstate == SHUTDOWN)	//检测手动开窗
 					{
@@ -194,7 +183,7 @@ void BH_Check()
 			   
 				motorStruct.hasrun --;
 				debug("马达.hasrun --\r\n");
-				if(flag_motorIO == 0)
+				if(flag_DM == 0)
 				{
 					if(windowstate == OPENDOWN)	//检测手动关窗
 					{

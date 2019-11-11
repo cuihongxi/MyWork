@@ -3,10 +3,10 @@
 #include "UHEAD.h"
 
 
-#define		FLASH_INIT_DATA		0x33			// 初始化值
+#define		FLASH_INIT_DATA		0x93			// 初始化值
 
 
-#define         ADDR_DM    		0x1000  // 定义保存地址 0x1000开始，dm_counter
+#define         ADDR_DM    		0x1000  // 定义保存地址 0x1000开始，flag_DM
 #define         ADDR_AM_VAL  		0x1010  // AM状态 key_AM.val
 #define         ADDR_motorIO     	0x1020  // flag_motorIO
 #define         ADDR_flag_BH     	0x1030  // BH正方向

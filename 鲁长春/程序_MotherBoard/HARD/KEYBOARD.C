@@ -32,7 +32,7 @@ extern	u16			amtime ;
 extern	JugeCStr 		LEDAM_juge ;
 extern	JugeCStr 		LEDY30_juge ;
 extern	JugeCStr 		beep;
-extern 	u8			flag_motorIO;
+extern 	u8			flag_DM;
 extern 	TaskLinkStr* 		tasklink;
 extern 	u8 			ledSharpTimes;
 extern 	bool			is_suc;
@@ -266,27 +266,25 @@ void KeyFun()
 		switch(key_val)
 		{
 		    case KEY_VAL_DER_Z:	
-		    debug("flag_motorIO = %d ,windowstate = %d\n",flag_motorIO,windowstate);
-		    if((flag_motorIO == 0 && windowstate != SHUTDOWN) || (flag_motorIO != 0 && windowstate != OPENDOWN))flag_KEY_Z = 1;		    
+		    //debug("flag_DM = %d ,windowstate = %d\n",flag_DM,windowstate);
+		    if((flag_DM == 0 && windowstate != SHUTDOWN) || (flag_DM != 0 && windowstate != OPENDOWN))flag_KEY_Z = 1;
+                      else key_Z.counter = 0;
 		    BeepStart();
 				break;
 		    case KEY_VAL_DER_Y:
-		    if((flag_motorIO == 0 && windowstate != OPENDOWN) || (flag_motorIO != 0 && windowstate !=SHUTDOWN) )flag_KEY_Y = 1;
+		    if((flag_DM == 0 && windowstate != OPENDOWN) || (flag_DM != 0 && windowstate !=SHUTDOWN) )flag_KEY_Y = 1;
+                    else key_Y.counter = 0;
 		    BeepStart();
 				break;
 			case KEY_VAL_DM:	BeepStart();
 				if(key_DM.val == six)	//对话马达转向
 				{
-						flag_motorIO = ~flag_motorIO;
-						FLASH_ProgramByte(ADDR_motorIO,flag_motorIO);
-						flag_BH = ~flag_BH;
-						FLASH_ProgramByte(ADDR_flag_BH,flag_BH);	// BH正方向
+						flag_DM = ~flag_DM;
+						FLASH_ProgramByte(ADDR_DM,flag_DM);
 						key_DM.val = off;
 						debug("马达对换引脚\r\n");
 				}
 		}
-		
-		
 				
 		key_val = KEY_VAL_NULL;
 	}

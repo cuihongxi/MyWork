@@ -313,7 +313,7 @@ void NRF24L01_TX_Mode(void)
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 
-        CE_OUT_1;
+   //     CE_OUT_1;
  //       DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
     //  CE_OUT_0; 
 }
