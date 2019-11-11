@@ -30,6 +30,9 @@ typedef struct{
 	u8 state;				// 状态
 }BATStr;
 
+#define		GPIO_BAT_CON		GPIOA,GPIO_Pin_0		// 电池电量检测控制
+
+
 extern u8 flag_checkBat;
 
 

@@ -7,18 +7,16 @@
 #include "LED_SHOW.H"
 #include "MYCLK.h"
 #include "ADC_CHECK.H"
-#include "NRF24L01_AUTO_ACK.H"
-#include "24l01.h"
-#include "lowpower.h"
 #include "stm8l15x_rtc.h"
 #include "stm8l15x_wwdg.h"
-//#include "stm8l15x_tim2.h"
-//#include "CUI_RTOS.H"
 #include "keyboard.h"
 #include "BAT.H"
 #include "FL.H"
 #include "stmflash.h"
-//#include "mylib.a"
+#include "CUI_RTOS.H"
+#include "NRF24L01_AUTO_ACK.H"
+#include "24l01.h"
+#include "NRF_App.h"
 
 
 

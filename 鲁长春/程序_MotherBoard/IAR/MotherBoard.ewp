@@ -1624,6 +1624,9 @@
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\HARD\NRF_App.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
     </file>
   </group>
@@ -1661,10 +1664,31 @@
     </file>
   </group>
   <group>
-    <name>main</name>
+    <name>lib</name>
     <file>
-      <name>$PROJ_DIR$\..\USR\lowpower.c</name>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\24l01.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\CUI_MALLOC0.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\CUI_MALLOC1.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\CUI_RTOS.C</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\NRF24L01_AUTO_ACK.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\SingleCycList.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\SingleList.c</name>
+    </file>
+  </group>
+  <group>
+    <name>main</name>
     <file>
       <name>$PROJ_DIR$\..\USR\main.c</name>
     </file>

@@ -164,7 +164,7 @@ void Key_ScanLeave()
 			beepdelayon = 100;
 			beepdelayoff = 200;
 			debug("对码状态\r\n");
-			NRF24L01_ResetAddr(ADDRESS2);
+			
 			
 		}
 		else if((systime - DM_Risingtime) > TIM_DM_CLEARL && (systime - DM_Risingtime) < TIM_DM_CLEARH )
@@ -283,6 +283,11 @@ void KeyFun()
 						FLASH_ProgramByte(ADDR_DM,flag_DM);
 						key_DM.val = off;
 						debug("马达对换引脚\r\n");
+						ledSharpTimes = 12;
+						is_suc = (bool)TRUE;
+						beepTimes = 2;
+						beepdelayoff = 200;
+						beepdelayon = 100;
 				}
 		}
 				

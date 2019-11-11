@@ -15,7 +15,7 @@ void OS_FreeRom(SingleList* list,void * prom)
 	//free(prom);
 }
 //删除当前任务的节点之前所有任务，包括该任务
-//如果下面还有任务则返回真
+//如果下面还有任务则返回真,如果没有则将此任务从任务链表中删除
 bool Free_taskBefore(TaskStr* task)
 {
 	funLinkStr* that = (funLinkStr*)&task->funNode;

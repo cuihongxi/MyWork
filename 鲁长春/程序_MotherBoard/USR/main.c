@@ -1,20 +1,15 @@
 #include "main.h"
-#include "CUI_RTOS.H"
-#include "ADC_CHECK.H"
-#include "BAT.H"
-Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
-u8 			txbuf[5] 	= {0};				// nrf发送缓存
-u8 			rxbuf[10] 	= {0};				// nrf接收缓存
-u32 			dm_counter 	= 0;				// 开机检测DM，计数器
+
+
 
 TimerLinkStr 		timer2 		= {0};				// 任务的定时器
 TaskLinkStr		task_link 	= {0};
-TaskLinkStr* 		tasklink 	= &task_link;			// 任务列表
+TaskLinkStr* 		tasklink 	= &task_link;		// 任务列表
 
-BATStr 			bat = {0};					// 电池结构体
+BATStr 			bat = {0};					        // 电池结构体
 TaskStr* 		taskBatControl 	= {0};	
-TaskStr* 		taskYS		= {0};				// YS测量任务
-TaskStr* 		taskKeyScan	= {0};				// KEY 扫描
+TaskStr* 		taskYS		= {0};				    // YS测量任务
+TaskStr* 		taskNRF	        = {0};				// NRF
 TaskStr* 		taskInMain   	={0};
 TaskStr* 		taskAlarm   	={0};
 
@@ -153,7 +148,6 @@ void FunInSleap()
 	{
 		LEN_GREEN_Close();
 	}
-	
 #if	USE_NRF > 0	
 	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
 	{
@@ -167,22 +161,6 @@ void FunInSleap()
 	}
 #endif
 }
-/*nrf接收函数*/
-void NRF_Function()
-{
-	
-	if(prx.hasrxlen != 0)
-	{
-		debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-		for(u8 i=0;i<prx.hasrxlen;i++)
-		  {
-			debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-		  }		
-		debug("\r\n------\r\n");
-		prx.hasrxlen = 0;
-	}
-}
-
 
 //按键处理函数
 void KeyFun();
@@ -192,13 +170,11 @@ void main()
   	CLK_GPIO_Init();					// 低功耗时钟和GPIO初始化,2MHZ
 	//delay_ms(1000);					// 等待系统稳定
 	UART_INIT(115200);
-	prx.txbuf[0] =39; 					//收到回复信息，填充‘9’
-
 	FlashData_Init();
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);			// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);				// 创建YS测量任务 ，每2秒检测一次
-	taskKeyScan = OS_CreatTask(&timer2);			// 创建按键扫描任务
+	taskNRF = OS_CreatTask(&timer2);			// 创建nrf任务
 	taskAlarm =  OS_CreatTask(&timer2);	
 	taskInMain = OS_CreatTask(&timer2);			// 创建主函数运行任务
 	
@@ -214,6 +190,7 @@ void main()
 	Key_GPIO_Init();							// 触摸按键初始化	
 #if	USE_NRF > 0
 	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+
 	NRFpowon.start = 1;
 	NRF_CreatNewAddr(ADDRESS2);
 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
@@ -223,7 +200,7 @@ void main()
 	CheckWindowState();
 	while(1)
 	{         
-            	halt(); 					// 停止模式
+        halt(); 					// 停止模式
 		KeyFun();					// 按键处理
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		FunInSleap();
@@ -253,19 +230,13 @@ void main()
 		    }
 		   WWDG_SWReset();	// 复位
 		}
+        
+#if	USE_NRF > 0
+        NRF_Function();
+#endif
 	}
 }
 
-//IRQ 中断服务函数
-INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
-{
-		
-	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
-	{		
-		prx.IRQCallBack(&prx);
-	}
-   	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
-}
 
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)

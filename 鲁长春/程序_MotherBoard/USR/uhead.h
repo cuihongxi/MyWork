@@ -101,6 +101,8 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		MES_Y_3_1	0X09
 #define		MES_Y_3_2	0X0A
 #define		MES_Y_3_3	0X0B
+#define		MES_DM	        0X0C
+#define		MES_CLEARDM	0X0D
 
 #endif
 

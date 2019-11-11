@@ -20,6 +20,11 @@
 
 #define  MX830Motor_GPIOMode    GPIO_Mode_Out_PP_Low_Slow
 
+
+#define		GPIO_38KHZ_BC1		GPIOB,GPIO_Pin_5		// 红外检测返回信号，低电平有效
+#define		GPIO_38KHZ_BC2		GPIOD,GPIO_Pin_6		// 红外检测返回信号，低电平有效	 
+
+
 typedef enum
 {
 	MOTOR_NULL  	= 0,		//没有指令

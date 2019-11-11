@@ -82,14 +82,14 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
     u8 txbuf[7] = {0};
     NRF24L01_PWR(1);
-    txbuf[0] = addr[0];
-    txbuf[1] = addr[1];
-    txbuf[2] = addr[2];
-    txbuf[3] = addr[3];
-    txbuf[4] = addr[4];
-    txbuf[5] = cmd;
-    txbuf[6] = mes;
-    NRF_AutoAck_TxPacket(ptx,txbuf,7);
+    ptx->txbuf[0] = addr[0];
+    ptx->txbuf[1] = addr[1];
+    ptx->txbuf[2] = addr[2];
+    ptx->txbuf[3] = addr[3];
+    ptx->txbuf[4] = addr[4];
+    ptx->txbuf[5] = cmd;
+    ptx->txbuf[6] = mes;
+    NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
 
