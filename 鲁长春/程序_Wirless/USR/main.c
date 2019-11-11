@@ -18,8 +18,9 @@
 #define		PRESS_MOTZ	0X02
 #define		PRESS_MOTY	0X04
 
-#define	        TIM_MAXDELAY	1000
-#define         IRQ_PERIOD      1000   
+#define	        TIM_MAXDELAY	2000
+
+#define         IRQ_PERIOD      500   
 
 Nrf24l01_PTXStr         ptx = {0};
 
@@ -27,9 +28,9 @@ u8      rxbuf[7] = {0};
 u8      nrfaddr[5];
 u8 	keyval = 0;
 u8 	flag_wake = 1;
-int 	systime = 0;
+u32 	systime = 0;
 u8 	pressKey = 0;
-int 	presstime = 0;
+u32 	presstime = 0;
 u8	is_DM = 0;		// 保存是否配对信息
 
 extern 		u32 		DM_time;
@@ -58,7 +59,7 @@ void Init_LedGPIO(void)
 void Make_SysSleep()
 {
     	//debug(" Sleep \r\n");
-	systime = 0;
+
 	NRF24L01_PWR(0); 						// 关闭NRF的电源
 	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
 	CLK_LSICmd(ENABLE);						// 使能LSI
@@ -69,7 +70,7 @@ void Make_SysSleep()
 	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
 	
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
-	RTC_SetWakeUpCounter(19000);                     			// 唤醒间隔	1000mS
+	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
 	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  
 	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
@@ -118,10 +119,11 @@ void main()
 	   {
 		 switch(keyval)
 		 {
-		     case KEY_VAL_Y30: pressKey = PRESS_Y30;presstime = systime + TIM_MAXDELAY;
+		     case KEY_VAL_Y30: pressKey = PRESS_Y30;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
 		   break;
 		     case KEY_VAL_I30:
-                       if(systime<presstime)
+                       //debug("systime = %d,presstime = %d\n",systime,presstime);
+                       if(systime<=presstime)
                        {
                          switch(pressKey){
                              case PRESS_Y30:debug("延时30分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_1);
@@ -136,7 +138,8 @@ void main()
 		     pressKey = 0;
 		   break;
 			case KEY_VAL_I60:
-                        if(systime<presstime)
+                          //debug("systime = %d,presstime = %d\n",systime,presstime);
+                        if(systime<=presstime)
                        {                         
 			switch(pressKey){
 			 case PRESS_Y30:debug("延时60分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_2);
@@ -151,9 +154,10 @@ void main()
 		     pressKey = 0;
 		   break;
 			case KEY_VAL_I100:
-                       if(systime < presstime)
+                        //  debug("systime = %d,presstime = %d\n",systime,presstime);
+                       if(systime <= presstime)
                        {
-                         debug("systime = %d,presstime = %d\n",systime,presstime);
+                         
 			switch(pressKey){
                                  case PRESS_Y30:debug("延时90分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_3);
                                  break;
@@ -166,9 +170,9 @@ void main()
                      presstime = 0;
 		     pressKey = 0;
 		   break;
-			case KEY_VAL_MOTZ:pressKey = PRESS_MOTZ;presstime = systime + TIM_MAXDELAY;
+			case KEY_VAL_MOTZ:pressKey = PRESS_MOTZ;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
 		   break;
-			case KEY_VAL_MOTY:pressKey = PRESS_MOTY;presstime = systime + TIM_MAXDELAY;
+			case KEY_VAL_MOTY:pressKey = PRESS_MOTY;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
 		   break;
 		   
 		 }
@@ -193,6 +197,7 @@ void assert_failed(u8* file,u32 line)
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
         systime += IRQ_PERIOD;
+      //  debug("systime = %d\r\n",systime);
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 
 }

@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>27995374</fileChecksum>
+  <fileChecksum>3220166857</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -423,6 +423,10 @@
       </outputs>
       <inputs>
         <tool>
+          <name>BICOMP</name>
+          <file> 2 68 177 64 96 195 36 189 168 157 164 106 234 103 29 52 176 16 188 123 67 170 160 127 141 199 3 117 75 18 38 26 97 186 125 91 226 95 60 101 135 45 27 41 193 55 19 98 198 121</file>
+        </tool>
+        <tool>
           <name>ICCSTM8</name>
           <file> 193 2 68 103 106 18 36 38 29 26 64 97 52 234 189 186 176 125 177 91 16 226 168 95 188 60 96 101 123 195 117 67 27 170 98 198 19 160 45 55 157 135 75 3 199 41 121 127 164 141</file>
         </tool>
@@ -640,7 +644,7 @@
       <outputs>
         <tool>
           <name>OBJCOPY</name>
-          <file> 197 235</file>
+          <file> 235</file>
         </tool>
         <tool>
           <name>ILINK</name>
@@ -1452,6 +1456,10 @@
         </tool>
       </outputs>
     </file>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>ILINK</tool>
+    </forcedrebuild>
     <forcedrebuild>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_flash.c</name>
       <tool>C-STAT</tool>
