@@ -9,13 +9,13 @@ u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
 u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
 u8* address = ADDRESS1;
-
+extern 
 void NRF24L01_ResetAddr(u8* add)
 {
-    CE_OUT_0; 
     address = add;
-    NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH);    //写本地地址	
-    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); //写接收端地址	
+    CE_OUT_0; 
+    NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,add,TX_ADR_WIDTH);    //写本地地址	
+    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,add,RX_ADR_WIDTH); //写接收端地址	
     CE_OUT_1; 
 }
 
@@ -95,16 +95,26 @@ u8 SPI2_ReadWriteByte(unsigned char date)
 
 }
 
+//进入低功耗时释放GPIO
 void NRF24L01_GPIO_Lowpower(void)
 {
     GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_No_IT);      		//,当IRQ为低电平时为中断触发
-    GPIO_Init(NRF24L01_CSN_PIN,GPIO_Mode_In_PU_No_IT);     		//SPI片选取消    
-    GPIO_Init(NRF24L01_CE_PIN,GPIO_Mode_Out_PP_Low_Slow);       	//使能24L01
-    GPIO_Init(MOSI_PIN,GPIO_Mode_Out_PP_Low_Slow);    
-    GPIO_Init(MISO_PIN,GPIO_Mode_Out_PP_Low_Slow);
-    GPIO_Init(SCLK_PIN,GPIO_Mode_Out_PP_Low_Slow);	
+//    GPIO_Init(NRF24L01_CSN_PIN,GPIO_Mode_Out_PP_High_Fast);     		//SPI片选取消    
+//    GPIO_Init(NRF24L01_CE_PIN,NRF_GPIO_OUTPUTMODE);       	//使能24L01
+//    GPIO_Init(MOSI_PIN,NRF_GPIO_OUTPUTMODE);    
+//    GPIO_Init(MISO_PIN,NRF_GPIO_INPUTMODE);
+//    GPIO_Init(SCLK_PIN,NRF_GPIO_OUTPUTMODE);	
+    CSN_OUT_1;
+    CE_OUT_0;
+    MOSI_OUT_0;
+    SCLK_OUT_0;
+    
 }
 
+void NRF24L01_GPIO_Work(void)
+{
+    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_IT);      		//,当IRQ为低电平时为中断触发
+}
 	  
 //初始化24L01的IO口
 void NRF24L01_GPIO_Init(void)
@@ -148,8 +158,9 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 //初始化配置
 void Init_NRF24L01(u8 pip,u8 rf_ch)
 {
+  u8 i = 10;
     NRF24L01_GPIO_Init();
-     while(NRF24L01_Check())         //检测模块存在,如果不存在就周期1s切换继电器状态,让LED闪烁
+     while(NRF24L01_Check()&& i--)         //检测模块存在,如果不存在就周期1s切换继电器状态,让LED闪烁
     {            
         debug("NRF24L01_Check EEROR\r\n"); 
         delay_ms(1000);
@@ -285,7 +296,7 @@ void NRF24L01_RX_Mode(void)
 		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
        // CE_OUT_1; 
-        DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
+  //      DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
 }						 
 //该函数初始化NRF24L01到TX模式
 //设置TX地址,写TX数据宽度,设置RX自动应答的地址,填充TX发送数据,选择RF频道,波特率和LNA HCURR
@@ -298,12 +309,12 @@ void NRF24L01_TX_Mode(void)
         CE_OUT_0; 
         NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH);     //写本地地址
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff); 	//清除中断标志
-		NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
+	NRF24L01_Write_Reg(FLUSH_RX,0x00); 			//清除RX_FIFO寄存器
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 
-      //  CE_OUT_1;
-        DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
+        CE_OUT_1;
+ //       DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
     //  CE_OUT_0; 
 }
 
@@ -313,14 +324,25 @@ void NRF24L01_PWR(u8 state)
 #ifdef DMA_SPI
 CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
 #endif
+	NRF24L01_GPIO_Work();
 	CE_OUT_0; 
-    u8 config = NRF24L01_Read_Reg(CONFIG);
-    if(state)
+   	 u8 config = NRF24L01_Read_Reg(CONFIG);
+    	if(state)
 	{
+	    	
 		NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);
 		CE_OUT_1;
+
 	}	
-    else NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
+	else 
+	{
+		NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config&0xFD);
+		NRF24L01_GPIO_Lowpower();
+	}
+    
+#ifdef DMA_SPI
+CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);	
+#endif
 
 }
 

@@ -2,7 +2,7 @@
 #define _MYCLK_H
 
 #include "UHEAD.H"
-
+#include "stm8l15x_clk.h"
 
 /*说明
 	1： 	STM8上电复位默认HSI/8
@@ -84,13 +84,7 @@ typedef struct
   unsigned char HSIDIV      : 2;
 } __BITS_CLK_CKDIVR;
 
-__IO_REG8    (CLK_PCKENR1, 0x50C7, __READ_WRITE);
 
-__IO_REG8    (CLK_PCKENR2, 0x50CA, __READ_WRITE);
-
-__IO_REG8_BIT(CLK_HSITRIMR, 0x50CC, __READ_WRITE, __BITS_CLK_HSITRIMR);
-
-__IO_REG8_BIT(CLK_CKDIVR,  0x50C6, __READ_WRITE, __BITS_CLK_CKDIVR);
 
 //函数
 void CLK_INIT(CLK_CKDIVR_HIS_CPU HIS_clk,CLK_CKDIVR_HIS_CPU CUP_clk);
@@ -103,5 +97,8 @@ void CLOSE_CLK1(unsigned char Clk_Peripheral1);
 void CLOSE_CLK2(unsigned char Clk_Peripheral2);
 void MyCLK_AdjustHSICalibrationValue(unsigned char CLK_HSICalibrationValue);              //HSI时钟修正寄存器
 void MyCLK_SYSCLKConfig(CLK_CKDIVR_HIS_CPU CLK_Prescaler);       //配置HSI或者CPU的分频器
-                                             
+
+void CLK_Change2LSI();     //切换LSI时钟源   
+void CLK_Change2HSI();		//切换HSI时钟源
+
 #endif

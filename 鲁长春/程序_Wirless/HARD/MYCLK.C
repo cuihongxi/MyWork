@@ -1,8 +1,6 @@
 #include "MyCLK.H"
 
-
 //    关闭所有外设时钟
-
 void CLOSE_CLK_ALL(void)
 {
     CLK->PCKENR1 = 0;
@@ -11,8 +9,6 @@ void CLOSE_CLK_ALL(void)
 
 
 //    打开外设时钟1
-
-
 void OPEN_CLK1(unsigned char Clk_Peripheral1)
 {
     assert_param(IS_Peripheral1_SOURCE(Clk_Peripheral1));
@@ -81,3 +77,25 @@ void CLK_INIT(CLK_CKDIVR_HIS_CPU HIS_clk,CLK_CKDIVR_HIS_CPU CUP_clk)
    MyCLK_SYSCLKConfig(HIS_clk); //配置HSI或者CPU的分频器
    MyCLK_SYSCLKConfig(CUP_clk); //配置HSI或者CPU的分频器
 }
+
+//切换LSI时钟源
+void CLK_Change2LSI()
+{
+	CLK_HSICmd (DISABLE); 
+	CLK_LSICmd (ENABLE);    							//使能LSI
+    CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_LSI);		//LSI为系统时钟
+	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  //RTC时钟源LSI，
+    while(CLK_GetFlagStatus(CLK_FLAG_LSIRDY)==RESET);	//等待LSI准备就绪
+    CLK_SYSCLKSourceSwitchCmd (ENABLE);					//使能切换
+}
+
+//切换HSI时钟源
+void CLK_Change2HSI()
+{
+//	CLK_LSICmd (DISABLE); 
+	CLK_HSICmd (ENABLE);    							//使能HSI
+    CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSI);		//HSI为系统时钟
+    while(CLK_GetFlagStatus(CLK_FLAG_HSIRDY)==RESET);	//等待HSI准备就绪
+    CLK_SYSCLKSourceSwitchCmd (ENABLE);					//使能切换
+}
+

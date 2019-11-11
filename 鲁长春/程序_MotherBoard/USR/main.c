@@ -155,7 +155,7 @@ void FunInSleap()
 	}
 	
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,400000)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;

@@ -2,7 +2,7 @@
 #include "stm8l15x_exti.h"
 #include "24l01.h"
 #include "NRF24L01_AUTO_ACK.H"
-
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);
 u8      	flag_exti 		= 0 ;
 u32 		DM_time 		= 0;
 u32 		AM_time 		= 0;
@@ -14,8 +14,9 @@ u8		flag_funPOW_CA		= 0;
 extern		u32			systime;
 extern 		u8 			keyval ;
 extern 		Nrf24l01_PTXStr 	ptx;
+extern 		u8 			pressKey;
 
-void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
 
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
@@ -134,6 +135,7 @@ u8  Keyscan()
     return(KEY_VAL_NULL);
     
 }
+
 //松手程序
 void Key_ScanLeave()
 {
@@ -149,8 +151,8 @@ void Key_ScanLeave()
 		flag_funAM = ~flag_funAM;
 		debug(" AM :%d\r\n",flag_funAM);
 		//NRF发送AM命令
-		if(flag_funAM){ NRF_SendCMD(&ptx,CMD_AM, MES_AM_ON);}
-		else{NRF_SendCMD(&ptx,CMD_AM, MES_AM_OFF); }
+		if(flag_funAM){ NRF_SendCMD(&ptx,address,CMD_AM, MES_AM_ON);}
+		else{NRF_SendCMD(&ptx,address,CMD_AM, MES_AM_OFF); }
 		keyval = KEY_VAL_NULL;
 	    }
 	    
@@ -172,8 +174,7 @@ void Key_ScanLeave()
 	
     if(Read_Valu() == 0x07)
     {       
-	//debug("key null\r\n");
-        
+
         GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
         GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //列读数 
 	if(keyval == KEY_VAL_DUIMA)
@@ -182,11 +183,15 @@ void Key_ScanLeave()
 	    if((systime - DM_time)< 2000)
 	    {
 		debug(" :DM \r\n");
-		
+		NRF_SendCMD(&ptx,ADDRESS2,CMD_DM, MES_DM);
 	    }
-	    if((systime - DM_time) > 6000)debug(" :clear DM \r\n");
+	    if((systime - DM_time) > 6000)
+            {
+              debug(" :clear DM \r\n");
+              NRF_SendCMD(&ptx,ADDRESS1,CMD_DM, MES_CLEARDM);
+            }
 	    DM_time = 0;
-	    
+	    pressKey = 1;
 	}	
 	flag_exti = 0;
 	keyval = KEY_VAL_NULL;
@@ -198,9 +203,9 @@ void Key_GPIO_Init()
       GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
       GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //列读数
       flag_exti = 0;
-	  disableInterrupts();
-	  EXTI_SetPinSensitivity(EXTI_Pin_0,EXTI_Trigger_Falling);
-	  EXTI_SetPinSensitivity(EXTI_Pin_3,EXTI_Trigger_Falling);
+      disableInterrupts();
+      EXTI_SetPinSensitivity(EXTI_Pin_0,EXTI_Trigger_Falling);
+      EXTI_SetPinSensitivity(EXTI_Pin_3,EXTI_Trigger_Falling);
       enableInterrupts();                                                 //使能中断
 }
 
@@ -212,14 +217,8 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
   {
    	    if(keyval ==KEY_VAL_NULL)
 		{
-			
-//			CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
-//			TIM3_Cmd(ENABLE);
-//			systime = 0;
-			//NRF24L01_PWR(1);
 			flag_exti = 1;
 			keyval = Keyscan();  
-
 		}
   }
 
@@ -234,16 +233,8 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
    {
    	    if(keyval ==KEY_VAL_NULL)
 		{
-		    
-		    	
-//			CLK_PeripheralClockConfig(CLK_Peripheral_TIM3,ENABLE);
-//			TIM3_Cmd(ENABLE);
-//			systime = 0;
-
 			flag_exti = 1;  
 			keyval = Keyscan();
-
-			
 		}
    }
    EXTI_ClearITPendingBit (EXTI_IT_Pin3);

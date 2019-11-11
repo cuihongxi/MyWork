@@ -1941,15 +1941,24 @@
     </settings>
   </configuration>
   <group>
+    <name>DATA</name>
+    <file>
+      <name>$PROJ_DIR$\..\USR\UDATA.H</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\USR\uhead.h</name>
+    </file>
+  </group>
+  <group>
     <name>HARD</name>
     <file>
       <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\HARD\BAT.C</name>
+      <name>$PROJ_DIR$\..\HARD\KEYBOARD.C</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\HARD\KEYBOARD.C</name>
+      <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
@@ -1957,9 +1966,6 @@
   </group>
   <group>
     <name>LIB</name>
-    <file>
-      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_clk.c</name>
-    </file>
     <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_exti.c</name>
     </file>
@@ -1970,16 +1976,10 @@
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_gpio.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_iwdg.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_pwr.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_rtc.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_spi.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_tim3.c</name>
@@ -2012,12 +2012,9 @@
       <name>$PROJ_DIR$\..\USR\UHEAD.C</name>
     </file>
   </group>
-  <group>
-    <name>MYFUN</name>
-    <file>
-      <name>$PROJ_DIR$\..\MYFUN\MyCLK.c</name>
-    </file>
-  </group>
+  <file>
+    <name>$PROJ_DIR$\..\LIB\src\stm8l15x_clk.c</name>
+  </file>
 </project>
 
 
