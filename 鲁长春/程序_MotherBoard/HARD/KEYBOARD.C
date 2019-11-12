@@ -159,7 +159,7 @@ void Key_ScanLeave()
 		{
 			flag_duima = 1;	//¶ÔÂë×´Ì¬
 			is_suc = (bool)TRUE;
-		    	ledSharpTimes = 6;
+		    ledSharpTimes = 6;
 			beepTimes = 2;
 			beepdelayon = 100;
 			beepdelayoff = 200;

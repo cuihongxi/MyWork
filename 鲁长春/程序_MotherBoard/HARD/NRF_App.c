@@ -2,12 +2,13 @@
 #include "NRF24L01_AUTO_ACK.H"
 #include "24l01.h"
 #include "CUI_RTOS.H"
+#include "LED_SHOW.H"
 
 Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
 u8 			txbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrf发送缓存
 u8 			rxbuf[7] 	= {0};				        // nrf接收缓存
-u8          dm_ok   = 0;                            // DM成功是置一
+u8          DM_num = 0;
 
 extern  u8 		            flag_duima  		;	//对码状态
 extern  u8 		            flag_duima_clear  	;	//清除对码
@@ -30,23 +31,22 @@ void NRF_Function()
         {
           if(flag_duima == 0)
           {
-			dm_ok = 0;
-			address = ADDRESS2;
+            address = ADDRESS2;
             InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
             prx.RXDCallBack = RXD_CallBack;
-            OS_AddJudegeFunction(taskNRF,NRFReceived,200,JugeRX);
+            OS_AddJudegeFunction(taskNRF,NRFReceived,100,JugeRX);
           }
           else
-          {
-			  flag_duima = 0;			
+          {		
               NRFpowon.start = 0;
               NRFpowoff.start = 0;
               address = ADDRESS1;
               InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);	// 初始化发射模式
               ptx.RXDCallBack = ptxRXD_CallBack;
-			  NRF24L01_PWR(1);
+			  NRF24L01_GPIO_Lowpower();
+              DM_num = DM_NUM;
               OS_AddJudegeFunction(taskNRF,NRF_DM,800,JugeDM);
           }
            OS_AddTask(tasklink,taskNRF);	
@@ -88,11 +88,18 @@ bool JugeRX()
 
 void NRF_DM()
 {
+  
+  DM_num--;
+  if(DM_num&0x01)
+    LEN_GREEN_Open();
+  else LEN_GREEN_Close();
+  if(DM_num>0)
     NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);
+  else flag_duima = 0;
 }
 bool JugeDM()
 {
-  return (bool)dm_ok;
+  return (bool)(flag_duima == 0);
 }
 //接收模式自动接收完成回调函数
 void RXD_CallBack(Nrf24l01_PRXStr* prx) 
@@ -127,7 +134,7 @@ void ptxRXD_CallBack(Nrf24l01_PTXStr* ptx)
   	    debug(" ptxRXD_CallBack ");	
 		ptx->rxlen = NRF24L01_GetRXLen();
 		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf + ptx->hasrxlen,ptx->rxlen);	//读取数据
-        if(ptxJugeDMok(ptx)) dm_ok = 1;
+        if(ptxJugeDMok(ptx))  {LEN_GREEN_Close();flag_duima = 0;} 
         
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
 }
@@ -138,8 +145,11 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 		
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
-	{		
+	{	
+      if(flag_duima == 0)	
 		prx.IRQCallBack(&prx);
+      else
+        ptx.IRQCallBack(&ptx);
 	}
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }

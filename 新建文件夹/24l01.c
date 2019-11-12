@@ -7,7 +7,7 @@
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
-u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
+u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1}; 
 u8* address = ADDRESS1;
 
 void NRF24L01_ResetAddr(u8* add)
@@ -158,7 +158,7 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 	NRF24L01_Write_Reg(NRF_WRITE_REG + DYNPD, (1<<pipNum));	//使能通道0动态长度 ,Requires EN_DPL and ENAA_P0
 }
 //初始化配置
-void Init_NRF24L01(u8 pip,u8 rf_ch)
+u8 Init_NRF24L01(u8 pip,u8 rf_ch)
 {
     u8 i = 10;
     NRF24L01_GPIO_Init();
@@ -175,7 +175,8 @@ void Init_NRF24L01(u8 pip,u8 rf_ch)
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,rf_ch);            //设置信道工作频率，收发必须一致
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(RF_DR_2M,RF_PWR_7dBm));// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
 	NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x7c); //配置基本工作模式的参数;PWR_UP=0,EN_CRC,16BIT_CRC,接收模式,不所有中断	
-	
+	return i;
+
 }
 
 
@@ -189,7 +190,7 @@ u8 NRF24L01_Check(void)
 	NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,buf,2);        
         buf[0] = buf[1] = 0;	
 	NRF24L01_Read_Buf(TX_ADDR,buf,2);                       //读出写入的地址  
-	if(buf[0]!=0XA5)return 1;                                  //检测24L01错误	
+	if(buf[0]!=0XA5 || buf[1]!=0X33)return 1;                                  //检测24L01错误	
         //printf("buf = %#X,%#X\r\n",buf[0],buf[1]);
 	return 0;		                                //检测到24L01
 }
@@ -219,7 +220,7 @@ u8 NRF24L01_Read_Reg(u8 reg)
   	reg_val=SPI2_ReadWriteByte(0XFF);       //读取寄存器内容
   	CSN_OUT_1;                              //禁止SPI传输		    
   	return(reg_val);                        //返回状态值
-}	
+}
 //在指定位置读出指定长度的数据
 //reg:寄存器(位置)
 //*pBuf:数据指针
@@ -330,7 +331,7 @@ CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);
 	NRF24L01_GPIO_Work();
 	CE_OUT_0; 
    	 u8 config = NRF24L01_Read_Reg(CONFIG);
-    	if(state)
+    if(state)
 	{
 	    	
 		NRF24L01_Write_Reg(NRF_WRITE_REG+CONFIG,config|0x02);

@@ -70,7 +70,7 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动发射完成回调函数
 void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx);	// 发射模式自动接收完成回调函数
 
 /*接收模式*/
-void InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch);	// 初始化接收模式
+u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch);	// 初始化接收模式
 
 void Default_IRQCallBack_PRX(Nrf24l01_PRXStr* prx); // 默认的接收回调函数
 void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx);		// 接收模式自动接收完成回调函数

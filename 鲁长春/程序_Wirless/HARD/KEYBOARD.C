@@ -15,9 +15,10 @@ extern		u32			systime;
 extern 		u8 			keyval ;
 extern 		Nrf24l01_PTXStr 	ptx;
 extern 		u8 			pressKey;
+extern 		u8	                flag_duima;
 
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
-
+void DM_Mode();
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
 {
@@ -136,6 +137,9 @@ u8  Keyscan()
     
 }
 
+
+
+
 //松手程序
 void Key_ScanLeave()
 {
@@ -182,8 +186,9 @@ void Key_ScanLeave()
 	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
 	    if((systime - DM_time)< 2000)
 	    {
-		debug(" :DM \r\n");
-		NRF_SendCMD(&ptx,ADDRESS2,CMD_DM, MES_DM);
+		debug("DM 模式\r\n");
+                DM_Mode();
+
 	    }
 	    if((systime - DM_time) > 6000)
             {
@@ -210,7 +215,7 @@ void Key_GPIO_Init()
 }
 
 
-//IRQ 中断服务函数 D0 A0 //NRF24L01 IRQ 
+//IRQ 中断服务函数 D0 A0
 INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 {
   if(GPIO_READ(Lie_1)== RESET || GPIO_READ(Lie_2)== RESET)
@@ -219,6 +224,7 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
+                        debug("keyval = %d\n",keyval);
 		}
   }
 
@@ -235,6 +241,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
+                        debug("keyval = %d\n",keyval);
 		}
    }
    EXTI_ClearITPendingBit (EXTI_IT_Pin3);

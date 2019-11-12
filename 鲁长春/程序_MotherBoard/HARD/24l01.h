@@ -159,7 +159,7 @@ extern u8  ADDRESS2[RX_ADR_WIDTH];
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-void Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
+u8 Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
 void NRF24L01_RX_Mode(void);					//配置为接收模式
 void NRF24L01_TX_Mode(void);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区

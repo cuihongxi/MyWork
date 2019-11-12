@@ -10,8 +10,8 @@
 
 
 #define KEY_VAL_AM				1
-#define KEY_VAL_POW_CA			2
-#define KEY_VAL_Y30 			3
+#define KEY_VAL_POW_CA			        2
+#define KEY_VAL_Y30 			        3
 #define KEY_VAL_I30				4
 #define KEY_VAL_I60				5        
 #define KEY_VAL_I100            6           

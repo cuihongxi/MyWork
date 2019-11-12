@@ -85,7 +85,9 @@ void FunInMain()
 	FL_Control();		// FL，供电控制
 	MotorControl();		// 马达运动
 	BatControl(&bat,tasklink,taskBatControl);	// 电源管理
-	
+#if	USE_NRF > 0
+        NRF_Function();
+#endif
 }
 
 void BeepInIT(u8* time,u32 systime,u32 ontime,u32 offtime)
@@ -149,12 +151,12 @@ void FunInSleap()
 		LEN_GREEN_Close();
 	}
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,40)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,20)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
 	}
-	if(Juge_counter(&NRFpowoff,40)) 
+	if(Juge_counter(&NRFpowoff,400)) 
 	{
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
@@ -171,6 +173,7 @@ void main()
 	//delay_ms(1000);					// 等待系统稳定
 	UART_INIT(115200);
 	FlashData_Init();
+
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskMotor = OS_CreatTask(&timer2);			// 创建马达运行任务
 	taskYS = OS_CreatTask(&timer2);				// 创建YS测量任务 ，每2秒检测一次
@@ -187,24 +190,35 @@ void main()
 	BatControl(&bat,tasklink,taskBatControl);
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 
-	Key_GPIO_Init();							// 触摸按键初始化	
-#if	USE_NRF > 0
-	InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
 
-	NRFpowon.start = 1;
-	NRF_CreatNewAddr(ADDRESS2);
-	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);
-	NRF24L01_PWR(0);
+#if	USE_NRF > 0
+// 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);   
+//                address = ADDRESS2;
+//            if(InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ))
+//            {
+//                NRFpowon.start = 1;
+//                NRF24L01_PWR(0);            
+//            };	
+//
+//            prx.RXDCallBack = RXD_CallBack;
+	//NRF_CreatNewAddr(ADDRESS2);
+
 #endif
 	NRF24L01_GPIO_Lowpower();
 	CheckWindowState();
+    
+  	Key_GPIO_Init();							// 触摸按键初始化	
+//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable) ;
+//    IWDG_SetPrescaler(IWDG_Prescaler_256) ;
+//    IWDG_SetReload(0xFF);
+//    IWDG_Enable();
 	while(1)
 	{         
         halt(); 					// 停止模式
 		KeyFun();					// 按键处理
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		FunInSleap();
-		NRF_Function();
+
 		OS_Task_Run(tasklink);				// 执行任务链表中的任务
 			
 		if(jugeBHLED.start && GPIO_READ(GPIO_BH)){jugeBHLED.start = 0;LEN_GREEN_Close();} 
@@ -230,10 +244,18 @@ void main()
 		    }
 		   WWDG_SWReset();	// 复位
 		}
-        
-#if	USE_NRF > 0
-        NRF_Function();
-#endif
+        	if(prx.hasrxlen)
+	{
+		debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
+		for(u8 i=0;i<prx.hasrxlen;i++)
+		  {
+			debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+		  }		
+		debug("\r\n------\r\n");
+		prx.hasrxlen = 0;
+	}
+    
+ 
 	}
 }
 
@@ -241,6 +263,7 @@ void main()
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
+    // IWDG_ReloadCounter();
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 
 }

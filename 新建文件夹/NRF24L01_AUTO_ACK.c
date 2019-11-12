@@ -192,26 +192,32 @@ void Default_IRQCallBack_PRX(Nrf24l01_PRXStr* prx)
 		{
 		  prx->TXDCallBack(prx);	
 		}				
-		debug("\r\n");
+		debug(".");
 	}
 }
 
 
 //初始化接收模式
-void InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch)
+u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch)
 {
+    u8 erro = 0;
 	prx->rxbuf = rxbuf;
 	prx->pip = pip;
 	prx->rf_ch = rf_ch;
 	prx->txbuf = txbuf;
 	prx->txlen = txlen;
 	prx->hasrxlen = 0;
-	Init_NRF24L01(prx->pip,prx->rf_ch);
-	NRF24L01_GPIO_IRQ();
+	if(Init_NRF24L01(prx->pip,prx->rf_ch))
+    {
+        NRF24L01_RX_Mode();                         //配置接收模式 
+        NRF24L01_GPIO_IRQ();  
+        erro = 1;
+    }
+
 	prx->IRQCallBack = Default_IRQCallBack_PRX;
 	prx->RXDCallBack = RXD_CallBack_PRX;
 	prx->TXDCallBack = TXD_CallBack_PRX;
-	NRF24L01_RX_Mode();                         //配置接收模式 
+	return erro;
 }
 
  

@@ -22,9 +22,11 @@
 
 #define         IRQ_PERIOD      500   
 
-Nrf24l01_PTXStr         ptx = {0};
+Nrf24l01_PRXStr 	prx 		= {0};				// NRF接收结构体
+Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
 
 u8      rxbuf[7] = {0};
+u8      txbuf[7] = {0};
 u8      nrfaddr[5];
 u8 	keyval = 0;
 u8 	flag_wake = 1;
@@ -32,7 +34,7 @@ u32 	systime = 0;
 u8 	pressKey = 0;
 u32 	presstime = 0;
 u8	is_DM = 0;		// 保存是否配对信息
-
+u8	flag_duima = 0;
 extern 		u32 		DM_time;
 
 
@@ -80,7 +82,6 @@ void Make_SysSleep()
 //通过NRF向主板发送命令函数
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
-    u8 txbuf[7] = {0};
     NRF24L01_PWR(1);
     ptx->txbuf[0] = addr[0];
     ptx->txbuf[1] = addr[1];
@@ -92,21 +93,44 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
-
+//DM模式自动接收完成回调函数
+void dmRXD_CallBack(Nrf24l01_PRXStr* prx) 
+{
+      prx->rxlen = NRF24L01_GetRXLen();	
+      NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据
+      NRF24L01_RX_AtuoACKPip(prx->rxbuf,prx->rxlen,prx->pip);	//填充应答信号		
+      NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
+      debug("RX_OK ");
+      flag_duima = 0;
+      
+}
+void DM_Mode()
+{
+       flag_duima = 1;
+      address = ADDRESS1;
+      InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+      NRF24L01_PWR(1);
+      prx.RXDCallBack = dmRXD_CallBack;
+      while(flag_duima)
+      {
+        
+      }
+ 	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
+        NRF24L01_GPIO_Lowpower();     
+}
 void main()
 {    
 
 	RCC_Config();
 	Key_GPIO_Init();
-
-	delay_ms(500);
+	//delay_ms(500);
 	UART_INIT(115200);	
-        FlashData_Init();
+      //  FlashData_Init();
         address = nrfaddr;
 	InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);
 	Init_LedGPIO();	
-	NRF_CreatNewAddr(ADDRESS2);
-	debug("addr:%d,%d,%d,%d,%d",address[0],address[1],address[2],address[3],address[4]);
+	//NRF_CreatNewAddr(ADDRESS2);
+	//debug("addr:%d,%d,%d,%d,%d",address[0],address[1],address[2],address[3],address[4]);
         NRF24L01_GPIO_Lowpower();
        Make_SysSleep();
 
@@ -197,20 +221,18 @@ void assert_failed(u8* file,u32 line)
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
         systime += IRQ_PERIOD;
-      //  debug("systime = %d\r\n",systime);
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
-
 }
 
 //NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
   if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
-  {
-	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,ENABLE);	
-  	ptx.IRQCallBack(&ptx);
-	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
-	
+  {	
+      if(flag_duima == 0)	
+        ptx.IRQCallBack(&ptx);
+      else
+        prx.IRQCallBack(&prx);
   }
    EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }             

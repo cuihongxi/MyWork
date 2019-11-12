@@ -53,5 +53,6 @@
 #define			USE_NRF			1	// NRF模块 ：0，不使用，1 使用	
 #define 		DEBUG_LEVEL 		1	// 串口调试接口
 
+#define         DM_NUM              10     //对码次数，超过次数没对码成功，退出对码模式 
 #endif
 
