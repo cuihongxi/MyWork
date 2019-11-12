@@ -192,21 +192,11 @@ void main()
 
 
 #if	USE_NRF > 0
-// 	debug("New ID:%d,%d,%d,%d,%d",ADDRESS2[0],ADDRESS2[1],ADDRESS2[2],ADDRESS2[3],ADDRESS2[4]);   
-//                address = ADDRESS2;
-//            if(InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ))
-//            {
-//                NRFpowon.start = 1;
-//                NRF24L01_PWR(0);            
-//            };	
-//
-//            prx.RXDCallBack = RXD_CallBack;
-	//NRF_CreatNewAddr(ADDRESS2);
+	NRF_CreatNewAddr(ADDRESS2);
 
 #endif
 	NRF24L01_GPIO_Lowpower();
 	CheckWindowState();
-    
   	Key_GPIO_Init();							// 触摸按键初始化	
 //    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable) ;
 //    IWDG_SetPrescaler(IWDG_Prescaler_256) ;
@@ -244,16 +234,6 @@ void main()
 		    }
 		   WWDG_SWReset();	// 复位
 		}
-        	if(prx.hasrxlen)
-	{
-		debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-		for(u8 i=0;i<prx.hasrxlen;i++)
-		  {
-			debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
-		  }		
-		debug("\r\n------\r\n");
-		prx.hasrxlen = 0;
-	}
     
  
 	}

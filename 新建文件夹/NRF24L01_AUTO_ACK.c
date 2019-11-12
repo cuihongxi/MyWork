@@ -157,7 +157,7 @@ void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
 
 void RXD_ACK_CallBack(Nrf24l01_PRXStr* prx)
 {
-	prx->txbuf[0] ++;
+	//prx->txbuf[0] ++;
 }
 //接收模式自动接收完成回调函数
 void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx) 

@@ -229,7 +229,7 @@ u8 NRF24L01_Read_Reg(u8 reg)
 u8 NRF24L01_Read_Buf(u8 reg,u8 *pBuf,u8 len)
 {
 	u8 status,u8_ctr;
-        SCLK_OUT_0;
+     SCLK_OUT_0;
   	CSN_OUT_0;                              //使能SPI传输
   	status=SPI2_ReadWriteByte(reg);         //发送寄存器值(位置),并读取状态值   	   
  	for(u8_ctr=0;u8_ctr<len;u8_ctr++)pBuf[u8_ctr]=SPI2_ReadWriteByte(0XFF);//读出数据

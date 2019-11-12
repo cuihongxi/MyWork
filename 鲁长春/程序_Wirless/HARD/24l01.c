@@ -7,7 +7,7 @@
 #endif
 u8 RF_CH_HZ =10;                                  //ÆµÂÊ0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //·¢ËÍµØÖ·
-u8  ADDRESS2[RX_ADR_WIDTH]={2,2,2,2,2}; 
+u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1}; 
 u8* address = ADDRESS1;
 extern 
 void NRF24L01_ResetAddr(u8* add)

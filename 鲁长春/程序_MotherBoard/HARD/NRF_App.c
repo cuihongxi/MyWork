@@ -4,10 +4,12 @@
 #include "CUI_RTOS.H"
 #include "LED_SHOW.H"
 
-Nrf24l01_PRXStr 	prx 		= {0};				// NRFæ¥æ”¶ç»“æ„ä½“
-Nrf24l01_PTXStr 	ptx 		= {0};				// NRFå‘é€ç»“æ„ä½“
-u8 			txbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrfå‘é€ç¼“å­˜
-u8 			rxbuf[7] 	= {0};				        // nrfæ¥æ”¶ç¼“å­˜
+Nrf24l01_PRXStr 	RXprx 		= {0};				// NRFæ¥æ”¶ç»“æ„ä½“
+Nrf24l01_PTXStr 	TXptx 		= {0};				// NRFå‘é€ç»“æ„ä½“
+u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrfå‘é€ç¼“å­˜
+u8 			RXrxbuf[7] 	= {0};				        // nrfæ¥æ”¶ç¼“å­˜
+u8 			TXtxbuf[7] 	= {0};		
+u8 			TXrxbuf[7] 	= {0};				        
 u8          DM_num = 0;
 
 extern  u8 		            flag_duima  		;	//å¯¹ç çŠ¶æ€
@@ -24,18 +26,20 @@ void NRF_DM();
 bool JugeDM();
 void RXD_CallBack(Nrf24l01_PRXStr* prx) ;   //æ¥æ”¶æ¨¡å¼è‡ªåŠ¨æ¥æ”¶å®Œæˆå›è°ƒå‡½æ•°
 void ptxRXD_CallBack(Nrf24l01_PTXStr* ptx);//å‘å°„æ¨¡å¼è‡ªåŠ¨æ¥æ”¶å®Œæˆå›è°ƒå‡½æ•°
-/*nrfæ¥æ”¶å‡½æ•°*/
+/*nrf´¦Àíº¯Êı*/
 void NRF_Function()
 {   
-        if(taskNRF->state == Stop)  //å¯¹ç çŠ¶æ€
+        if(taskNRF->state == Stop)
         {
           if(flag_duima == 0)
           {
+            
             address = ADDRESS2;
-            InitNRF_AutoAck_PRX(&prx,rxbuf,txbuf,sizeof(txbuf),BIT_PIP0,RF_CH_HZ);	
+            InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//ÅäÖÃ½ÓÊÕÄ£Ê½
+            RXprx.rxbuf = RXrxbuf;
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
-            prx.RXDCallBack = RXD_CallBack;
+            RXprx.RXDCallBack = RXD_CallBack;
             OS_AddJudegeFunction(taskNRF,NRFReceived,100,JugeRX);
           }
           else
@@ -43,8 +47,9 @@ void NRF_Function()
               NRFpowon.start = 0;
               NRFpowoff.start = 0;
               address = ADDRESS1;
-              InitNRF_AutoAck_PTX(&ptx,rxbuf,sizeof(rxbuf),BIT_PIP0,RF_CH_HZ);	// åˆå§‹åŒ–å‘å°„æ¨¡å¼
-              ptx.RXDCallBack = ptxRXD_CallBack;
+              InitNRF_AutoAck_PTX(&TXptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);	//·¢ËÍÄ£Ê½
+              TXptx.RXDCallBack = ptxRXD_CallBack;
+              TXptx.txbuf = TXtxbuf;
 			  NRF24L01_GPIO_Lowpower();
               DM_num = DM_NUM;
               OS_AddJudegeFunction(taskNRF,NRF_DM,800,JugeDM);
@@ -55,6 +60,7 @@ void NRF_Function()
 
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
+
     NRF24L01_PWR(1);
     ptx->txbuf[0] = addr[0];
     ptx->txbuf[1] = addr[1];
@@ -63,21 +69,22 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     ptx->txbuf[4] = addr[4];
     ptx->txbuf[5] = cmd;
     ptx->txbuf[6] = mes;
-    NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
+    
+  NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
-
+// Ö÷Ñ­»·ÖĞÔËĞĞµÄ£¬ÏÔÊ¾½ÓÊÕµ½µÄÊı¾İ
 void NRFReceived()
 {
-	if(prx.hasrxlen)
+	if(RXprx.hasrxlen)
 	{
-		debug("hasrxlen = %d :\r\n",prx.hasrxlen);		
-		for(u8 i=0;i<prx.hasrxlen;i++)
+		debug("hasrxlen = %d :\r\n",RXprx.hasrxlen);		
+		for(u8 i=0;i<RXprx.hasrxlen;i++)
 		  {
-			debug("rxbuf[%d]=%d	",i,prx.rxbuf[i]);
+			debug("rxbuf[%d]=%d	",i,RXprx.rxbuf[i]);
 		  }		
 		debug("\r\n------\r\n");
-		prx.hasrxlen = 0;
+		RXprx.hasrxlen = 0;
 	}
 }
 
@@ -94,14 +101,14 @@ void NRF_DM()
     LEN_GREEN_Open();
   else LEN_GREEN_Close();
   if(DM_num>0)
-    NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);
+    NRF_SendCMD(&TXptx,ADDRESS2,CMD_DM,MES_DM);
   else flag_duima = 0;
 }
 bool JugeDM()
 {
   return (bool)(flag_duima == 0);
 }
-//æ¥æ”¶æ¨¡å¼è‡ªåŠ¨æ¥æ”¶å®Œæˆå›è°ƒå‡½æ•°
+//½ÓÊÕÄ£Ê½×Ô¶¯½ÓÊÕÍê³É»Øµ÷º¯Êı
 void RXD_CallBack(Nrf24l01_PRXStr* prx) 
 {
         prx->txbuf[0] = prx->rxbuf[0];
@@ -111,45 +118,47 @@ void RXD_CallBack(Nrf24l01_PRXStr* prx)
         prx->txbuf[4] = prx->rxbuf[4];
         prx->txbuf[5] = 'O';
         prx->txbuf[6] = 'K';
-  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);	//å¡«å……åº”ç­”ä¿¡å·		
+  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);//Ìî³äÓ¦´ğĞÅºÅ	
 		prx->rxlen = NRF24L01_GetRXLen();
-		NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//è¯»å–æ•°æ®
+		NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//¶ÁÈ¡Êı¾İ
 		prx->hasrxlen += prx->rxlen;		
-		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// æ¸…é™¤RX_DSä¸­æ–­æ ‡å¿—
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// Çå³ıRX_DSÖĞ¶Ï±êÖ¾
 		debug("RX_OK ");
 }
 
 bool ptxJugeDMok(Nrf24l01_PTXStr* ptx)
 {
-  u8 i = 0;
-  for(i=0;i < ptx->rxlen; i++)
-  {
+  for(u8 i=0;i < ptx->rxlen; i++)
+  {  
     if(ptx->rxbuf[i] ^ ptx->txbuf[i]) return (bool)0;
   }
   return (bool)1;
 }
-//å‘å°„æ¨¡å¼è‡ªåŠ¨æ¥æ”¶å®Œæˆå›è°ƒå‡½æ•°
+//·¢ÉúÄ£Ê½½ÓÊÕÍê³É»Øµ÷º¯Êı
 void ptxRXD_CallBack(Nrf24l01_PTXStr* ptx)
 {
-  	    debug(" ptxRXD_CallBack ");	
+  	    	
 		ptx->rxlen = NRF24L01_GetRXLen();
-		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf + ptx->hasrxlen,ptx->rxlen);	//è¯»å–æ•°æ®
-        if(ptxJugeDMok(ptx))  {LEN_GREEN_Close();flag_duima = 0;} 
+		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf,ptx->rxlen);	//è¯»å–æ•°æ®
         
-		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// æ¸…é™¤RX_DSä¸­æ–­æ ‡å¿—
+        if(ptxJugeDMok(ptx))  {debug("Åä¶Ô³É¹¦\n");LEN_GREEN_Close();flag_duima = 0;} 
+        
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// Çå±êÖ¾Î»
+        
+
 }
 
 
-//IRQ ä¸­æ–­æœåŠ¡å‡½æ•°
+//IRQ ÖĞ¶Ï
 INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
 		
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
 	{	
       if(flag_duima == 0)	
-		prx.IRQCallBack(&prx);
+		RXprx.IRQCallBack(&RXprx);
       else
-        ptx.IRQCallBack(&ptx);
+        TXptx.IRQCallBack(&TXptx);
 	}
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }

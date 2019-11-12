@@ -3,7 +3,7 @@
 #include "24l01.h"
 
 extern	u8		is_DM;
-extern	u8  nrfaddr[5];
+
 //初始化表头的数据
 void FlashData_Init()
 {
@@ -19,11 +19,11 @@ void FlashData_Init()
                 FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
                 
 	}
-        nrfaddr[0] = FLASH_ReadByte(EEPROM_ADDRESS0);
-        nrfaddr[1] = FLASH_ReadByte(EEPROM_ADDRESS1);
-        nrfaddr[2] = FLASH_ReadByte(EEPROM_ADDRESS2);
-        nrfaddr[3] = FLASH_ReadByte(EEPROM_ADDRESS3);
-        nrfaddr[4] = FLASH_ReadByte(EEPROM_ADDRESS4);
+        ADDRESS2[0] = FLASH_ReadByte(EEPROM_ADDRESS0);
+        ADDRESS2[1] = FLASH_ReadByte(EEPROM_ADDRESS1);
+        ADDRESS2[2] = FLASH_ReadByte(EEPROM_ADDRESS2);
+        ADDRESS2[3] = FLASH_ReadByte(EEPROM_ADDRESS3);
+        ADDRESS2[4] = FLASH_ReadByte(EEPROM_ADDRESS4);
 	is_DM = FLASH_ReadByte(ADDR_DM);
         
 	debug("is_DM = %d\r\n",is_DM);
