@@ -37,19 +37,19 @@ void GPIO_Lie_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
 //给端口赋值
 void    Set_Valu(u8 dat)
 {
-      if((dat&0x01) == 0) GPIO_ResetBits(Lie_0);              
-      else  GPIO_SetBits(Lie_0);
-      if((dat&0x02) == 0) GPIO_ResetBits(Lie_1);
-      else  GPIO_SetBits(Lie_1);
-      if((dat&0x04) == 0) GPIO_ResetBits(Lie_2);
-      else  GPIO_SetBits(Lie_2);
+      if((dat&0x01) == 0) GPIO_RESET(Lie_0);              
+      else  GPIO_SET(Lie_0);
+      if((dat&0x02) == 0) GPIO_RESET(Lie_1);
+      else  GPIO_SET(Lie_1);
+      if((dat&0x04) == 0) GPIO_RESET(Lie_2);
+      else  GPIO_SET(Lie_2);
 
-        if((dat&0x10) == 0) GPIO_ResetBits(Heng_0);
-      else  GPIO_SetBits(Heng_0);
-        if((dat&0x20) == 0) GPIO_ResetBits(Heng_1);
-      else  GPIO_SetBits(Heng_1);
-        if((dat&0x40) == 0) GPIO_ResetBits(Heng_2);
-      else  GPIO_SetBits(Heng_2);
+        if((dat&0x10) == 0) GPIO_RESET(Heng_0);
+      else  GPIO_SET(Heng_0);
+        if((dat&0x20) == 0) GPIO_RESET(Heng_1);
+      else  GPIO_SET(Heng_1);
+        if((dat&0x40) == 0) GPIO_RESET(Heng_2);
+      else  GPIO_SET(Heng_2);
 
 }
 
@@ -58,13 +58,13 @@ u8    Read_Valu()
 {
     u8  dat = 0;
   
-    if(GPIO_ReadInputDataBit(Lie_0) != 0) dat|=0x01;
-    if(GPIO_ReadInputDataBit(Lie_1) != 0) dat|=0x02;
-    if(GPIO_ReadInputDataBit(Lie_2) != 0) dat|=0x04;
+    if(GPIO_READ(Lie_0) != 0) dat|=0x01;
+    if(GPIO_READ(Lie_1) != 0) dat|=0x02;
+    if(GPIO_READ(Lie_2) != 0) dat|=0x04;
 
-    if(GPIO_ReadInputDataBit(Heng_0)  != 0) dat|=0x10;
-    if(GPIO_ReadInputDataBit(Heng_1)  != 0) dat|=0x20;
-    if(GPIO_ReadInputDataBit(Heng_2)  != 0) dat|=0x40;
+    if(GPIO_READ(Heng_0)  != 0) dat|=0x10;
+    if(GPIO_READ(Heng_1)  != 0) dat|=0x20;
+    if(GPIO_READ(Heng_2)  != 0) dat|=0x40;
     return dat;
 }
 
@@ -149,25 +149,23 @@ void Key_ScanLeave()
 	
 	if(keyval == KEY_VAL_AM)
 	{
-	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
 	    if((systime - AM_time) > 3000)
 	    {
 		flag_funAM = ~flag_funAM;
-		debug(" AM :%d\r\n",flag_funAM);
+		debug(" AM \r\n");
 		//NRF发送AM命令
-		if(flag_funAM){ NRF_SendCMD(&ptx,address,CMD_AM, MES_AM_ON);}
-		else{NRF_SendCMD(&ptx,address,CMD_AM, MES_AM_OFF); }
+		if(flag_funAM){ NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_ON);}
+		else{NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_OFF); }
 		keyval = KEY_VAL_NULL;
 	    }
 	    
 	}  
 	if(keyval == KEY_VAL_POW_CA)
 	{
-	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
 	    if((systime - POW_CA_time) > 3000)
 	    {
 		flag_funPOW_CA= ~flag_funPOW_CA;
-		debug(" POW_CA :%d\r\n",flag_funPOW_CA);
+		debug("POW_CA\r\n");
 		//NRF信号强度设定
 		if(flag_funPOW_CA){ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
 		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
@@ -192,7 +190,7 @@ void Key_ScanLeave()
 	    }
 	    if((systime - DM_time) > 6000)
             {
-              debug(" :clear DM \r\n");
+              debug("clear DM \r\n");
               NRF_SendCMD(&ptx,ADDRESS1,CMD_DM, MES_CLEARDM);
             }
 	    DM_time = 0;
@@ -224,11 +222,12 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
-                        debug("keyval = %d\n",keyval);
+                     //   debug("keyval = %d\n",keyval);
 		}
   }
 
-   EXTI_ClearITPendingBit (EXTI_IT_Pin0);
+  // EXTI_ClearITPendingBit (EXTI_IT_Pin0);
+   EXTI->SR1 = (uint8_t) (EXTI_IT_Pin0);
 } 
  
 
@@ -241,10 +240,11 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
-                        debug("keyval = %d\n",keyval);
+                   //     debug("keyval = %d\n",keyval);
 		}
    }
-   EXTI_ClearITPendingBit (EXTI_IT_Pin3);
+   //EXTI_ClearITPendingBit (EXTI_IT_Pin3);
+   EXTI->SR1 = (uint8_t) (EXTI_IT_Pin3);
 } 
 
 

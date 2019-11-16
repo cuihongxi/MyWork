@@ -26,7 +26,7 @@
 #if  DEBUG_LEVEL > 0
 #include "stm8l15x_usart.h"
 #include "stdio.h"
-#define  debug(...)	printf(__VA_ARGS__);
+#define  debug(...)	USART1_SendSTR(__VA_ARGS__)     //printf(__VA_ARGS__);
 #define	UART_INIT(baud)	do{\
 	SWAPPER_UART_PA2_PC5();	\
 	CLK_PeripheralClockConfig (CLK_Peripheral_USART1,ENABLE);\
@@ -69,7 +69,7 @@ void LSI_delayms(unsigned int  nCount);         //16M æß’Ò ±   —” ± 1∏ˆ∫¡√Î
 
 #define	GPIO_SET(pin)		GPIO_SetBits(pin)
 #define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
-
 #define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
+
 #endif
 

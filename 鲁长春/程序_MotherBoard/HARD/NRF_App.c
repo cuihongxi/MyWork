@@ -73,6 +73,8 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
   NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
+
+void ChangeNRFCmd(u8* buf);
 // 主循环中运行的，显示接收到的数据
 void NRFReceived()
 {
@@ -84,6 +86,8 @@ void NRFReceived()
 			debug("rxbuf[%d]=%d	",i,RXprx.rxbuf[i]);
 		  }		
 		debug("\r\n------\r\n");
+                //根据收到的字节，映射出相应的控制命令
+                ChangeNRFCmd(RXprx.rxbuf);
 		RXprx.hasrxlen = 0;
 	}
 }
@@ -128,24 +132,22 @@ void RXD_CallBack(Nrf24l01_PRXStr* prx)
 
 bool ptxJugeDMok(Nrf24l01_PTXStr* ptx)
 {
-  for(u8 i=0;i < ptx->rxlen; i++)
-  {  
-    if(ptx->rxbuf[i] ^ ptx->txbuf[i]) return (bool)0;
-  }
+//  for(u8 i=0;i < ptx->rxlen; i++)
+//  {  
+//    if(ptx->rxbuf[i] ^ ptx->txbuf[i]) return (bool)0;
+//  }
+  if(ptx->rxbuf[5] ^ 'O') return (bool)0;
+  if(ptx->rxbuf[6] ^ 'K') return (bool)0;
   return (bool)1;
 }
 //发生模式接收完成回调函数
 void ptxRXD_CallBack(Nrf24l01_PTXStr* ptx)
 {
-  	    	
-		ptx->rxlen = NRF24L01_GetRXLen();
-		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf,ptx->rxlen);	//璇诲彇鏁版嵁
-        
+        ptx->rxlen = NRF24L01_GetRXLen();
+	NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf,ptx->rxlen);	//读接收数据
         if(ptxJugeDMok(ptx))  {debug("配对成功\n");LEN_GREEN_Close();flag_duima = 0;} 
-        
-		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清标志位
-        
-
+   
+	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清标志位
 }
 
 

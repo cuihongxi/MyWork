@@ -158,13 +158,17 @@ void GPIO_ExternalPullUpConfig(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin, Functional
 /* GPIO Read and Write ********************************************************/
 void GPIO_Write(GPIO_TypeDef* GPIOx, uint8_t GPIO_PortVal);
 void GPIO_WriteBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin, BitAction GPIO_BitVal);
-void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin);
-void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin);
+//void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin);
+//void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin);
 void GPIO_ToggleBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin);
 uint8_t GPIO_ReadInputData(GPIO_TypeDef* GPIOx);
 uint8_t GPIO_ReadOutputData(GPIO_TypeDef* GPIOx);
-BitStatus GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin);
+//BitStatus GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin);
 BitStatus GPIO_ReadOutputDataBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin);
+
+#define  GPIO_ResetBits(GPIOx,GPIO_Pin)                 (GPIOx->ODR &= (uint8_t)(~GPIO_Pin))
+#define  GPIO_SetBits(GPIOx,GPIO_Pin)                   (GPIOx->ODR |= GPIO_Pin)
+#define  GPIO_ReadInputDataBit(GPIOx,GPIO_Pin)          ((BitStatus)(GPIOx->IDR & (uint8_t)GPIO_Pin))
 
 #endif /* __STM8L15x_GPIO_H */
 

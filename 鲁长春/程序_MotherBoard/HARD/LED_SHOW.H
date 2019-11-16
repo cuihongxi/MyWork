@@ -7,7 +7,15 @@
 #include "uhead.h"
 
 #define         LED_GREEN          GPIOB,GPIO_Pin_4          //ÂÌµÆ
+
+
+#ifndef  DM_LED_RESET               
+#define         LED_RED            GPIOD,GPIO_Pin_7         //ºìµÆ
+#else
 #define         LED_RED            GPIOD,GPIO_Pin_1         //ºìµÆ
+#endif
+
+
 
 typedef enum{
 	RED,

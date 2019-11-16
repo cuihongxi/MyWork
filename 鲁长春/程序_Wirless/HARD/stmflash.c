@@ -26,7 +26,6 @@ void FlashData_Init()
         ADDRESS2[4] = FLASH_ReadByte(EEPROM_ADDRESS4);
 	is_DM = FLASH_ReadByte(ADDR_DM);
         
-	debug("is_DM = %d\r\n",is_DM);
 }
 
 

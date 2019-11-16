@@ -30,7 +30,8 @@ u8      RXtxbuf[7] = {0};
 u8      TXrxbuf[7] = {0};
 u8      TXtxbuf[7] = {0};
 
-u8      ddr[7] = {1,1,1,1,1,90,12};
+
+
 u8      nrfaddr[5];
 u8 	keyval = 0;
 u8 	flag_wake = 1;
@@ -46,6 +47,7 @@ extern 		u32 		DM_time;
 
 void RCC_Config()
 {
+ // CLK_INIT(HIS_DIV1,CPU_DIV1);
   CLK_Change2HSI();				//切换HSI时钟 
 }
 
@@ -113,43 +115,45 @@ void SaveFlashAddr(u8* buf)
 //DM模式自动接收完成回调函数
 void dmRXD_CallBack(Nrf24l01_PRXStr* prx) 
 {
-      static u8 i = 0;
       prx->rxlen = NRF24L01_GetRXLen();	
-      NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据   
-      NRF24L01_RX_AtuoACKPip(prx->rxbuf,prx->rxlen,prx->pip);	//填充应答信号		
+      NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据   	
       NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
   
       if(prx->rxbuf[5] == CMD_DM && prx->rxbuf[6] == MES_DM) 
       { 
-          i++;
-          if(i >= 2)
-          {
             SaveFlashAddr(prx->rxbuf);
             flag_duima = 0;
-            i = 0;
-          }
-      }else i = 0;
-      
+      }
       	if(prx->rxlen)
 	{
-		debug("hasrxlen = %d :\r\n",prx->rxlen);		
-		for(u8 i=0;i<prx->rxlen;i++)
-		  {
-			debug("rxbuf[%d]=%d	",i,prx->rxbuf[i]);
-		  }		
-		debug("\r\n------\r\n");
+//		debug("hasrxlen = %d :\r\n",prx->rxlen);		
+//		for(u8 i=0;i<prx->rxlen;i++)
+//		  {
+//			debug("rxbuf[%d]=%d	",i,prx->rxbuf[i]);
+//		  }		
+		debug("\r\n---自动接收完成---\r\n");
 		prx->rxlen = 0;
 	}
 }
 void DM_Mode()
 {
-       flag_duima = 1;
+      flag_duima = 1;
       address = ADDRESS1;
       InitNRF_AutoAck_PRX(&prx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	
       
       NRF24L01_PWR(1);
+      prx.txbuf[0] = ADDRESS3[0];
+      prx.txbuf[1] = ADDRESS3[1];
+      prx.txbuf[2] = ADDRESS3[2];
+      prx.txbuf[3] = ADDRESS3[3];
+      prx.txbuf[4] = ADDRESS3[4];
+      prx.txbuf[5] = 'D';
+      prx.txbuf[6] = 'M';
+      
+      NRF24L01_RX_AtuoACKPip(prx.txbuf,7,prx.pip);	//填充应答信号
       prx.RXDCallBack = dmRXD_CallBack;
       DM_num = DM_NUM;
+      
       while(flag_duima);
       address = ADDRESS2;
  	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
@@ -158,101 +162,94 @@ void DM_Mode()
 void main()
 {    
 
-	RCC_Config();
+	//RCC_Config();
 	Key_GPIO_Init();
 	//delay_ms(500);
 	UART_INIT(115200);	
-      //  FlashData_Init();
+#if  DEBUG_LEVEL == 0
+        FlashData_Init();
+        Init_LedGPIO();
+#endif
         address = ADDRESS2;
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
-         ptx.rxbuf = TXrxbuf;
-	//Init_LedGPIO();	
-	//NRF_CreatNewAddr(ADDRESS2);
-	//debug("addr:%d,%d,%d,%d,%d",address[0],address[1],address[2],address[3],address[4]);
+        ptx.rxbuf = TXrxbuf;
+		
+	NRF_CreatNewAddr(ADDRESS3);
         NRF24L01_GPIO_Lowpower();
        Make_SysSleep();
-
+     //   debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());
     while(1)
     {    
           halt();
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
-//	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
-//	   {
-//		 switch(keyval)
-//		 {
-//		     case KEY_VAL_Y30: pressKey = PRESS_Y30;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
-//		   break;
-//		     case KEY_VAL_I30:
-//                       //debug("systime = %d,presstime = %d\n",systime,presstime);
-//                       if(systime<=presstime)
-//                       {
-//                         switch(pressKey){
-//                             case PRESS_Y30:debug("延时30分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_1);
-//                             break;
-//                             case PRESS_MOTZ:debug("马达关1/3");NRF_SendCMD(&ptx,address,CMD_Z, MES_Z_3_1);
-//                             break;
-//                             case PRESS_MOTY:debug("马达开1/3");NRF_SendCMD(&ptx,address,CMD_Y, MES_Y_3_1);
-//                             break;
-//                         };                      
-//                       }
-//                     presstime = 0;
-//		     pressKey = 0;
-//		   break;
-//			case KEY_VAL_I60:
-//                          //debug("systime = %d,presstime = %d\n",systime,presstime);
-//                        if(systime<=presstime)
-//                       {                         
-//			switch(pressKey){
-//			 case PRESS_Y30:debug("延时60分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_2);
-//			 break;
-//			 case PRESS_MOTZ:debug("马达关2/3");NRF_SendCMD(&ptx,address,CMD_Z, MES_Z_3_2);
-//			 break;
-//			 case PRESS_MOTY:debug("马达开2/3");NRF_SendCMD(&ptx,address,CMD_Y, MES_Y_3_2);
-//			 break;
-//                        };
-//                       }
-//                     presstime = 0;
-//		     pressKey = 0;
-//		   break;
-//			case KEY_VAL_I100:
-//                        //  debug("systime = %d,presstime = %d\n",systime,presstime);
-//                       if(systime <= presstime)
-//                       {
-//                         
-//			switch(pressKey){
-//                                 case PRESS_Y30:debug("延时90分钟");NRF_SendCMD(&ptx,address,CMD_Y30, MES_Y30_3_3);
-//                                 break;
-//                                 case PRESS_MOTZ:debug("马达全关");NRF_SendCMD(&ptx,address,CMD_Z, MES_Z_3_3);
-//                                 break;
-//                                 case PRESS_MOTY:debug("马达全开");NRF_SendCMD(&ptx,address,CMD_Y, MES_Y_3_3);
-//                                 break;
-//                            };
-//                       }
-//                     presstime = 0;
-//		     pressKey = 0;
-//		   break;
-//			case KEY_VAL_MOTZ:pressKey = PRESS_MOTZ;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
-//		   break;
-//			case KEY_VAL_MOTY:pressKey = PRESS_MOTY;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
-//		   break;
-//		   
-//		 }
-//		 keyval = KEY_VAL_NULL;
-//		debug("\r\n");
-//	   }	  		
+	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
+	   {
+		 switch(keyval)
+		 {
+		     case KEY_VAL_Y30: pressKey = PRESS_Y30;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
+		   break;
+		     case KEY_VAL_I30:
+                       //debug("systime = %d,presstime = %d\n",systime,presstime);
+                       if(systime<=presstime)
+                       {
+                         switch(pressKey){
+                             case PRESS_Y30:debug("延时30分钟");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_1);
+                             break;
+                             case PRESS_MOTZ:debug("马达关1/3");NRF_SendCMD(&ptx,ADDRESS3,CMD_Z, MES_Z_3_1);
+                             break;
+                             case PRESS_MOTY:debug("马达开1/3");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y, MES_Y_3_1);
+                             break;
+                         };                      
+                       }
+                     presstime = 0;
+		     pressKey = 0;
+		   break;
+			case KEY_VAL_I60:
+                          //debug("systime = %d,presstime = %d\n",systime,presstime);
+                        if(systime<=presstime)
+                       {                         
+			switch(pressKey){
+			 case PRESS_Y30:debug("延时60分钟");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_2);
+			 break;
+			 case PRESS_MOTZ:debug("马达关2/3");NRF_SendCMD(&ptx,ADDRESS3,CMD_Z, MES_Z_3_2);
+			 break;
+			 case PRESS_MOTY:debug("马达开2/3");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y, MES_Y_3_2);
+			 break;
+                        };
+                       }
+                     presstime = 0;
+		     pressKey = 0;
+		   break;
+			case KEY_VAL_I100:
+                        //  debug("systime = %d,presstime = %d\n",systime,presstime);
+                       if(systime <= presstime)
+                       {
+                         
+			switch(pressKey){
+                                 case PRESS_Y30:debug("延时90分钟");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_3);
+                                 break;
+                                 case PRESS_MOTZ:debug("马达全关");NRF_SendCMD(&ptx,ADDRESS3,CMD_Z, MES_Z_3_3);
+                                 break;
+                                 case PRESS_MOTY:debug("马达全开");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y, MES_Y_3_3);
+                                 break;
+                            };
+                       }
+                     presstime = 0;
+		     pressKey = 0;
+		   break;
+			case KEY_VAL_MOTZ:pressKey = PRESS_MOTZ;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
+		   break;
+			case KEY_VAL_MOTY:pressKey = PRESS_MOTY;presstime = systime + TIM_MAXDELAY;//debug("systime = %d,presstime = %d\n",systime,presstime);
+		   break;
+		   
+		 }
+		 keyval = KEY_VAL_NULL;
+		debug("\r\n");
+	   }	  		
     }   
     
 }
-
-
-#ifdef USE_FULL_ASSERT
-void assert_failed(u8* file,u32 line)
-{
-  debug("assert_failed : %s,line:%d\r\n",file,line);
-  while(1);
-}
-#endif
  
 
 //自动唤醒

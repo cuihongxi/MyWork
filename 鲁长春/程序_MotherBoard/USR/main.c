@@ -198,13 +198,9 @@ void main()
 	NRF24L01_GPIO_Lowpower();
 	CheckWindowState();
   	Key_GPIO_Init();							// 触摸按键初始化	
-//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable) ;
-//    IWDG_SetPrescaler(IWDG_Prescaler_256) ;
-//    IWDG_SetReload(0xFF);
-//    IWDG_Enable();
 	while(1)
 	{         
-        halt(); 					// 停止模式
+                halt(); 					// 停止模式
 		KeyFun();					// 按键处理
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		FunInSleap();

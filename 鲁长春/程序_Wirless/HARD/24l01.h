@@ -136,13 +136,13 @@
 
 #define MOSI_OUT_1      GPIO_SET(MOSI_PIN)
 #define MOSI_OUT_0      GPIO_RESET(MOSI_PIN)
-#define READ_MISO_IN    GPIO_ReadInputDataBit(MISO_PIN)
+#define READ_MISO_IN    GPIO_READ(MISO_PIN)
 #define SCLK_OUT_1      GPIO_SET(SCLK_PIN)
 #define SCLK_OUT_0      GPIO_RESET(SCLK_PIN)
 #define CSN_OUT_0       GPIO_RESET(NRF24L01_CSN_PIN)
 #define CE_OUT_0        GPIO_RESET(NRF24L01_CE_PIN)
 #define CE_OUT_1        GPIO_SET(NRF24L01_CE_PIN)
-#define READ_IRQ_IN     GPIO_ReadInputDataBit(NRF24L01_IRQ_PIN)
+#define READ_IRQ_IN     GPIO_READ(NRF24L01_IRQ_PIN)
 #ifdef  DMA_SPI
 #define CSN_OUT_1        while(SPI_GetFlagStatus(SPI_FLAG_BSY));GPIO_SET(NRF24L01_CSN_PIN)
 #else 
@@ -153,8 +153,9 @@
 #define	REPEAT_DELAY	15		//重复间隔，单位250uS
 
 extern u8 RF_CH_HZ ; 
-extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
-extern u8  ADDRESS2[RX_ADR_WIDTH]; 
+extern u8  ADDRESS1[TX_ADR_WIDTH]; // DM地址
+extern u8  ADDRESS2[RX_ADR_WIDTH]; // DM成功后通讯地址
+extern u8  ADDRESS3[5]; //保存本地地址
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化

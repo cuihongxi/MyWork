@@ -64,11 +64,11 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		ptx->rxlen = NRF24L01_GetRXLen();
 		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf + ptx->hasrxlen,ptx->rxlen);	//读取数据
 		ptx->hasrxlen += ptx->rxlen;
-		debug("rxlen = %d :\r\n",ptx->rxlen);		
-		for(u8 i=0;i<ptx->rxlen;i++)
-			  {
-				debug(" %d ",ptx->rxbuf[i]);
-			  }   
+	//	debug("rxlen = %d :\r\n",ptx->rxlen);		
+//		for(u8 i=0;i<ptx->rxlen;i++)
+//			  {
+//				debug(" %d ",ptx->rxbuf[i]);
+//			  }   
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
 		NRF24L01_PWR(0);
 }

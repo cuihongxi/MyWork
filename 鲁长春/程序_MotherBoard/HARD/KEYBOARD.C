@@ -22,7 +22,7 @@ u32 		AM_Risingtime 		= 0;
 
 u8 		flag_KEY_Z 		= 0;	// 传递给马达函数，让他根据val做出动作
 u8 		flag_KEY_Y 		= 0;
-u8		signal_key 		= 0;
+//u8		signal_key 		= 0;
 
 extern	TimerLinkStr 		timer2 ;	// 任务的定时器
 extern	JugeCStr 		YS_30 ;
@@ -212,7 +212,11 @@ void Key_GPIO_Init()
 	EXTI_SelectPort(EXTI_Port_B);
 	EXTI_SetHalfPortSelection(EXTI_HalfPort_B_LSB,ENABLE);   
 	EXTI_SetPortSensitivity(EXTI_Port_B,EXTI_Trigger_Falling);	// 设置端口敏感性
-	EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
+#ifndef DM_LED_RESET        
+	EXTI_SetPinSensitivity(EXTI_Pin_1,EXTI_Trigger_Falling);
+#else
+        EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
+#endif
 	//使能中断
 	enableInterrupts();                                                 // 使能中断
 }
@@ -295,20 +299,49 @@ void KeyFun()
 	}
 }
 
-bool Juge_key()
+void ChangeNRFCmd(u8* buf)
 {
-	return (bool)signal_key;
-}
-void KeyScanControl()
-{
-	if(flag_exti && taskKeyScan->state == Stop)
-	{
-		signal_key = 0;
-		OS_AddJudegeFunction(taskKeyScan,OS_DeleteTask,TIM_KEY,Juge_key);			
-		OS_AddJudegeFunction(taskKeyScan,KeyFun,4,Juge_key);
-		OS_AddFunction(taskKeyScan,OS_DeleteTask,0);	
-		OS_AddTask(tasklink,taskKeyScan);// 添加检测任务
-	}
+  switch(buf[5])
+  {
+    case CMD_AM:			
+                        AM_Risingtime = 0;
+			ledSharpTimes = 12;
+                        if(buf[6] == MES_AM_ON) 
+                        {
+                                key_AM.val = on;
+                                debug("打开AM延时\r\n");
+                                is_suc = (bool)TRUE;
+                                beepTimes = 2;
+                                beepdelayoff = 200;
+                                beepdelayon = 100;}
+                        else
+                        {
+                                key_AM.val = off;
+                                flag_YS_isno = 0;
+                                jugeYS_No.start = 0;
+                                jugeYS_No.counter =0;
+                                jugeYS_No.switchon = 0;
+                                shut_time = 0;
+                                debug("取消AM\r\n");
+                                is_suc = (bool)FALSE;
+                                beepTimes = 2;
+                                beepdelayon = 500;
+                                beepdelayoff = 10;
+                        }
+    break;
+//      case CMD_Y30:
+//        
+//    break;
+//      case :
+//    break;
+//      case :
+//    break;
+//      case :
+//    break;
+//      case :
+//    break;
+    
+  }
 }
 
 INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
@@ -342,7 +375,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		if(key_val)
 		{
 			flag_exti = 1;   
-			signal_key = 1;
+			//signal_key = 1;
 			//debug("key_val = %d\r\n",key_val);
 		}	
     }
@@ -350,6 +383,23 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
      EXTI_ClearITPendingBit (EXTI_IT_PortB);  
        
 }
+
+#ifndef DM_LED_RESET
+INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
+{
+    if(key_val == KEY_VAL_NULL)
+    {
+		if(GPIO_READ(GPIO_DM) == RESET)
+		{
+			DM_Risingtime = ScanKey(&key_DM);
+			key_val = KEY_VAL_DM;
+		}
+		if(key_val)flag_exti = 1; 	
+    }
+	EXTI_ClearITPendingBit (EXTI_IT_Pin1);
+	
+}
+#else
 
 void BH_Check();
 
@@ -360,18 +410,15 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 		if(GPIO_READ(GPIO_DM) == RESET)
 		{
 			DM_Risingtime = ScanKey(&key_DM);
-			debug("DM_Risingtime = %lu\r\n",DM_Risingtime);
 			key_val = KEY_VAL_DM;
 		}
-		if(key_val)
-		{
-			flag_exti = 1; 
-			signal_key = 1;
-			//debug("key_val = %d\r\n",key_val);
-		}	
+		if(key_val)flag_exti = 1; 
+	
     }
     
     BH_Check();//BH检测
-//	debug("EXTI7_IRQHandler\r\n");
-	EXTI_ClearITPendingBit (EXTI_IT_Pin7);
+    EXTI_ClearITPendingBit (EXTI_IT_Pin7);
 }
+
+
+#endif

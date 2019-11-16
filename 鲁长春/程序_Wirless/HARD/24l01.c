@@ -6,8 +6,9 @@
 #include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =10;                                  //频率0~125
-u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1}; //发送地址
-u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1}; 
+u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1};         // DM地址
+u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1};         // DM成功后通讯地址 
+u8  ADDRESS3[5]={0};                            //保存本地地址
 u8* address = ADDRESS1;
 extern 
 void NRF24L01_ResetAddr(u8* add)
@@ -275,7 +276,7 @@ u8 NRF24L01_RxPacket(u8 *rxbuf,u8* len)
 	if(sta&RX_OK)//接收到数据
 	{
 	  	*len = NRF24L01_GetRXLen();
-		debug("len = %d  sta = %x\r\n",*len,sta);
+		//debug("len = %d  sta = %x\r\n",*len,sta);
 		NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,RX_PLOAD_WIDTH);//读取数据
 		u8 txbuf[2] = {0x30,0x31};
 		 NRF24L01_RX_AtuoACKPip(txbuf,2,BIT_PIP0);

@@ -241,3 +241,11 @@ INTERRUPT_HANDLER(EXTI6_IRQHandler,14)
     	EXTI_ClearITPendingBit (EXTI_IT_Pin6);
 }
 
+#ifndef  DM_LED_RESET  
+INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
+{
+
+        BH_Check();//BH¼ì²â
+	EXTI_ClearITPendingBit (EXTI_IT_Pin7);
+}
+#endif
