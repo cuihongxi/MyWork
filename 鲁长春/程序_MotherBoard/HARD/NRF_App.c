@@ -140,12 +140,21 @@ bool ptxJugeDMok(Nrf24l01_PTXStr* ptx)
   if(ptx->rxbuf[6] ^ 'M') return (bool)0;
   return (bool)1;
 }
+
+//成功状态：LED闪烁6次，蜂鸣器同步
+void StateSuccess();
 //发生模式接收完成回调函数
 void ptxRXD_CallBack(Nrf24l01_PTXStr* ptx)
 {
         ptx->rxlen = NRF24L01_GetRXLen();
 	NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf,ptx->rxlen);	//读接收数据
-        if(ptxJugeDMok(ptx))  {debug("配对成功\n");LEN_GREEN_Close();flag_duima = 0;} 
+        if(ptxJugeDMok(ptx))  
+		{
+		  debug("配对成功\n");
+		  LEN_GREEN_Close();
+		  flag_duima = 0;
+		  StateSuccess();
+		} 
    
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清标志位
 }

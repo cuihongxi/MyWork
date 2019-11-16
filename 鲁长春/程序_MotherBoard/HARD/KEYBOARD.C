@@ -6,16 +6,16 @@
 #include "stmflash.h"
 #include "24l01.h"
 #include "MX830Motor.h"
-u8 		flag_exti	= 0;
-u8 		key_val 	= 0;
+u8 			flag_exti	= 0;
+u8 			key_val 	= 0;
 keyStr 		key_Z 		= {0};
 keyStr 		key_Y		= {0};
 keyStr 		key_AM 		= {0};
 keyStr 		key_Y30 	= {0};
 keyStr 		key_DM 		= {0};
 
-u8 		flag_duima  		= 0;	//对码状态
-u8 		flag_duima_clear  	= 0;	//清除对码
+u8 			flag_duima  		= 0;	//对码状态
+u8 			flag_duima_clear  	= 0;	//清除对码
 u32 		Y30_Risingtime 		= 0;
 u32 		DM_Risingtime 		= 0;		
 u32 		AM_Risingtime 		= 0;
@@ -56,32 +56,45 @@ void BeepStart()
 //	#endif
 	
 }
+//成功状态：LED闪烁6次，蜂鸣器同步
+void StateSuccess()
+{
+		ledSharpTimes = 12;
+		is_suc = (bool)TRUE;
+		beepTimes = 2;
+		beepdelayoff = 200;
+		beepdelayon = 100;
+}
+
+//取消状态：LED闪烁6次，蜂鸣器同步
+void StateFalse()
+{
+		ledSharpTimes = 12;
+		beepTimes = 2;
+		beepdelayon = 500;
+		beepdelayoff = 10;
+		is_suc = (bool)FALSE;
+}
 
 //AM切换
 void SwitchAM()
 {
 		if(key_AM.val == off)
 		{
-				key_AM.val = on;
+			key_AM.val = on;
 			debug("打开AM延时\r\n");
-			is_suc = (bool)TRUE;
-			beepTimes = 2;
-			beepdelayoff = 200;
-			beepdelayon = 100;
+			StateSuccess();
 		}
 		else 
 		{
-				key_AM.val = off;
+			key_AM.val = off;
 			flag_YS_isno = 0;
 			jugeYS_No.start = 0;
 			jugeYS_No.counter =0;
 			jugeYS_No.switchon = 0;
 			shut_time = 0;
 			debug("取消AM\r\n");
-			is_suc = (bool)FALSE;
-			beepTimes = 2;
-			beepdelayon = 500;
-			beepdelayoff = 10;
+			StateFalse();
 		}
 		AM_Risingtime = 0;
 		ledSharpTimes = 12;
@@ -93,6 +106,8 @@ void ShowAMState()
 	if(key_AM.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
+
+
 // Y30切换
 void SwitchY30()
 {
@@ -101,13 +116,9 @@ void SwitchY30()
 		key_Y30.val = on;			
 		YS_30.start = 1;
 		YS_30.counter = 0;
-		ledSharpTimes = 12;
-		is_suc = (bool)TRUE;
 		ys_timer30 = TIM_30;
 		Y30_Risingtime = 0;
-		beepTimes = 2;
-		beepdelayoff = 200;
-		beepdelayon = 100;
+		StateSuccess();
 		debug("ys_timer30 = %d\r\n",ys_timer30);
 
 	}
@@ -119,11 +130,7 @@ void SwitchY30()
 		YS_30.counter = 0;//取消Y30延时
 		YS_30.switchon = 0;
 		ys_timer30 = 0;
-		ledSharpTimes = 12;
-		beepTimes = 2;
-		beepdelayon = 500;
-		beepdelayoff = 10;
-		is_suc = (bool)FALSE;
+ 		StateFalse();
 		key_val = KEY_VAL_NULL;
 		Y30_Risingtime = 0;
 	}
@@ -136,6 +143,10 @@ void ShowY30State()
 	if(key_Y30.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
+
+
+
+
 // 松手程序
 void Key_ScanLeave()
 {    	
@@ -164,23 +175,13 @@ void Key_ScanLeave()
 		if((systime - DM_Risingtime) > TIM_DML && (systime - DM_Risingtime) < TIM_DMH )
 		{
 			flag_duima = 1;	//对码状态
-			is_suc = (bool)TRUE;
-		    ledSharpTimes = 6;
-			beepTimes = 2;
-			beepdelayon = 100;
-			beepdelayoff = 200;
+			StateSuccess();
 			debug("对码状态\r\n");
-			
-			
 		}
 		else if((systime - DM_Risingtime) > TIM_DM_CLEARL && (systime - DM_Risingtime) < TIM_DM_CLEARH )
 		{
 			flag_duima_clear = 1;	//清除对码
-			is_suc = (bool)FALSE;
-		    	ledSharpTimes = 6;
-			beepTimes = 2;
-			beepdelayon = 500;
-			beepdelayoff = 10;
+			StateFalse();
 			debug("清除对码\r\n");
 		}
 		DM_Risingtime = 0;
@@ -265,6 +266,7 @@ u32 ScanKey(keyStr* key)
 }
 
 
+
 //按键处理函数
 void KeyFun()
 {					
@@ -319,11 +321,7 @@ void ChangeNRFCmd(u8* buf)
 				YS_30.counter = 0;//取消Y30延时
 				YS_30.switchon = 0;
 				ys_timer30 = 0;
-				ledSharpTimes = 12;
-				beepTimes = 2;
-				beepdelayon = 500;
-				beepdelayoff = 10;
-				is_suc = (bool)FALSE;
+				StateFalse();
 				key_val = KEY_VAL_NULL;
 				Y30_Risingtime = 0;
 			}else
@@ -332,10 +330,10 @@ void ChangeNRFCmd(u8* buf)
 			 	key_Y30.val = on;			
 				YS_30.start = 1;
 				YS_30.counter = 0;
-				ledSharpTimes = 2;
-				is_suc = (bool)TRUE;
 				ys_timer30 = TIM_30;
 				Y30_Risingtime = 0;
+				ledSharpTimes = 2;
+				is_suc = (bool)TRUE;
 				beepTimes = 2;
 				beepdelayoff = 200;
 				beepdelayon = 100;
