@@ -22,10 +22,12 @@ typedef struct PTXStr{
 	u8 hastxlen;						// 已发送长度
 	u8 hasrxlen;						// 已接收的长度
 	u8 flag_sendfinish;					// 发送完成标志
+	u8 reuse_times;						// 发送不成功时重发的次数
 	void(*IRQCallBack)(struct PTXStr*);	// 回调函数，放在IRQ中断中
 	void(*RXDCallBack)(struct PTXStr*);	// 接收完成回调函数
 	void(*TXDCallBack)(struct PTXStr*);	// 发送完成回调函数
 	void(*MAXTXCallBack)(struct PTXStr*);// 达到最大发射次数回调函数
+	
 }Nrf24l01_PTXStr;
 
 //接收模式结构体
@@ -45,7 +47,7 @@ typedef struct PRXStr{
 }Nrf24l01_PRXStr;
 
 #define		NRF_GPIO_IRQMODE		GPIO_Mode_In_PU_IT	// 上拉带中断
-
+#define		REUSE_TIMES			10			// 发送模式，发送不成功时重发的次数
 /**
  * IRQ中断功能配置
  */

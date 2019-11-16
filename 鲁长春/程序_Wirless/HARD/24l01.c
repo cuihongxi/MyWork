@@ -382,3 +382,13 @@ void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr)
     	CE_OUT_0; 
 	NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(dr,pwr));
 }
+
+
+void NRF24L01_RESUSE_TX()
+{
+  	CE_OUT_0; 
+	NRF24L01_Write_Reg(REUSE_TX_PL,0x00);	      //TX重复发上次发送的消息  
+	NRF24L01_Write_Reg(NRF_FIFO_STATUS,NRF24L01_Read_Reg(NRF_FIFO_STATUS)|0x40);	      //TX重复发上次发送的消息  
+	CE_OUT_1;
+	
+}

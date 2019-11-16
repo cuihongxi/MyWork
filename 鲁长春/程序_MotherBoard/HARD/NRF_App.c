@@ -122,12 +122,12 @@ void RXD_CallBack(Nrf24l01_PRXStr* prx)
         prx->txbuf[4] = prx->rxbuf[4];
         prx->txbuf[5] = 'O';
         prx->txbuf[6] = 'K';
-  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);//填充应答信号	
-		prx->rxlen = NRF24L01_GetRXLen();
-		NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//读取数据
-		prx->hasrxlen += prx->rxlen;		
-		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
-		debug("RX_OK ");
+        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);//填充应答信号	
+        prx->rxlen = NRF24L01_GetRXLen();
+        NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//读取数据
+        prx->hasrxlen += prx->rxlen;		
+        NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
+        debug("RX_OK ");
 }
 
 bool ptxJugeDMok(Nrf24l01_PTXStr* ptx)
@@ -136,8 +136,8 @@ bool ptxJugeDMok(Nrf24l01_PTXStr* ptx)
 //  {  
 //    if(ptx->rxbuf[i] ^ ptx->txbuf[i]) return (bool)0;
 //  }
-  if(ptx->rxbuf[5] ^ 'O') return (bool)0;
-  if(ptx->rxbuf[6] ^ 'K') return (bool)0;
+  if(ptx->rxbuf[5] ^ 'D') return (bool)0;
+  if(ptx->rxbuf[6] ^ 'M') return (bool)0;
   return (bool)1;
 }
 //发生模式接收完成回调函数

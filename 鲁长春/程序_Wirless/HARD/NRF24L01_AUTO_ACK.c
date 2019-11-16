@@ -51,10 +51,20 @@ void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen)
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
 	debug("ERROR! MAX_TX!! ");
-	NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
-	NRF24L01_PTXInMainReset(ptx);
-	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
-	NRF24L01_PWR(0);
+	if(ptx->reuse_times)
+	{
+	  debug("reuse_times\r\n");
+		ptx->reuse_times --;
+		NRF24L01_RESUSE_TX();
+	}else
+	{
+		NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
+		NRF24L01_PTXInMainReset(ptx);
+
+		NRF24L01_PWR(0);	
+	}
+	
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
 }
 
 //发射模式自动接收完成回调函数
@@ -76,7 +86,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 //发射模式自动发射完成回调函数
 void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	debug(" TX_OK  ");
+	//debug(" TX_OK  ");
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1<<STATUS_BIT_IRT_TXD)); 	// 清除TX_DS中断标志
 	if(ptx->hastxlen < ptx->txlen)
 	{
@@ -149,6 +159,7 @@ void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
 	ptx->hastxlen = 0;
 	ptx->hasrxlen = 0;
 	ptx->flag_sendfinish  = FALSE;
+	ptx->reuse_times = REUSE_TIMES;
 	NRF24L01_TxPacket(ptx->txbuf,ptx->txlen);
 	ptx->hastxlen += ptx->txlen;	
 }

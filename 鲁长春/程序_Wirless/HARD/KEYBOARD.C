@@ -2,23 +2,27 @@
 #include "stm8l15x_exti.h"
 #include "24l01.h"
 #include "NRF24L01_AUTO_ACK.H"
+#include "stmflash.h"
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);
 u8      	flag_exti 		= 0 ;
 u32 		DM_time 		= 0;
 u32 		AM_time 		= 0;
-u32 		POW_CA_time 		= 0;
+u32 		POW_CA_time 	= 0;
+u32 		Y30_time 		= 0;
+u32			I30_time		= 0;
+u8			flag_funAM		= 0;
+u8			flag_funPOW_CA	= 0;
+u8			flag_I30_en		= 0;
 
-u8		flag_funAM		= 0;
-u8		flag_funPOW_CA		= 0;
-
-extern		u32			systime;
-extern 		u8 			keyval ;
+extern		u32					systime;
+extern 		u8 					keyval ;
 extern 		Nrf24l01_PTXStr 	ptx;
-extern 		u8 			pressKey;
+extern 		u8 					pressKey;
 extern 		u8	                flag_duima;
-
+extern 		u8					LEDtimes;
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
 void DM_Mode();
+void ClearDM();// 清除DM
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
 {
@@ -92,7 +96,7 @@ u8  Keyscan()
                                         break;
                                     case 0x50: return(KEY_VAL_I100);
                                         break;
-                                    case 0x60: return(KEY_VAL_Y30);
+                                    case 0x60: Y30_time = systime;return(KEY_VAL_Y30);
                                         break;
 
                                 };
@@ -121,7 +125,7 @@ u8  Keyscan()
                                 {
                                     case 0x30: DM_time = systime;return (KEY_VAL_DUIMA);
                                         break;
-                                    case 0x50: return(KEY_VAL_I30);	
+                                    case 0x50: I30_time = systime;return(KEY_VAL_I30);	
                                         break;
                                     case 0x60: AM_time = systime;return(KEY_VAL_AM);
                                         break;
@@ -167,13 +171,37 @@ void Key_ScanLeave()
 		flag_funPOW_CA= ~flag_funPOW_CA;
 		debug("POW_CA\r\n");
 		//NRF信号强度设定
-		if(flag_funPOW_CA){ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
+		if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
 		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
 		keyval = KEY_VAL_NULL;
 	    }
 	    
 	}
 	
+	if(keyval == KEY_VAL_Y30)
+	{
+	    if((systime - Y30_time) > 3000)
+	    {
+			debug("Y30取消\r\n");
+			NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CLEAR); 
+			keyval = KEY_VAL_NULL;
+	    }
+	    
+	} 
+	if(keyval == KEY_VAL_I30)
+	{
+	    if((systime - I30_time) > 3000)
+	    {
+			debug("开窗报警\r\n");
+			flag_I30_en = ~flag_I30_en;
+			
+			if(flag_I30_en)NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM_EN); 
+			else NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM_DIS); ; 
+		
+			keyval = KEY_VAL_NULL;
+	    }
+	    
+	} 	
     if(Read_Valu() == 0x07)
     {       
 
@@ -184,14 +212,13 @@ void Key_ScanLeave()
 	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
 	    if((systime - DM_time)< 2000)
 	    {
-		debug("DM 模式\r\n");
+				debug("DM 模式\r\n");
                 DM_Mode();
 
 	    }
 	    if((systime - DM_time) > 6000)
             {
-              debug("clear DM \r\n");
-              NRF_SendCMD(&ptx,ADDRESS1,CMD_DM, MES_CLEARDM);
+              ClearDM();
             }
 	    DM_time = 0;
 	    pressKey = 1;
@@ -222,7 +249,7 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
-                     //   debug("keyval = %d\n",keyval);
+                      debug(".");
 		}
   }
 
@@ -240,7 +267,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
-                   //     debug("keyval = %d\n",keyval);
+                        debug(".");
 		}
    }
    //EXTI_ClearITPendingBit (EXTI_IT_Pin3);

@@ -89,20 +89,27 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		CMD_Y30		0X2A
 #define		CMD_Z		0X1A
 #define		CMD_Y		0X0A
+#define		CMD_I30		0X6A
 
 #define		MES_AM_ON	0X01
 #define		MES_AM_OFF	0X02
 #define		MES_Y30_3_1	0X03
 #define		MES_Y30_3_2	0X04
 #define		MES_Y30_3_3	0X05
+#define		MES_Y30_CLEAR	0X0E
+
 #define		MES_Z_3_1	0X06
 #define		MES_Z_3_2	0X07
 #define		MES_Z_3_3	0X08
+#define		MES_Z		0X0F
 #define		MES_Y_3_1	0X09
 #define		MES_Y_3_2	0X0A
 #define		MES_Y_3_3	0X0B
-#define		MES_DM	        0X0C
+#define		MES_Y		0X10
+#define		MES_DM	    0X0C
 #define		MES_CLEARDM	0X0D
+#define		MES_I30_ALARM_EN		0X11
+#define		MES_I30_ALARM_DIS		0X12
 
 #endif
 

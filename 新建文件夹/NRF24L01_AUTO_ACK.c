@@ -74,7 +74,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 //发射模式自动发射完成回调函数
 void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	debug(" TX_OK  ");
+	//debug(" TX_OK  ");
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1<<STATUS_BIT_IRT_TXD)); 	// 清除TX_DS中断标志
 	if(ptx->hastxlen < ptx->txlen)
 	{

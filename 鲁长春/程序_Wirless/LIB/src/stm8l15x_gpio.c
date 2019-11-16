@@ -301,10 +301,10 @@ void GPIO_WriteBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin, BitAction GPI
   *            @arg GPIO_Pin_7: Pin 7   
   * @retval None
   */
-//void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin)
-//{
-//  GPIOx->ODR |= GPIO_Pin;
-//}
+void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin)
+{
+  GPIOx->ODR |= GPIO_Pin;
+}
 
 /**
   * @brief  Writes low level to the specified GPIO pins.
@@ -322,10 +322,10 @@ void GPIO_WriteBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin, BitAction GPI
   *            @arg GPIO_Pin_7: Pin 7 
   * @retval None
   */
-//void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin)
-//{
-//  GPIOx->ODR &= (uint8_t)(~GPIO_Pin);
-//}
+void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin)
+{
+  GPIOx->ODR &= (uint8_t)(~GPIO_Pin);
+}
 
 /**
   * @brief  Toggles the specified GPIO pins.
@@ -376,10 +376,10 @@ uint8_t GPIO_ReadOutputData(GPIO_TypeDef* GPIOx)
   *            @arg GPIO_Pin_7: Pin 7 
   * @retval BitStatus : GPIO input pin status.
   */
-//BitStatus GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin)
-//{
-//  return ((BitStatus)(GPIOx->IDR & (uint8_t)GPIO_Pin));
-//}
+BitStatus GPIO_ReadInputDataBit(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin)
+{
+  return ((BitStatus)(GPIOx->IDR & (uint8_t)GPIO_Pin));
+}
 
 /**
   * @brief  Reads the specified GPIO Output data pin.

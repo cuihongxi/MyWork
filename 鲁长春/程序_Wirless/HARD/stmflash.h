@@ -3,7 +3,7 @@
 #include "UHEAD.h"
 
 
-#define		FLASH_INIT_DATA		0x22			// 初始化值
+#define		FLASH_INIT_DATA		0x24			// 初始化值
 
 
 #define		NO_DM			0	// 没有配对
