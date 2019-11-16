@@ -151,12 +151,12 @@ void FunInSleap()
 		LEN_GREEN_Close();
 	}
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,20)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,200)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
 	}
-	if(Juge_counter(&NRFpowoff,400)) 
+	if(Juge_counter(&NRFpowoff,20)) 
 	{
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
@@ -200,7 +200,7 @@ void main()
   	Key_GPIO_Init();							// 触摸按键初始化	
 	while(1)
 	{         
-                halt(); 					// 停止模式
+        halt(); 					// 停止模式
 		KeyFun();					// 按键处理
 		if(flag_exti)	Key_ScanLeave();            	// 松手程序
 		FunInSleap();

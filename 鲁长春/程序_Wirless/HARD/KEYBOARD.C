@@ -10,9 +10,9 @@ u32 		AM_time 		= 0;
 u32 		POW_CA_time 	= 0;
 u32 		Y30_time 		= 0;
 u32			I30_time		= 0;
-u8			flag_funAM		= 0;
+//u8			flag_funAM		= 0;
 u8			flag_funPOW_CA	= 0;
-u8			flag_I30_en		= 0;
+//u8			flag_I30_en		= 0;
 
 extern		u32					systime;
 extern 		u8 					keyval ;
@@ -141,9 +141,6 @@ u8  Keyscan()
     
 }
 
-
-
-
 //松手程序
 void Key_ScanLeave()
 {
@@ -155,76 +152,80 @@ void Key_ScanLeave()
 	{
 	    if((systime - AM_time) > 3000)
 	    {
-		flag_funAM = ~flag_funAM;
-		debug(" AM \r\n");
-		//NRF发送AM命令
-		if(flag_funAM){ NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_ON);}
-		else{NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_OFF); }
-		keyval = KEY_VAL_NULL;
-	    }
-	    
+			//debug("切换AM\r\n");	
+			NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM);//NRF发送AM命令
+			keyval = KEY_VAL_NULL; 
+	    } 
 	}  
 	if(keyval == KEY_VAL_POW_CA)
 	{
 	    if((systime - POW_CA_time) > 3000)
 	    {
-		flag_funPOW_CA= ~flag_funPOW_CA;
-		debug("POW_CA\r\n");
-		//NRF信号强度设定
-		if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
-		else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
-		keyval = KEY_VAL_NULL;
+			flag_funPOW_CA= ~flag_funPOW_CA;
+			debug("POW_CA\r\n");
+			//NRF信号强度设定
+			if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
+			else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
+			keyval = KEY_VAL_NULL;
 	    }
-	    
 	}
 	
 	if(keyval == KEY_VAL_Y30)
 	{
 	    if((systime - Y30_time) > 3000)
 	    {
-			debug("Y30取消\r\n");
+			//debug("Y30取消\r\n");
 			NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CLEAR); 
 			keyval = KEY_VAL_NULL;
 	    }
-	    
 	} 
 	if(keyval == KEY_VAL_I30)
 	{
 	    if((systime - I30_time) > 3000)
 	    {
-			debug("开窗报警\r\n");
-			flag_I30_en = ~flag_I30_en;
-			
-			if(flag_I30_en)NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM_EN); 
-			else NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM_DIS); ; 
-		
+			//debug("开窗报警\r\n");
+			NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM); 
 			keyval = KEY_VAL_NULL;
 	    }
 	    
 	} 	
-    if(Read_Valu() == 0x07)
+    if(Read_Valu() == 0x07)	//无按键按下
     {       
 
         GPIO_Heng_MOED_SET(GPIO_MODE_OUT);  //横发 0
         GPIO_Lie_MOED_SET(GPIO_MODE_IT);    //列读数 
-	if(keyval == KEY_VAL_DUIMA)
-	{
-	  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
-	    if((systime - DM_time)< 2000)
-	    {
-				debug("DM 模式\r\n");
-                DM_Mode();
+		if(keyval == KEY_VAL_DUIMA)
+		{
+		  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
+			if((systime - DM_time)< 2000)
+			{
+					//debug("DM 模式\r\n");
+					DM_Mode();
 
-	    }
-	    if((systime - DM_time) > 6000)
-            {
-              ClearDM();
-            }
-	    DM_time = 0;
-	    pressKey = 1;
-	}	
-	flag_exti = 0;
-	keyval = KEY_VAL_NULL;
+			}
+			if((systime - DM_time) > 6000)
+				{
+				  ClearDM();
+				}
+			DM_time = 0;
+			pressKey = 1;
+		}
+		if(keyval == KEY_VAL_AM)
+		{
+			if((systime - AM_time) < 3000)
+				NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_CHECK);//NRF发送AM命令	
+		}
+		if(keyval == KEY_VAL_Y30)
+		{
+			if((systime - Y30_time) < 3000)
+			{
+				NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CHECK); 
+				//debug("MES_Y30_CHECK\r\n");
+			}
+				
+		}
+		flag_exti = 0;
+		keyval = KEY_VAL_NULL;
     }
 }
 
@@ -249,7 +250,7 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
-                      debug(".");
+                    //  debug(".");
 		}
   }
 
@@ -267,7 +268,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
-                        debug(".");
+                        //debug(".");
 		}
    }
    //EXTI_ClearITPendingBit (EXTI_IT_Pin3);

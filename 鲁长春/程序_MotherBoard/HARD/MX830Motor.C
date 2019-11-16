@@ -31,7 +31,7 @@ extern 	TimerLinkStr 	timer2;
 extern 	u8		flag_FLreasion;
 extern 	u8 		flag_FL_SHUT;
 extern	BATStr 		bat;			// 电池管理
-extern	u8		ys_timer30;		// YS不响应计时
+extern	u16		ys_timer30;		// YS不响应计时
 extern	JugeCStr 	YS_30;
 extern	TaskStr* 	taskAlarm; 
 /**************************************
@@ -406,12 +406,16 @@ void MotorControl()
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 						
 					break;
-					default:// 关2/3
+					case three:
 						motorStruct.needrun = motorStruct.hasrun - STEP_MOTO - STEP_MOTO;
-						debug("flag_KEY_Z :three\r\n");	
+						debug("flag_KEY_Z :3\r\n");	
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 					break;
-				    
+					default:
+						motorStruct.needrun = motorStruct.hasrun - STEP_MOTO - STEP_MOTO - STEP_MOTO;
+						debug("flag_KEY_Z :4\r\n");	
+						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
+					break;				    
 				}
 
 			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);
@@ -440,9 +444,14 @@ void MotorControl()
 						debug("KEY_Y :two\r\n");
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 					break;
-					default:// 开2/3
+					case three:// 
 						debug("KEY_Y :three\r\n");
 						motorStruct.needrun = motorStruct.hasrun + STEP_MOTO + STEP_MOTO;
+						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
+					break;	
+					default:
+						debug("KEY_Y :4\r\n");
+						motorStruct.needrun = motorStruct.hasrun + STEP_MOTO + STEP_MOTO + STEP_MOTO;
 						OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
 					break;	
 				}					
@@ -464,7 +473,7 @@ void MotorControl()
 					OS_AddFunction(taskMotor,WindowStateShutDown,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_shutdown = 0;	
 					key_Z.counter = 0;
-
+					key_Z.val = off;
 					if(flag_shut_time)	//计算关窗用的时间
 					{
 						debug("没有FLYS时，启动定时器计时，延时打开窗~\r\n");//没有FLYS时，启动定时器计时，延时打开窗
@@ -479,6 +488,7 @@ void MotorControl()
 					OS_AddFunction(taskMotor,WindowStateOpendown,IRQ_PERIOD);				// 关窗标志置位
 					motorStruct.flag_opendown = 0;	
 					key_Y.counter = 0;
+					key_Y.val = off;
 				}
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,TIM_MOTOR_F,MotorSysProtect0);	// 脱扣

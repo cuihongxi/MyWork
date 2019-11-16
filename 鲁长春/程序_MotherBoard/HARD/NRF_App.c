@@ -80,14 +80,14 @@ void NRFReceived()
 {
 	if(RXprx.hasrxlen)
 	{
-		debug("hasrxlen = %d :\r\n",RXprx.hasrxlen);		
-		for(u8 i=0;i<RXprx.hasrxlen;i++)
-		  {
-			debug("rxbuf[%d]=%d	",i,RXprx.rxbuf[i]);
-		  }		
-		debug("\r\n------\r\n");
-                //根据收到的字节，映射出相应的控制命令
-                ChangeNRFCmd(RXprx.rxbuf);
+//		debug("\r\n");		
+//		for(u8 i=0;i<RXprx.hasrxlen;i++)
+//		  {
+//			debug("[%d]=%d	",i,RXprx.rxbuf[i]);
+//		  }		
+//		debug("\r\n------\r\n\r\n");
+		//根据收到的字节，映射出相应的控制命令
+		ChangeNRFCmd(RXprx.rxbuf);
 		RXprx.hasrxlen = 0;
 	}
 }

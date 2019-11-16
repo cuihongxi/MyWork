@@ -6,7 +6,7 @@ JugeCStr 	jugeYS_No 	= {0};			// 无雨水，AM打开时计时开窗
 JugeCStr 	jugeYS 		= {0};			// YS信号超警戒,启动计时器，超过4S，触发	
 float 		YSdat 		= 0;			// ys-u
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
-u8		ys_timer30 	= 0;			// YS不响应计时
+u16			ys_timer30 	= 0;			// YS不响应计时
 
 extern 		TaskLinkStr* 	tasklink;		// 任务列表
 extern 		WindowState	windowstate;

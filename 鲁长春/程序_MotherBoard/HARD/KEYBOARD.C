@@ -22,7 +22,7 @@ u32 		AM_Risingtime 		= 0;
 
 u8 		flag_KEY_Z 		= 0;	// 传递给马达函数，让他根据val做出动作
 u8 		flag_KEY_Y 		= 0;
-//u8		signal_key 		= 0;
+u8		flag_I30_en		= 0;	// 开窗报警使能
 
 extern	TimerLinkStr 		timer2 ;	// 任务的定时器
 extern	JugeCStr 		YS_30 ;
@@ -57,99 +57,105 @@ void BeepStart()
 	
 }
 
+//AM切换
+void SwitchAM()
+{
+		if(key_AM.val == off)
+		{
+				key_AM.val = on;
+			debug("打开AM延时\r\n");
+			is_suc = (bool)TRUE;
+			beepTimes = 2;
+			beepdelayoff = 200;
+			beepdelayon = 100;
+		}
+		else 
+		{
+				key_AM.val = off;
+			flag_YS_isno = 0;
+			jugeYS_No.start = 0;
+			jugeYS_No.counter =0;
+			jugeYS_No.switchon = 0;
+			shut_time = 0;
+			debug("取消AM\r\n");
+			is_suc = (bool)FALSE;
+			beepTimes = 2;
+			beepdelayon = 500;
+			beepdelayoff = 10;
+		}
+		AM_Risingtime = 0;
+		ledSharpTimes = 12;
+}
+// 指示当前AM状态
+void ShowAMState()
+{
+	ledSharpTimes = 2;
+	if(key_AM.val == off)is_suc = (bool)FALSE;
+	else is_suc = (bool)TRUE;
+}
+// Y30切换
+void SwitchY30()
+{
+	if(key_Y30.val == off)
+	{
+		key_Y30.val = on;			
+		YS_30.start = 1;
+		YS_30.counter = 0;
+		ledSharpTimes = 12;
+		is_suc = (bool)TRUE;
+		ys_timer30 = TIM_30;
+		Y30_Risingtime = 0;
+		beepTimes = 2;
+		beepdelayoff = 200;
+		beepdelayon = 100;
+		debug("ys_timer30 = %d\r\n",ys_timer30);
+
+	}
+	else 
+	{
+			key_Y30.val = off;
+		debug("取消Y30延时");
+		YS_30.start = 0;
+		YS_30.counter = 0;//取消Y30延时
+		YS_30.switchon = 0;
+		ys_timer30 = 0;
+		ledSharpTimes = 12;
+		beepTimes = 2;
+		beepdelayon = 500;
+		beepdelayoff = 10;
+		is_suc = (bool)FALSE;
+		key_val = KEY_VAL_NULL;
+		Y30_Risingtime = 0;
+	}
+}
+
+// 指示当前Y30状态
+void ShowY30State()
+{
+	ledSharpTimes = 2;
+	if(key_Y30.val == off)is_suc = (bool)FALSE;
+	else is_suc = (bool)TRUE;
+}
 // 松手程序
 void Key_ScanLeave()
 {    	
     if(Y30_Risingtime != 0)
     {
-	if(GPIO_READ(GPIO_Y30) ==RESET)
-	{
-	   
-		if((systime - Y30_Risingtime) > TIM_Y30_DELAY)
-		{	
-			if(key_Y30.val == off)
-			{
-			    	key_Y30.val = on;			
-				YS_30.start = 1;
-				YS_30.counter = 0;
-				ledSharpTimes = 12;
-				is_suc = (bool)TRUE;
-				ys_timer30 = TIM_30;
-				Y30_Risingtime = 0;
-				beepTimes = 2;
-				beepdelayoff = 200;
-				beepdelayon = 100;
-				debug("ys_timer30 = %d\r\n",ys_timer30);
-		
-			}
-			else 
-			{
-			    	key_Y30.val = off;
-				debug("取消Y30延时");
-				YS_30.start = 0;
-				YS_30.counter = 0;//取消Y30延时
-				YS_30.switchon = 0;
-				ys_timer30 = 0;
-				ledSharpTimes = 12;
-				beepTimes = 2;
-				beepdelayon = 500;
-				beepdelayoff = 10;
-				is_suc = (bool)FALSE;
-				key_val = KEY_VAL_NULL;
-				Y30_Risingtime = 0;
-			}
-		}
-		else 	//LED显示当前Y30状态
+		if(GPIO_READ(GPIO_Y30) ==RESET)
 		{
-			ledSharpTimes = 2;
-			if(key_Y30.val == off)is_suc = (bool)FALSE;
-			else is_suc = (bool)TRUE;
-		}
-	}else Y30_Risingtime = 0;
+			if((systime - Y30_Risingtime) > TIM_Y30_DELAY) SwitchY30();
+			else ShowY30State();		//LED显示当前Y30状态
+		}else Y30_Risingtime = 0;
     }
     
     if(AM_Risingtime != 0)
     {
-	if(GPIO_READ(GPIO_AM) == RESET)
-	{
-	    // debug("systime  = %lu,AM_Risingtime = %lu\r\n",systime , AM_Risingtime);
-		if((systime - AM_Risingtime) > TIM_Y30_DELAY)
+		if(GPIO_READ(GPIO_AM) == RESET)
 		{
-			if(key_AM.val == off)
-			{
-			    	key_AM.val = on;
-				debug("打开AM延时\r\n");
-				is_suc = (bool)TRUE;
-				beepTimes = 2;
-				beepdelayoff = 200;
-				beepdelayon = 100;
-			}
-			else 
-			{
-			    	key_AM.val = off;
-				flag_YS_isno = 0;
-				jugeYS_No.start = 0;
-				jugeYS_No.counter =0;
-				jugeYS_No.switchon = 0;
-				shut_time = 0;
-				debug("取消AM\r\n");
-				is_suc = (bool)FALSE;
-				beepTimes = 2;
-				beepdelayon = 500;
-				beepdelayoff = 10;
-			}
-			AM_Risingtime = 0;
-			ledSharpTimes = 12;
-			
+			if((systime - AM_Risingtime) > TIM_Y30_DELAY) SwitchAM();
+			else ShowAMState();			//LED显示当前AM状态
 		}
-		else 	//LED显示当前AM状态
-		{
-			ledSharpTimes = 2;
-			if(key_AM.val == off)is_suc = (bool)FALSE;
-			else is_suc = (bool)TRUE;
-		}
-	}
-	else AM_Risingtime = 0;
+		else AM_Risingtime = 0;
     }
      
 	if(DM_Risingtime != 0 && GPIO_READ(GPIO_DM))
@@ -220,9 +226,6 @@ void Key_GPIO_Init()
 	//使能中断
 	enableInterrupts();                                                 // 使能中断
 }
-
-
-
 
 //按键扫描
 u32 ScanKey(keyStr* key)
@@ -304,42 +307,100 @@ void ChangeNRFCmd(u8* buf)
   switch(buf[5])
   {
     case CMD_AM:			
-                        AM_Risingtime = 0;
-			ledSharpTimes = 12;
-                        if(buf[6] == MES_AM_ON) 
-                        {
-                                key_AM.val = on;
-                                debug("打开AM延时\r\n");
-                                is_suc = (bool)TRUE;
-                                beepTimes = 2;
-                                beepdelayoff = 200;
-                                beepdelayon = 100;}
-                        else
-                        {
-                                key_AM.val = off;
-                                flag_YS_isno = 0;
-                                jugeYS_No.start = 0;
-                                jugeYS_No.counter =0;
-                                jugeYS_No.switchon = 0;
-                                shut_time = 0;
-                                debug("取消AM\r\n");
-                                is_suc = (bool)FALSE;
-                                beepTimes = 2;
-                                beepdelayon = 500;
-                                beepdelayoff = 10;
-                        }
+			if(buf[6] == MES_AM) SwitchAM();
+			else if(buf[6] == MES_AM_CHECK) ShowAMState();
     break;
-//      case CMD_Y30:
-//        
-//    break;
-//      case :
-//    break;
-//      case :
-//    break;
-//      case :
-//    break;
-//      case :
-//    break;
+      case CMD_Y30:
+			if(buf[6] == MES_Y30_CLEAR)
+			{
+				key_Y30.val = off;
+				debug("取消Y30延时");
+				YS_30.start = 0;
+				YS_30.counter = 0;//取消Y30延时
+				YS_30.switchon = 0;
+				ys_timer30 = 0;
+				ledSharpTimes = 12;
+				beepTimes = 2;
+				beepdelayon = 500;
+				beepdelayoff = 10;
+				is_suc = (bool)FALSE;
+				key_val = KEY_VAL_NULL;
+				Y30_Risingtime = 0;
+			}else
+			 if(buf[6] == MES_Y30_3_1)
+			 {
+			 	key_Y30.val = on;			
+				YS_30.start = 1;
+				YS_30.counter = 0;
+				ledSharpTimes = 2;
+				is_suc = (bool)TRUE;
+				ys_timer30 = TIM_30;
+				Y30_Risingtime = 0;
+				beepTimes = 2;
+				beepdelayoff = 200;
+				beepdelayon = 100;
+				debug("ys_timer30 = %d\r\n",ys_timer30);
+			 }else
+			 if(buf[6] == MES_Y30_3_2)
+			 {
+			 	key_Y30.val = on;			
+				YS_30.start = 1;
+				YS_30.counter = 0;
+				ledSharpTimes = 4;
+				is_suc = (bool)TRUE;
+				ys_timer30 = TIM_30*4;
+				Y30_Risingtime = 0;
+				beepTimes = 4;
+				beepdelayoff = 200;
+				beepdelayon = 100;
+				debug("ys_timer30 = %d\r\n",ys_timer30);
+			 }else
+			 if(buf[6] == MES_Y30_3_3)
+			 {
+			 	key_Y30.val = on;			
+				YS_30.start = 1;
+				YS_30.counter = 0;
+				ledSharpTimes = 6;
+				is_suc = (bool)TRUE;
+				ys_timer30 = TIM_30*8;
+				Y30_Risingtime = 0;
+				beepTimes = 6;
+				beepdelayoff = 200;
+				beepdelayon = 100;
+				debug("ys_timer30 = %d\r\n",ys_timer30);
+			 }else
+			 if(buf[6] == MES_Y30_CHECK) ShowY30State();
+        
+    break;
+      case CMD_Z:
+			key_val = KEY_VAL_DER_Z;
+			key_Z.counter = GetSysTime(&timer2);
+			if(buf[6] == MES_Z)
+			{
+				if(key_Z.val != off) key_Z.val = off;
+				else key_Z.val = on;
+			}else if(buf[6] == MES_Z_3_1) key_Z.val = two;
+			else if(buf[6] == MES_Z_3_2) key_Z.val = three;
+			else if(buf[6] == MES_Z_3_3) key_Z.val = four;
+    break;
+      case CMD_Y:
+			key_val = KEY_VAL_DER_Y;
+			key_Y.counter = GetSysTime(&timer2);
+			if(buf[6] == MES_Y)
+			{
+				if(key_Y.val != off) key_Y.val = off;
+				else key_Y.val = on;
+			}else if(buf[6] == MES_Y_3_1) key_Y.val = two;
+			else if(buf[6] == MES_Y_3_2) key_Y.val = three;
+			else if(buf[6] == MES_Y_3_3) key_Y.val = four;
+    break;
+      case CMD_I30:
+		if(buf[6] == MES_I30_ALARM)
+		{
+			flag_I30_en = ~flag_I30_en;
+			debug("flag_I30_en = %d\r\n",flag_I30_en);
+		}
+    break;
     
   }
 }
