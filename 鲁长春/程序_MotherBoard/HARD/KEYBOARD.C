@@ -377,7 +377,11 @@ void ChangeNRFCmd(u8* buf)
 			key_Z.counter = GetSysTime(&timer2);
 			if(buf[6] == MES_Z)
 			{
-				if(key_Z.val != off) key_Z.val = off;
+				if(key_Z.val != off) 
+				{
+					key_Z.counter = 0;
+					key_Z.val = off;
+				}
 				else key_Z.val = on;
 			}else if(buf[6] == MES_Z_3_1) key_Z.val = two;
 			else if(buf[6] == MES_Z_3_2) key_Z.val = three;
@@ -388,7 +392,11 @@ void ChangeNRFCmd(u8* buf)
 			key_Y.counter = GetSysTime(&timer2);
 			if(buf[6] == MES_Y)
 			{
-				if(key_Y.val != off) key_Y.val = off;
+				if(key_Y.val != off)
+				{
+					key_Y.counter = 0;
+					key_Y.val = off;
+				} 
 				else key_Y.val = on;
 			}else if(buf[6] == MES_Y_3_1) key_Y.val = two;
 			else if(buf[6] == MES_Y_3_2) key_Y.val = three;

@@ -147,6 +147,8 @@ void LEN_GREEN_Close();
 void MotorSTOP()
 {	
 	motorStruct.command = STOP;
+	key_Y.counter = 0;
+	key_Z.counter = 0;
 	MX830Motor_StateDir(&motorStruct);
 }
 
