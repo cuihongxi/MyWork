@@ -162,11 +162,17 @@ void RXD_ACK_CallBack(Nrf24l01_PRXStr* prx)
 //接收模式自动接收完成回调函数
 void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx) 
 {
-  		RXD_ACK_CallBack(prx);
-  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);	//填充应答信号		
+  	//	RXD_ACK_CallBack(prx);
+  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);	//填充应答信号	
+		
 		prx->rxlen = NRF24L01_GetRXLen();
-		NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//读取数据
-		prx->hasrxlen += prx->rxlen;		
+		while(prx->rxlen)
+		{
+			NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据
+			prx->hasrxlen = prx->rxlen;	
+			prx->rxlen = NRF24L01_GetRXLen();
+		}
+		
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
 		debug("RX_OK ");
 }

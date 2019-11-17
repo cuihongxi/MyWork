@@ -45,7 +45,8 @@ extern	u8  			ADDRESS1[TX_ADR_WIDTH];
 extern	u8  			ADDRESS2[RX_ADR_WIDTH];
 extern	u8			flag_BH;
 extern 	u8			flag_YS_isno;
-
+extern 	u16				nrf_sleeptime 	;
+extern 	u16				nrf_worktime	;
 void BeepStart()
 {
 	beep.start = 1;
@@ -102,7 +103,7 @@ void SwitchAM()
 // 指示当前AM状态
 void ShowAMState()
 {
-	ledSharpTimes = 2;
+	ledSharpTimes = 10;
 	if(key_AM.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
@@ -139,7 +140,7 @@ void SwitchY30()
 // 指示当前Y30状态
 void ShowY30State()
 {
-	ledSharpTimes = 2;
+	ledSharpTimes = 10;
 	if(key_Y30.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
@@ -407,7 +408,19 @@ void ChangeNRFCmd(u8* buf)
 			debug("flag_I30_en = %d\r\n",flag_I30_en);
 		}
     break;
-    
+      case CMD_WAKE:
+		if(buf[6] == MES_WAKE_UP)
+		{
+		  	debug("MES_WAKE_UP\r\n");
+				nrf_sleeptime = GZ_SLEEP_TIME;
+				nrf_worktime = GZ_SLEEP_TIME;
+		}else
+		{
+		  debug("MES_SLEEP\r\n");
+				nrf_sleeptime = DJ_SLEEP_TIME;
+				nrf_worktime = DJ_SLEEP_TIME;		
+		}
+    break;    
   }
 }
 

@@ -50,6 +50,7 @@
 #define		CMD_Z		0X1A
 #define		CMD_Y		0X0A
 #define		CMD_I30		0X6A
+#define		CMD_WAKE	0X4A
 
 #define		MES_AM		0X01
 #define		MES_AM_CHECK	0X02
@@ -70,7 +71,8 @@
 #define		MES_DM	    0X0C
 #define		MES_CLEARDM	0X0D
 #define		MES_I30_ALARM		0X11
-
+#define		MES_WAKE_UP		0X13
+#define		MES_WAKE_SLEEP	0X14
 
 
 void LSI_delayus(unsigned int  nCount);         //16M æß’Ò ±  —” ± 1∏ˆŒ¢√Ó

@@ -45,27 +45,30 @@ void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen)
 	  
 
 }
+// 重发
+void NRF24L01_RESUSE(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
+{
+  	ptx->txbuf = txbuf;
+	ptx->txlen = size;
+	ptx->hastxlen = 0;
+	ptx->hasrxlen = 0;
+	ptx->flag_sendfinish  = FALSE;
+	NRF24L01_TxPacket(ptx->txbuf,ptx->txlen);
+	ptx->hastxlen += ptx->txlen;	
+}
 
-void NRF24L01_RESUSE();
 //达到最大发射次数默认回调函数
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
 	debug("ERROR! MAX_TX!! ");
 
-	//else
-	//{
-		NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
-		NRF24L01_PTXInMainReset(ptx);
-
-		//NRF24L01_PWR(0);	
-	//}
-	
-		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
+	NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
+	NRF24L01_PTXInMainReset(ptx);	
+	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
 	if(ptx->reuse_times)
 	{
 		ptx->reuse_times --;
-		//NRF24L01_RESUSE_TX();
-		NRF24L01_RESUSE();
+		NRF24L01_RESUSE(ptx,ptx->txbuf,ptx->txlen);// 重发
 	}
 }
 

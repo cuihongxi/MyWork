@@ -45,14 +45,20 @@
 #define			TIM_MOTORLED_SHARP_ON	100	//ms，马达运行LED闪烁亮的时间
 #define			TIM_MOTORLED_SHARP_OFF	100	//ms，马达运行LED闪烁灭的时间
 
-#define			STEP_MOTO		10	// 每按一次，马达行走的步数
+#define			STEP_MOTO			10	// 每按一次，马达行走的步数
 #define			TIM_MOTO_HOLD		500	// ms,马达刹车时间
 #define			TIM_ALARM_BH		10000	// ms,BH无方波和马达超时报警间隔
-#define			TIM_SHACHE		500	// ms,刹车时间
+#define			TIM_SHACHE			500	// ms,刹车时间
 
-#define			USE_NRF			1	// NRF模块 ：0，不使用，1 使用	
+#define			USE_NRF				1	// NRF模块 ：0，不使用，1 使用	
 #define 		DEBUG_LEVEL 		1	// 串口调试接口
 
-#define         DM_NUM              10     //对码次数，超过次数没对码成功，退出对码模式 
+#define         DM_NUM              10     	//对码次数，超过次数没对码成功，退出对码模式 
+#define			DJ_SLEEP_TIME		1800	//ms,NRF待机睡眠时间
+#define			DJ_WORK_TIME		40		//ms,NRF待机工作时间
+#define			GZ_SLEEP_TIME		40		//ms,NRF工作睡眠时间
+#define			GZ_WORK_TIME		100		//ms,NRF工作工作时间
+
+
 #endif
 

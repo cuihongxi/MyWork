@@ -5,6 +5,7 @@
 #include "stmflash.h"
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);
 u8      	flag_exti 		= 0 ;
+u8			flag_touch		= 0;
 u32 		DM_time 		= 0;
 u32 		AM_time 		= 0;
 u32 		POW_CA_time 	= 0;
@@ -140,7 +141,18 @@ u8  Keyscan()
     return(KEY_VAL_NULL);
     
 }
-
+//´¥ÃþËÉÊÖ¼ì²â
+void Key_TouchtLeave()
+{
+  
+	if(GPIO_READ(TOUCH_IO) == RESET)
+	{
+		GPIO_SET(Z_LED);
+		flag_touch = 0;
+		NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_SLEEP);
+	}
+	  
+}
 //ËÉÊÖ³ÌÐò
 void Key_ScanLeave()
 {
@@ -275,4 +287,16 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
    EXTI->SR1 = (uint8_t) (EXTI_IT_Pin3);
 } 
 
-
+INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
+{
+  if(flag_touch == 0)
+   {
+   	    if(GPIO_READ(TOUCH_IO)) 
+		{
+			flag_touch = 1;  
+			GPIO_RESET(Z_LED);
+			NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
+		}
+   } 	
+ 	EXTI_ClearITPendingBit (EXTI_IT_Pin5);
+}

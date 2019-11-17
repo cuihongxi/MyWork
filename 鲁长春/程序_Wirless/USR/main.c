@@ -203,11 +203,18 @@ void DM_Mode()
       NRF24L01_GPIO_Lowpower();     
 }
 
-void NRF24L01_RESUSE()
+
+// 触摸IO初始化，上升沿触发
+void Init_TOUCHGPIO(void)
 {
- // NRF24L01_PWR(1);
-	NRF_AutoAck_TxPacket(&ptx,ptx.txbuf,7);
+	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
+	disableInterrupts();
+    EXTI_SelectPort(EXTI_Port_B);
+	EXTI_SetPinSensitivity(EXTI_Pin_5,EXTI_Trigger_Rising);   
+	GPIO_RESET(TOUCH_IO);
+    enableInterrupts();                                           //使能中断
 }
+
 void main()
 {    
 
@@ -215,7 +222,7 @@ void main()
 	UART_INIT(115200);	
 //#if  DEBUG_LEVEL == 0
     FlashData_Init();
-   // Init_LedGPIO();    
+    Init_LedGPIO();    
 //#endif
 	
     address = ADDRESS2;
@@ -226,17 +233,19 @@ void main()
     NRF24L01_GPIO_Lowpower();
 	Make_SysSleep();
 	
-	IWDG_Enable();
-	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-	IWDG_SetPrescaler(IWDG_Prescaler_256);
-	IWDG_SetReload(0xFF);
-    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
+//	IWDG_Enable();
+//	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+//	IWDG_SetPrescaler(IWDG_Prescaler_256);
+//	IWDG_SetReload(0xFF);
+//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
+	Init_TOUCHGPIO();
     while(1)
     {    
         halt();
-		IWDG_ReloadCounter() ;
+//		IWDG_ReloadCounter() ;
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
+	   if(flag_touch)Key_TouchtLeave();
 	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
 	   {
 		 switch(keyval)
@@ -314,7 +323,9 @@ void main()
 		
 		
 	   }	  		
-    }   
+    
+	
+	}   
     
 }
  

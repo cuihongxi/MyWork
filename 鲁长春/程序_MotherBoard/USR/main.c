@@ -23,7 +23,8 @@ bool			is_suc 		= (bool)FALSE;			// 设置是否成功
 u8 			beepTimes 	= 0;				// 蜂鸣器响的次数
 u32 			beepdelayon 	= 0;				// 蜂鸣器响的时间
 u32 			beepdelayoff 	= 0;				// 蜂鸣器关闭的时间
-
+u16				nrf_sleeptime 	= DJ_SLEEP_TIME;
+u16				nrf_worktime	= DJ_WORK_TIME;
 extern u32 		counter_BH;			// BH计数
 extern u8 		flag_no30;
 extern keyStr 		key_AM;
@@ -151,12 +152,12 @@ void FunInSleap()
 		LEN_GREEN_Close();
 	}
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,500)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,nrf_sleeptime)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
 	}
-	if(Juge_counter(&NRFpowoff,40)) 
+	if(Juge_counter(&NRFpowoff,nrf_worktime)) 
 	{
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
