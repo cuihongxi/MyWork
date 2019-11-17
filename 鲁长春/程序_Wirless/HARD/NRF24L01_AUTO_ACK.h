@@ -47,7 +47,7 @@ typedef struct PRXStr{
 }Nrf24l01_PRXStr;
 
 #define		NRF_GPIO_IRQMODE		GPIO_Mode_In_PU_IT	// 上拉带中断
-#define		REUSE_TIMES			10			// 发送模式，发送不成功时重发的次数
+
 /**
  * IRQ中断功能配置
  */

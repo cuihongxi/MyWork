@@ -8,23 +8,23 @@ extern	u8		is_DM;
 void FlashData_Init()
 {
 	FLASH_Unlock(FLASH_MemType_Data); 					// 解锁EEPROM
-	if(FLASH_ReadByte(EEPROM_FLASH_INIT) != FLASH_INIT_DATA)		//如果没有被初始化就初始化FLASH
-	{
-		FLASH_ProgramByte(EEPROM_FLASH_INIT,FLASH_INIT_DATA);	
-		FLASH_ProgramByte(ADDR_DM,NO_DM);				//默认关闭，AM
-                FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS1[0]);
-                FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS1[1]);
-                FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
-                FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS1[3]);
-                FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
-                
-	}
+//	if(FLASH_ReadByte(EEPROM_FLASH_INIT) != FLASH_INIT_DATA)		//如果没有被初始化就初始化FLASH
+//	{
+//		FLASH_ProgramByte(EEPROM_FLASH_INIT,FLASH_INIT_DATA);	
+//		FLASH_ProgramByte(ADDR_DM,NO_DM);				//默认关闭，AM
+//                FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS1[0]);
+//                FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS1[1]);
+//                FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
+//                FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS1[3]);
+//                FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
+//                
+//	}
         ADDRESS2[0] = FLASH_ReadByte(EEPROM_ADDRESS0);
         ADDRESS2[1] = FLASH_ReadByte(EEPROM_ADDRESS1);
         ADDRESS2[2] = FLASH_ReadByte(EEPROM_ADDRESS2);
         ADDRESS2[3] = FLASH_ReadByte(EEPROM_ADDRESS3);
         ADDRESS2[4] = FLASH_ReadByte(EEPROM_ADDRESS4);
-	is_DM = FLASH_ReadByte(ADDR_DM);
+
         
 }
 

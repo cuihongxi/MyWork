@@ -94,9 +94,9 @@ u8  Keyscan()
                                 {								
                                     case 0x30: return(KEY_VAL_MOTY);	 
                                         break;
-                                    case 0x50: return(KEY_VAL_I100);
+                                    case 0x50: debug("I100\r\n");return(KEY_VAL_I100);
                                         break;
-                                    case 0x60: Y30_time = systime;return(KEY_VAL_Y30);
+                                    case 0x60: Y30_time = systime;debug("Y30\r\n");return(KEY_VAL_Y30);
                                         break;
 
                                 };
@@ -110,7 +110,7 @@ u8  Keyscan()
                                 {
                                      case 0x30: return(KEY_VAL_MOTZ);
                                         break;
-                                    case 0x50: return(KEY_VAL_I60);
+                                    case 0x50: debug("I60\r\n");return(KEY_VAL_I60);
                                         break;
                                     case 0x60: POW_CA_time = systime;return(KEY_VAL_POW_CA);
                                         break;
@@ -125,7 +125,7 @@ u8  Keyscan()
                                 {
                                     case 0x30: DM_time = systime;return (KEY_VAL_DUIMA);
                                         break;
-                                    case 0x50: I30_time = systime;return(KEY_VAL_I30);	
+                                    case 0x50: I30_time = systime;debug("I30\r\n");return(KEY_VAL_I30);	
                                         break;
                                     case 0x60: AM_time = systime;return(KEY_VAL_AM);
                                         break;
@@ -150,7 +150,7 @@ void Key_ScanLeave()
 	
 	if(keyval == KEY_VAL_AM)
 	{
-	    if((systime - AM_time) > 3000)
+	    if((systime - AM_time) > DELAY_TIME)
 	    {
 			//debug("切换AM\r\n");	
 			NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM);//NRF发送AM命令
@@ -159,7 +159,7 @@ void Key_ScanLeave()
 	}  
 	if(keyval == KEY_VAL_POW_CA)
 	{
-	    if((systime - POW_CA_time) > 3000)
+	    if((systime - POW_CA_time) > DELAY_TIME)
 	    {
 			flag_funPOW_CA= ~flag_funPOW_CA;
 			debug("POW_CA\r\n");
@@ -172,7 +172,7 @@ void Key_ScanLeave()
 	
 	if(keyval == KEY_VAL_Y30)
 	{
-	    if((systime - Y30_time) > 3000)
+	    if((systime - Y30_time) > DELAY_TIME)
 	    {
 			//debug("Y30取消\r\n");
 			NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CLEAR); 
@@ -181,7 +181,7 @@ void Key_ScanLeave()
 	} 
 	if(keyval == KEY_VAL_I30)
 	{
-	    if((systime - I30_time) > 3000)
+	    if((systime - I30_time) > DELAY_TIME)
 	    {
 			//debug("开窗报警\r\n");
 			NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM); 

@@ -151,12 +151,12 @@ void FunInSleap()
 		LEN_GREEN_Close();
 	}
 #if	USE_NRF > 0	
-	if(Juge_counter(&NRFpowon,200)) 				//nrf间隔打开电源,ms
+	if(Juge_counter(&NRFpowon,500)) 				//nrf间隔打开电源,ms
 	{
 		NRF24L01_PWR(1);
 		NRFpowoff.start = 1;
 	}
-	if(Juge_counter(&NRFpowoff,20)) 
+	if(Juge_counter(&NRFpowoff,40)) 
 	{
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;

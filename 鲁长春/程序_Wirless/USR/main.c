@@ -12,6 +12,7 @@
 #include "stmflash.h"
 #include "UDATA.H"
 #include "stm8l15x_rtc.h"
+#include "stm8l15x_iwdg.h"
 
 #define		PRESS_Y30	0X01
 #define		PRESS_MOTZ	0X02
@@ -89,7 +90,7 @@ void Make_SysSleep()
     	//debug(" Sleep \r\n");
 
 	NRF24L01_PWR(0); 						// 关闭NRF的电源
-	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);		// 关闭SPI时钟
+
 	CLK_LSICmd(ENABLE);						// 使能LSI
 	CLK_RTCClockConfig(CLK_RTCCLKSource_LSI, CLK_RTCCLKDiv_1);  	// RTC时钟源LSI，
 	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	// 等待LSI就绪
@@ -123,16 +124,19 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 //保存地址到flash
 void SaveFlashAddr(u8* buf)
 {
+  #if  DEBUG_LEVEL == 0
   ADDRESS2[0] = buf[0];
   ADDRESS2[1] = buf[1];
   ADDRESS2[2] = buf[2];
   ADDRESS2[3] = buf[3];
   ADDRESS2[4] = buf[4];
+
   FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS2[0]);
   FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS2[1]);
   FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS2[2]);
   FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS2[3]);
   FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS2[4]);
+#endif
 }
 
 // 清除DM
@@ -198,15 +202,21 @@ void DM_Mode()
 	  InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
       NRF24L01_GPIO_Lowpower();     
 }
+
+void NRF24L01_RESUSE()
+{
+ // NRF24L01_PWR(1);
+	NRF_AutoAck_TxPacket(&ptx,ptx.txbuf,7);
+}
 void main()
 {    
 
 	Key_GPIO_Init();
 	UART_INIT(115200);	
-#if  DEBUG_LEVEL == 0
+//#if  DEBUG_LEVEL == 0
     FlashData_Init();
-    Init_LedGPIO();    
-#endif
+   // Init_LedGPIO();    
+//#endif
 	
     address = ADDRESS2;
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
@@ -214,10 +224,17 @@ void main()
 		
 	NRF_CreatNewAddr(ADDRESS3);
     NRF24L01_GPIO_Lowpower();
-    Make_SysSleep();
+	Make_SysSleep();
+	
+	IWDG_Enable();
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+	IWDG_SetPrescaler(IWDG_Prescaler_256);
+	IWDG_SetReload(0xFF);
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
     while(1)
     {    
         halt();
+		IWDG_ReloadCounter() ;
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
 	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
@@ -230,7 +247,7 @@ void main()
                        if(systime<=presstime)
                        {
                          switch(pressKey){
-                             case PRESS_Y30:	debug("延时30分钟");
+                             case PRESS_Y30:	//debug("延时30分钟");
 							 	NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_1);
                              break;
                              case PRESS_MOTZ:	//debug("马达关1/3");
@@ -248,7 +265,7 @@ void main()
                         if(systime<=presstime)
                        {                         
 						switch(pressKey){
-						 case PRESS_Y30:debug("延时60分钟");
+						 case PRESS_Y30://debug("延时60分钟");
 						   NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_2);
 						 break;
 						 case PRESS_MOTZ://debug("马达关2/3");
@@ -267,7 +284,8 @@ void main()
                        {
                          
 								switch(pressKey){
-                                 case PRESS_Y30:debug("延时90分钟");NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_3);
+                                 case PRESS_Y30://debug("延时90分钟");
+								   NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_3_3);
                                  break;
                                  case PRESS_MOTZ://debug("马达全关");
 								   NRF_SendCMD(&ptx,ADDRESS3,CMD_Z, MES_Z_3_3);
@@ -291,8 +309,10 @@ void main()
 		   
 		 }
 		 if(keyval != KEY_VAL_Y30 && keyval != KEY_VAL_I30) keyval = KEY_VAL_NULL;
+		 
+		 
 		
-		//debug("\r\n");
+		
 	   }	  		
     }   
     
