@@ -16,6 +16,7 @@ TaskStr* 		taskAlarm   	={0};
 JugeCStr 		beep 		= {0};
 JugeCStr 		NRFpowon 	= {0};
 JugeCStr 		NRFpowoff 	= {0};
+JugeCStr 		NRFsleep 	= {0};
 
 u32 			systime 	= 0;				// 保存系统时间，ms
 u8 			ledSharpTimes 	= 0;				// 控制LED闪烁次数
@@ -25,6 +26,9 @@ u32 			beepdelayon 	= 0;				// 蜂鸣器响的时间
 u32 			beepdelayoff 	= 0;				// 蜂鸣器关闭的时间
 u16				nrf_sleeptime 	= DJ_SLEEP_TIME;
 u16				nrf_worktime	= DJ_WORK_TIME;
+u16				led_ontime		= TIM_LED_SHARP_ON;
+u16				led_offtime		= TIM_LED_SHARP_OFF;
+
 extern u32 		counter_BH;			// BH计数
 extern u8 		flag_no30;
 extern keyStr 		key_AM;
@@ -139,7 +143,7 @@ void FunInSleap()
 	}
 	
 	if(Juge_counter(&beep,130)) BeepStop();			// 按键蜂鸣器BEEP
-	LedSharpInIT(&ledSharpTimes,is_suc,systime,TIM_LED_SHARP_ON,TIM_LED_SHARP_OFF);	// 设置时，LED闪烁控制
+	LedSharpInIT(&ledSharpTimes,is_suc,systime,led_ontime,led_offtime);	// 设置时，LED闪烁控制
 	BeepInIT(&beepTimes,systime,beepdelayon,beepdelayoff);	// 设置时，beep控制
 	
 	if(Juge_counter(&jugeWindows,TIM__YS_D))
@@ -162,6 +166,13 @@ void FunInSleap()
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
 	}
+	
+	if(Juge_counter(&NRFsleep,10000)) 
+	{
+	  debug("SLEEP\r\n");
+		nrf_sleeptime = DJ_SLEEP_TIME;
+		nrf_worktime = DJ_WORK_TIME;
+	}	
 #endif
 }
 
@@ -196,7 +207,7 @@ void main()
 	NRF_CreatNewAddr(ADDRESS2);
 
 #endif
-	NRF24L01_GPIO_Lowpower();
+	NRF24L01_PWR(0);
 	CheckWindowState();
   	Key_GPIO_Init();							// 触摸按键初始化	
 	while(1)
@@ -225,9 +236,9 @@ void main()
 		    while( GPIO_READ(CHARGE_PRO_PIN) != RESET)
 		    {
 		    	float val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
-			if(val >= VALVE_BAT_CHARGE){LEN_RED_Close();LEN_GREEN_Open();}
-			else {LEN_GREEN_Close();LEN_RED_Open();}
-			delay_ms(100);		    
+				if(val >= VALVE_BAT_CHARGE){LEN_RED_Close();LEN_GREEN_Open();}
+				else {LEN_GREEN_Close();LEN_RED_Open();}
+				delay_ms(100);		    
 		    }
 		   WWDG_SWReset();	// 复位
 		}

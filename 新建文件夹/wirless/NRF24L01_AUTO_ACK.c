@@ -70,6 +70,10 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		ptx->reuse_times --;
 		NRF24L01_RESUSE(ptx,ptx->txbuf,ptx->txlen);// 重发
 	}
+	else 
+	{
+		NRF24L01_PWR(0);
+	}
 }
 
 //发射模式自动接收完成回调函数
@@ -85,6 +89,9 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 //				debug(" %d ",ptx->rxbuf[i]);
 //			  }   
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
+		//NRF24L01_PWR(0);
+				//NRF24L01_ClearFIFO();
+
 		NRF24L01_PWR(0);
 }
 
@@ -108,6 +115,9 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		ptx->flag_sendfinish = TRUE;
 		//debug("send OK");
 	}
+	//NRF24L01_ClearFIFO();
+
+	NRF24L01_PWR(0);
 }
 
 //发射中断回调函数

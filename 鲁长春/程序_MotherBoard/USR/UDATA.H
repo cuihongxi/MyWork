@@ -54,10 +54,10 @@
 #define 		DEBUG_LEVEL 		1	// 串口调试接口
 
 #define         DM_NUM              10     	//对码次数，超过次数没对码成功，退出对码模式 
-#define			DJ_SLEEP_TIME		1800	//ms,NRF待机睡眠时间
-#define			DJ_WORK_TIME		40		//ms,NRF待机工作时间
-#define			GZ_SLEEP_TIME		40		//ms,NRF工作睡眠时间
-#define			GZ_WORK_TIME		100		//ms,NRF工作工作时间
+#define			DJ_SLEEP_TIME		1200	//ms,NRF待机睡眠时间
+#define			DJ_WORK_TIME		20		//ms,NRF待机工作时间
+#define			GZ_SLEEP_TIME		200		//ms,NRF工作睡眠时间
+#define			GZ_WORK_TIME		20		//ms,NRF工作工作时间
 
 
 #endif

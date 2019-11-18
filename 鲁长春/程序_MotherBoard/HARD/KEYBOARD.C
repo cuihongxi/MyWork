@@ -47,6 +47,8 @@ extern	u8			flag_BH;
 extern 	u8			flag_YS_isno;
 extern 	u16				nrf_sleeptime 	;
 extern 	u16				nrf_worktime	;
+extern 	u16				led_ontime		;
+extern 	u16				led_offtime		;
 void BeepStart()
 {
 	beep.start = 1;
@@ -61,6 +63,8 @@ void BeepStart()
 void StateSuccess()
 {
 		ledSharpTimes = 12;
+		led_ontime = TIM_LED_SHARP_ON;
+		led_offtime = TIM_LED_SHARP_OFF;
 		is_suc = (bool)TRUE;
 		beepTimes = 2;
 		beepdelayoff = 200;
@@ -71,6 +75,8 @@ void StateSuccess()
 void StateFalse()
 {
 		ledSharpTimes = 12;
+		led_ontime = TIM_LED_SHARP_ON;
+		led_offtime = TIM_LED_SHARP_OFF;
 		beepTimes = 2;
 		beepdelayon = 500;
 		beepdelayoff = 10;
@@ -99,11 +105,16 @@ void SwitchAM()
 		}
 		AM_Risingtime = 0;
 		ledSharpTimes = 12;
+		led_ontime = TIM_LED_SHARP_ON;
+		led_offtime = TIM_LED_SHARP_OFF;
 }
 // 指示当前AM状态
 void ShowAMState()
 {
-	ledSharpTimes = 10;
+  debug("ShowAMState\r\n");
+	ledSharpTimes = 2;
+	led_ontime = 2000;
+	led_offtime = TIM_LED_SHARP_OFF;
 	if(key_AM.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
@@ -140,7 +151,9 @@ void SwitchY30()
 // 指示当前Y30状态
 void ShowY30State()
 {
-	ledSharpTimes = 10;
+	ledSharpTimes = 2;
+	led_ontime = 2000;
+	led_offtime = 100;
 	if(key_Y30.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
 }
@@ -156,8 +169,11 @@ void Key_ScanLeave()
 		if(GPIO_READ(GPIO_Y30) ==RESET)
 		{
 			if((systime - Y30_Risingtime) > TIM_Y30_DELAY) SwitchY30();
-			else ShowY30State();		//LED显示当前Y30状态
-		}else Y30_Risingtime = 0;
+		}else 
+		{
+		  	if((systime - Y30_Risingtime) < TIM_Y30_DELAY) ShowY30State();		//LED显示当前Y30状态
+			Y30_Risingtime = 0;
+		}
     }
     
     if(AM_Risingtime != 0)
@@ -165,9 +181,14 @@ void Key_ScanLeave()
 		if(GPIO_READ(GPIO_AM) == RESET)
 		{
 			if((systime - AM_Risingtime) > TIM_Y30_DELAY) SwitchAM();
-			else ShowAMState();			//LED显示当前AM状态
 		}
-		else AM_Risingtime = 0;
+		else 
+		{
+		  
+		  if((systime - AM_Risingtime) < TIM_Y30_DELAY) ShowAMState();			//LED显示当前AM状态;
+			AM_Risingtime = 0;
+			
+		}
     }
      
 	if(DM_Risingtime != 0 && GPIO_READ(GPIO_DM))
@@ -294,6 +315,8 @@ void KeyFun()
 						key_DM.val = off;
 						debug("马达对换引脚\r\n");
 						ledSharpTimes = 12;
+						led_ontime = TIM_LED_SHARP_ON;
+						led_offtime = TIM_LED_SHARP_OFF;
 						is_suc = (bool)TRUE;
 						beepTimes = 2;
 						beepdelayoff = 200;
@@ -334,6 +357,8 @@ void ChangeNRFCmd(u8* buf)
 				ys_timer30 = TIM_30;
 				Y30_Risingtime = 0;
 				ledSharpTimes = 2;
+				led_ontime = TIM_LED_SHARP_ON;
+				led_offtime = TIM_LED_SHARP_OFF;
 				is_suc = (bool)TRUE;
 				beepTimes = 2;
 				beepdelayoff = 200;
@@ -346,6 +371,8 @@ void ChangeNRFCmd(u8* buf)
 				YS_30.start = 1;
 				YS_30.counter = 0;
 				ledSharpTimes = 4;
+				led_ontime = TIM_LED_SHARP_ON;
+				led_offtime = TIM_LED_SHARP_OFF;
 				is_suc = (bool)TRUE;
 				ys_timer30 = TIM_30*4;
 				Y30_Risingtime = 0;
@@ -360,6 +387,8 @@ void ChangeNRFCmd(u8* buf)
 				YS_30.start = 1;
 				YS_30.counter = 0;
 				ledSharpTimes = 6;
+				led_ontime = TIM_LED_SHARP_ON;
+				led_offtime = TIM_LED_SHARP_OFF;
 				is_suc = (bool)TRUE;
 				ys_timer30 = TIM_30*8;
 				Y30_Risingtime = 0;
@@ -411,14 +440,11 @@ void ChangeNRFCmd(u8* buf)
       case CMD_WAKE:
 		if(buf[6] == MES_WAKE_UP)
 		{
-		  	debug("MES_WAKE_UP\r\n");
-				nrf_sleeptime = GZ_SLEEP_TIME;
-				nrf_worktime = GZ_SLEEP_TIME;
+		  	debug("WAKE_UP~~\r\n");
 		}else
+		  if(buf[6] == MES_WAKE_SLEEP)
 		{
-		  debug("MES_SLEEP\r\n");
-				nrf_sleeptime = DJ_SLEEP_TIME;
-				nrf_worktime = DJ_SLEEP_TIME;		
+		  		debug("WAKE_UP~~~\r\n");
 		}
     break;    
   }
@@ -441,22 +467,18 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		}else
 		if(GPIO_READ(GPIO_AM) == RESET)
 		{
-			//ScanKey(&key_AM);
 		    	AM_Risingtime = systime;
 			key_val = KEY_VAL_AM;
-			//debug("key_val = KEY_VAL_AM，%lu\r\n",AM_Risingtime);
 		}else
 		if(GPIO_READ(GPIO_Y30) == RESET)
 		{
-			Y30_Risingtime =systime;//ScanKey(&key_Y30);		//保存按下的时刻
+			Y30_Risingtime =systime;
 			debug("Y30_Risingtime = %lu\r\n",Y30_Risingtime);
 			key_val = KEY_VAL_Y30;
 		}
 		if(key_val)
 		{
 			flag_exti = 1;   
-			//signal_key = 1;
-			//debug("key_val = %d\r\n",key_val);
 		}	
     }
 

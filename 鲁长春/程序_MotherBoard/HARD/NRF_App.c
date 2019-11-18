@@ -18,7 +18,9 @@ extern  TaskStr* 	        taskNRF	            ;
 extern  TaskLinkStr* 		tasklink            ;
 extern  JugeCStr 		    NRFpowon 	        ;
 extern  JugeCStr 		    NRFpowoff 	        ;
-
+extern  JugeCStr 			NRFsleep;
+extern 	u16					nrf_sleeptime 	;
+extern 	u16					nrf_worktime	;
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);
 void NRFReceived();
 bool JugeRX();
@@ -87,6 +89,12 @@ void NRFReceived()
 //		  }		
 //		debug("\r\n------\r\n\r\n");
 		//根据收到的字节，映射出相应的控制命令
+	   debug("WAKE_UP\r\n");
+	   NRF24L01_ClearFIFO();
+		nrf_sleeptime = GZ_SLEEP_TIME;
+		nrf_worktime = GZ_WORK_TIME;
+		NRFsleep.start = 1;
+		NRFsleep.counter = 0;
 		ChangeNRFCmd(RXprx.rxbuf);
 		RXprx.hasrxlen = 0;
 	}

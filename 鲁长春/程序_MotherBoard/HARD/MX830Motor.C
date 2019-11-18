@@ -275,7 +275,13 @@ bool YS_MotorProtect()	//电机转动保护，充电保护，BH方波保护，Y30延时,关窗到限位
 	}
 	return juge;
 }
-
+void ZY()
+{
+	if(BoolOpenEdge() || BoolShutEdge())
+	{
+		Motor_RunFORWARD();
+	}
+}
 void WindowStateShutDown()
 {
 	windowstate = SHUTDOWN;
@@ -421,7 +427,7 @@ void MotorControl()
 				}
 
 			//	debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);
-				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectZ);	// 正转1秒
+				OS_AddJudegeFunction(taskMotor,ZY,TIM_MOTOR_Z, MotorSysProtectZ);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);		// 移除任务	
@@ -459,7 +465,7 @@ void MotorControl()
 				}					
 		
 				//debug("motorStruct.hasrun =%d,motorStruct.needrun =%d\r\n",motorStruct.hasrun,motorStruct.needrun);
-				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectY);	// 正转1秒
+				OS_AddJudegeFunction(taskMotor,ZY,TIM_MOTOR_Z, MotorSysProtectY);	// 正转1秒
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
 				OS_AddFunction(taskMotor,MotorHoldNoRunBack,TIM_SHACHE);// 刹车
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	

@@ -21,6 +21,8 @@ extern 		Nrf24l01_PTXStr 	ptx;
 extern 		u8 					pressKey;
 extern 		u8	                flag_duima;
 extern 		u8					LEDtimes;
+extern 		u32					sendtime;
+
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
 void DM_Mode();
 void ClearDM();// 清除DM
@@ -144,13 +146,17 @@ u8  Keyscan()
 //触摸松手检测
 void Key_TouchtLeave()
 {
-  
+
 	if(GPIO_READ(TOUCH_IO) == RESET)
 	{
 		GPIO_SET(Z_LED);
 		flag_touch = 0;
 		NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_SLEEP);
-	}
+	}else
+  	if((systime - sendtime)>=9000)
+	{
+		NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
+	}	  
 	  
 }
 //松手程序
@@ -292,10 +298,10 @@ INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
   if(flag_touch == 0)
    {
    	    if(GPIO_READ(TOUCH_IO)) 
-		{
-			flag_touch = 1;  
+		{ 
 			GPIO_RESET(Z_LED);
-			NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
+			 NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
+			 flag_touch = 1; 
 		}
    } 	
  	EXTI_ClearITPendingBit (EXTI_IT_Pin5);

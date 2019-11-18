@@ -101,11 +101,6 @@ u8 SPI2_ReadWriteByte(unsigned char date)
 void NRF24L01_GPIO_Lowpower(void)
 {
     GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_No_IT);      		//,当IRQ为低电平时为中断触发
-//    GPIO_Init(NRF24L01_CSN_PIN,GPIO_Mode_Out_PP_High_Fast);     		//SPI片选取消    
-//    GPIO_Init(NRF24L01_CE_PIN,NRF_GPIO_OUTPUTMODE);       	//使能24L01
-//    GPIO_Init(MOSI_PIN,NRF_GPIO_OUTPUTMODE);    
-//    GPIO_Init(MISO_PIN,NRF_GPIO_INPUTMODE);
-//    GPIO_Init(SCLK_PIN,NRF_GPIO_OUTPUTMODE);	
     CSN_OUT_1;
     CE_OUT_0;
     MOSI_OUT_0;
@@ -113,10 +108,7 @@ void NRF24L01_GPIO_Lowpower(void)
     
 }
 
-void NRF24L01_GPIO_Work(void)
-{
-    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_IT);      		//,当IRQ为低电平时为中断触发
-}
+
 	  
 //初始化24L01的IO口
 void NRF24L01_GPIO_Init(void)
@@ -147,6 +139,12 @@ void NRF24L01_GPIO_Init(void)
  
 
 
+}
+
+void NRF24L01_GPIO_Work(void)
+{
+    NRF24L01_GPIO_Init();
+    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_IT);      		//,当IRQ为低电平时为中断触发
 }
 
 //使能DPL动态长度
@@ -301,7 +299,15 @@ void NRF24L01_RX_Mode(void)
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
        // CE_OUT_1; 
        // DELAY_130US(); //从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us
-}						 
+}		
+
+void NRF24L01_ClearFIFO(void)
+{	
+        CE_OUT_0; 
+        NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
+		NRF24L01_Write_Reg(FLUSH_RX,0x00);	        //清除rX_FIFO寄存器 
+		//CE_OUT_1; 
+}
 //该函数初始化NRF24L01到TX模式
 //设置TX地址,写TX数据宽度,设置RX自动应答的地址,填充TX发送数据,选择RF频道,波特率和LNA HCURR
 //PWR_UP,CRC使能

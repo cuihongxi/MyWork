@@ -112,10 +112,8 @@ void NRF24L01_GPIO_Lowpower(void)
     
 }
 
-void NRF24L01_GPIO_Work(void)
-{
-    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_IT);      		//,当IRQ为低电平时为中断触发
-}
+
+
 	  
 //初始化24L01的IO口
 void NRF24L01_GPIO_Init(void)
@@ -147,7 +145,11 @@ void NRF24L01_GPIO_Init(void)
 
 
 }
-
+void NRF24L01_GPIO_Work(void)
+{
+    NRF24L01_GPIO_Init();
+    GPIO_Init(NRF24L01_IRQ_PIN,GPIO_Mode_In_PU_IT);      		//,当IRQ为低电平时为中断触发
+}
 //使能DPL动态长度
 //pipNum 通道号
 void NRF24L01_EnabelDPL(u8 pipNum)
@@ -317,6 +319,15 @@ void NRF24L01_TX_Mode(void)
    //     CE_OUT_1;
  //       DELAY_130US();//从CE = 0 到 CE = 1；即待机模式到收发模式，需要最大130us	
     //  CE_OUT_0; 
+}
+
+void NRF24L01_ClearFIFO(void)
+{	
+        CE_OUT_0; 
+        NRF24L01_Write_Reg(FLUSH_TX,0x00);	        	//清除TX_FIFO寄存器 
+		NRF24L01_Write_Reg(FLUSH_RX,0x00);	        	//清除rX_FIFO寄存器 
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff); 	//清除中断标志
+		//CE_OUT_1; 
 }
 
 //1打开0关闭电源

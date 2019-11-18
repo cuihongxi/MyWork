@@ -13,6 +13,7 @@
 #include "UDATA.H"
 #include "stm8l15x_rtc.h"
 #include "stm8l15x_iwdg.h"
+#include "stm8l15x_itc.h"
 
 #define		PRESS_Y30	0X01
 #define		PRESS_MOTZ	0X02
@@ -30,9 +31,6 @@ u8      RXtxbuf[7] = {0};
 u8      TXrxbuf[7] = {0};
 u8      TXtxbuf[7] = {0};
 
-
-
-u8      nrfaddr[5];
 u8 		keyval = 0;
 u8 		flag_wake = 1;
 u32 	systime = 0;
@@ -42,6 +40,8 @@ u8		is_DM = 0;		// 保存是否配对信息
 u8		flag_duima = 0;
 u8      DM_num = 0;
 u8		LEDtimes = 0;
+u32		sendtime = 0;
+
 extern 		u32 		DM_time;
 
 
@@ -97,7 +97,6 @@ void Make_SysSleep()
 	RTC_WakeUpCmd(DISABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);      	// RTC时钟门控使能
 	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
-	
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
 	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
@@ -110,6 +109,7 @@ void Make_SysSleep()
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
     NRF24L01_PWR(1);
+	NRF24L01_ClearFIFO();
     ptx->txbuf[0] = addr[0];
     ptx->txbuf[1] = addr[1];
     ptx->txbuf[2] = addr[2];
@@ -117,6 +117,8 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     ptx->txbuf[4] = addr[4];
     ptx->txbuf[5] = cmd;
     ptx->txbuf[6] = mes;
+	sendtime = systime;
+	GPIO_RESET(T_LED);
     NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
@@ -233,16 +235,17 @@ void main()
     NRF24L01_GPIO_Lowpower();
 	Make_SysSleep();
 	
-//	IWDG_Enable();
-//	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-//	IWDG_SetPrescaler(IWDG_Prescaler_256);
-//	IWDG_SetReload(0xFF);
-//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
+	IWDG_Enable();
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+	IWDG_SetPrescaler(IWDG_Prescaler_256);
+	IWDG_SetReload(0xFF);
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
 	Init_TOUCHGPIO();
+
     while(1)
     {    
         halt();
-//		IWDG_ReloadCounter() ;
+		
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
 	   if(flag_touch)Key_TouchtLeave();
@@ -339,7 +342,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
           DM_num--;
           if(DM_num == 0)flag_duima = 0;
         }
-		//SharpLED(Z_LED,&LEDtimes);
+		IWDG_ReloadCounter() ;
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 

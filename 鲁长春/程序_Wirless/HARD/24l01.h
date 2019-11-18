@@ -198,7 +198,7 @@ void NRF_CreatNewAddr(u8* addr);//依据唯一ID，产生一个新地址
 void NRF24L01_GPIO_Lowpower(void);
 /********************2019年11月16日增加函数*********************************/
 void NRF24L01_RESUSE_TX();	// 重发上一包数据
-
+void NRF24L01_ClearFIFO(void);
 #endif
 
 
