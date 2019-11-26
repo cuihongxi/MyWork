@@ -17,7 +17,7 @@ u16 GetNetPort(char* str);									// 获取端口号,要保证是严格的 ip:port 格式的字
 bool CampareCMD(char* str,char* cmd);						// 首部匹配字符串,去掉匹配的首部和回车换行，生成新的字符串
 void ChangeHex2Str(u8* hexbuf,u32 len);						// 将16进制转换成字符串,保存到hexbuf中，hexbuf 的大小至少是len*2+1
 u32 GetStringByteNum(const char* str);						// 获得字符串的字节个数
-
+bool CampareString(char* str1,char* str2);					// 比较两个字符串是否相等
 
 
 #endif

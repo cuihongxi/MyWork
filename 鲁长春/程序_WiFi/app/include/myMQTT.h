@@ -156,7 +156,7 @@ typedef struct _SessionStr{
 	void(*DisConnect)(struct _SessionStr*)					;			// 与服务器断开连接
 	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
 	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
-	void(*AddSubscribe)(struct _SessionStr*,char*,u8);	// 添加主题订阅，之后需要调用订阅主题
+	void(*AddSubscribe)(struct _SessionStr*, char*, u8);	// 添加主题订阅，之后需要调用订阅主题
 
 }SessionStr;
 

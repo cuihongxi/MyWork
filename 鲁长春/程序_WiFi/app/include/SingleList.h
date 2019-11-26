@@ -32,7 +32,7 @@ unsigned int SingleList_InsertEnd(SingleList* list, SingleListNode* node);	// 链
 SingleListNode* SingleList_DeleteNode(SingleList* list, SingleListNode* node);
 SingleListNode* SingleList_Iterator(SingleListNode** node);					// 迭代器,如果有下一个则返回下一个指针，否则返回 0
 void FreeSingList(SingleList* list);										// 释放链表
-
-#define		SingeListGetnode(type,nodehead)		(*(type*)(((SingleListNodeStr*)nodehead)->node))
+void SingleList_MoveEndNode(SingleList* list, SingleListNode* node);	// 将节点移到最后面
+#define		SingeListGetnode(type,nodehead)		((type*)(((SingleListNodeStr*)nodehead)->node))
 
 #endif

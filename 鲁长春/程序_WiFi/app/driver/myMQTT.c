@@ -95,7 +95,7 @@ void ICACHE_FLASH_ATTR  FixSubscribePayload(ControlStr* cs,SessionStr* ss)
 
 	SingleListNode* nod = (SingleListNode*)ss->subList;
 	while(((SingleListNodeStr*)SingleList_Iterator(&nod))->next);		// 取出最后一个链表节点
-	u16 len = GetStringByteNum(SingeListGetnode(subStr,nod)->subname);
+	u16 len = GetStringByteNum((const char*)(SingeListGetnode(subStr,nod)->subname));
 	cs->payload.length = 3 + len;
 	cs->payload.pdat =  (u8*)mymalloc(cs->payload.length);
 	Str2ByteSector(SingeListGetnode(subStr,nod)->subname,cs->payload.pdat);
@@ -155,8 +155,17 @@ DataMessageStr*  ICACHE_FLASH_ATTR  myMQTT_CreatControlMessage(ControlStr* messa
 	pdat += message->variableHeader.length;
 	//拷贝有效载荷
 	memcpy(pdat,message->payload.pdat,message->payload.length);
-	Free_ControlMessage(message);		//释放控制报文结构体内存
 
+//	debug("MQTT:\r\n");
+//	u16 j = 0;
+//	for( j = 0; j<dataMessage->length;j++)
+//	{
+//			debug("%x	",dataMessage->pdat[j]);
+//
+//	}
+//	debug(" <-MQTT end------------------------------>\r\n");
+
+	Free_ControlMessage(message);		//释放控制报文结构体内存
 	return dataMessage;
 }
 
@@ -196,6 +205,10 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 		case PINGRESP:
 			if(pdata[1] == 0) debug("收到PING回复...\r\n");
 			else debug("PING回复出错...\r\n");
+			break;
+		case SUBACK:	//订阅主题回复
+			if(pdata[1] == 0x80)	debug("订阅报文：%d 失败\r\n",pdata[3]|((u16)pdata[2]<<8));//订阅失败
+			else debug("订阅报文：%d 成功\r\n",pdata[3]|((u16)pdata[2]<<8));//订阅失败
 			break;
 	}
 

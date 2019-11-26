@@ -18,10 +18,25 @@ void ICACHE_FLASH_ATTR myMQTTConnect(SessionStr* ss)
 // 添加订阅主题报文
 void ICACHE_FLASH_ATTR myMQTTAddSubscribe(SessionStr* ss,char* sub,u8 reqQos)
 {
-	subStr* su = (subStr*)malloc(1 + strlen(sub));
-	memcpy(su->subname,sub,strlen(sub));
-	su->reqQos = reqQos;
-	SingleList_InsertEnd(ss->subList,su);
+	//查找订阅链表中有没有该订阅
+	SingleListNode* nod = (SingleListNode*)ss->subList;
+	while(SingleList_Iterator(&nod))
+	{
+		if(CampareString(sub,SingeListGetnode(subStr,nod)->subname))
+			{
+				debug("已经订阅过的主题\r\n");
+				SingleList_MoveEndNode(ss->subList,nod);
+				return;
+			}
+	}
+	if(nod == 0)
+	{
+		subStr* su = (subStr*)malloc(sizeof(subStr));
+		su->subname = (u8*)malloc(1 + strlen(sub));
+		memcpy(su->subname,sub,strlen(sub));
+		su->reqQos = reqQos;
+		SingleList_InsertEnd(ss->subList,su);
+	}
 }
 
 // 订阅主题报文
@@ -55,6 +70,6 @@ void ICACHE_FLASH_ATTR  myMQTT_SessionStrDefaultInit(SessionStr* ss,char* url,u1
 	ss->espconn = &ST_NetCon;
 	ss->subList = NewSingleList();
 	ss->AddSubscribe = myMQTTAddSubscribe;
-//	ss->Subscribe =
+	ss->Subscribe = myMQTTSubscribe;
 }
 

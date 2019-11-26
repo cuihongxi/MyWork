@@ -89,7 +89,7 @@ void ICACHE_FLASH_ATTR Str_Insert(char* sor,char* str,u32 position)
 }
 
 //首部匹配字符串,去掉匹配的首部和回车换行，生成新的字符串
-bool  CampareCMD(char* str,char* cmd)
+bool ICACHE_FLASH_ATTR CampareCMD(char* str,char* cmd)
 {
 	u8 i = 0;
 	u8 j = 0;
@@ -153,4 +153,17 @@ u32 ICACHE_FLASH_ATTR GetStringByteNum(const char* str)
 //	return i;
 	return strlen(str);
 
+}
+
+//比较两个字符串是否相等
+bool ICACHE_FLASH_ATTR CampareString(char* str1,char* str2)
+{
+	u16 i = 0;
+	//debug("str1: %s\r\n str2:%s\r\n",str1,str2);
+	for(i=0;str1[i]!=0;i++)
+	{
+		if(str1[i]^str2[i])return false;
+	}
+	if(str2[i] == 0) return true;
+	return false;
 }

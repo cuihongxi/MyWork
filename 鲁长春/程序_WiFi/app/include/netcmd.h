@@ -13,11 +13,11 @@
 #define		DIS_CONNECT			"disconnect"	// 断开与TCP_SERVER的连接
 #define		NET_CONNECT			"net:"			// 通过域名访问网址	net:www.baidu.com
 #define		HTTP_GET			"get:"			// HTTP get 请求
-#define		MQTT_CONNET			"qtc:"			// MQTT CONNECT报文
+#define		MQTT_CONNET			"qtc"			// MQTT CONNECT报文
 #define		MQTT_DISCON			"a_dis"			// MQTT DISCONNECT
 #define		MQTT_PING			"ping"			// PING
-
-
+#define		MQTT_ADDSUB			"addsub:"
+#define		MQTT_SUB			"subsend"
 /* 函数 */
 
 void Str_DelSpace(char* str);						// 字符串去掉空格，生成新的字符串
