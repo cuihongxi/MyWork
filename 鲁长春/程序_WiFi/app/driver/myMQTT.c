@@ -51,24 +51,8 @@ void ICACHE_FLASH_ATTR  FixHeader(ControlStr* cs,myMQTT_ControlType type)
 // 填充CONNECT报文可变报头
 void ICACHE_FLASH_ATTR  FixConnectVariableHeader(ControlStr* cs,SessionStr* ss)
 {
-	cs->variableHeader.pdat = malloc(10);
 	cs->variableHeader.length = 10;
-	cs->variableHeader.pdat[0] = 0;
-	cs->variableHeader.pdat[1] = 0x04;
-	cs->variableHeader.pdat[2] = 'M';
-	cs->variableHeader.pdat[3] = 'Q';
-	cs->variableHeader.pdat[4] = 'T';
-	cs->variableHeader.pdat[5] = 'T';
-	cs->variableHeader.pdat[6] = ss->protocolLevel;
-	cs->variableHeader.pdat[7] = ss->connectFlags;
-	cs->variableHeader.pdat[8] = ss->keepAlivetime >> 8;
-	cs->variableHeader.pdat[9] = (u8)(ss->keepAlivetime);
-}
-// 填充订阅报文可变报头
-void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss)
-{
-	cs->variableHeader.pdat = malloc(10);
-	cs->variableHeader.length = 10;
+	cs->variableHeader.pdat = malloc(cs->variableHeader.length);
 	cs->variableHeader.pdat[0] = 0;
 	cs->variableHeader.pdat[1] = 0x04;
 	cs->variableHeader.pdat[2] = 'M';
@@ -81,7 +65,7 @@ void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss
 	cs->variableHeader.pdat[9] = (u8)(ss->keepAlivetime);
 }
 
-// 填充报文有效载荷
+// 填充连接报文有效载荷
 void ICACHE_FLASH_ATTR  FixConnectPayload(ControlStr* cs,SessionStr* ss)
 {
 	cs->payload.length = GetStringByteNum(ss->clientId) + GetStringByteNum(ss->usrName) + GetStringByteNum(ss->passWord) +6;
@@ -94,19 +78,40 @@ void ICACHE_FLASH_ATTR  FixConnectPayload(ControlStr* cs,SessionStr* ss)
 	Str2ByteSector(ss->passWord ,p);
 }
 
+// 填充订阅报文可变报头
+void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss)
+{
+	cs->variableHeader.length = 2;
+	cs->variableHeader.pdat = malloc(cs->variableHeader.length);
+	cs->variableHeader.pdat[0] = (u8)((ss->subList->num)>>8);
+	cs->variableHeader.pdat[1] = (u8)(ss->subList->num);
+}
+
+
+
+// 填充订阅报文有效载荷
+void ICACHE_FLASH_ATTR  FixSubscribePayload(ControlStr* cs,SessionStr* ss)
+{
+
+	SingleListNode* nod = (SingleListNode*)ss->subList;
+	while(((SingleListNodeStr*)SingleList_Iterator(&nod))->next);		// 取出最后一个链表节点
+	u16 len = GetStringByteNum(SingeListGetnode(subStr,nod)->subname);
+	cs->payload.length = 3 + len;
+	cs->payload.pdat =  (u8*)mymalloc(cs->payload.length);
+	Str2ByteSector(SingeListGetnode(subStr,nod)->subname,cs->payload.pdat);
+	cs->payload.pdat[cs->payload.length - 1] = SingeListGetnode(subStr,nod)->reqQos;
+}
 
 /**
  * 创建报文
  */
 ControlStr* ICACHE_FLASH_ATTR  myMQTT_CreatMessage(SessionStr* ss)
 {
-	ControlStr* mControlStr = mymalloc(sizeof(ControlStr));
-	FixConnectVariableHeader(mControlStr,ss);				// 填充CONNECT报文可变报头
-	FixConnectPayload(mControlStr,ss);						// 填充CONNECT报文有效载荷
-	FixHeader(mControlStr,ss->messageType);	 				// 填充固定报头
-
-	return mControlStr;
-
+	ControlStr* cs = mymalloc(sizeof(ControlStr));
+	ss->FixVariableHeader(cs,ss);							// 填充报文可变报头
+	ss->FixPayload(cs,ss);									// 填充报文有效载荷
+	FixHeader(cs,ss->messageType);	 						// 填充固定报头
+	return cs;
 }
 
 

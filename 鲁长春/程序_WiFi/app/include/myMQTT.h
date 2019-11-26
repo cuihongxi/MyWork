@@ -11,6 +11,7 @@
  */
 #include "uhead.h"
 #include "mem.h"
+#include "SingleList.h"
 
 #define	 	my_malloc 	os_zalloc		//动态内存申请
 #define	 	myfree	    os_free			//释放
@@ -123,6 +124,10 @@ typedef struct{
 	u32 length;			//有效长度
 }DataMessageStr;
 
+typedef struct{
+	 u8* subname;		// 订阅主题
+	 u8 reqQos;			// 服务质量要求
+}subStr;				// 订阅主题结构体
 
 /**
  * 会话结构体
@@ -135,9 +140,10 @@ typedef struct _SessionStr{
 	char*  					usrName;
 	char*  					passWord;
 	u8  					connectFlags;		//连接标志
-	u16 					keepAlivetime;			//保存连接，秒
+	u16 					keepAlivetime;		//保存连接，秒
 	char*  					clientId;			//客户端标识符 , 客户端ID
 	myMQTT_ControlType 		messageType;		//报文类型
+	SingleList*				subList;			//订阅主题链表
 
 	void(*Connect)(struct _SessionStr*)		;			// 连接报文
 	void(*Disconnect)(struct _SessionStr*)	;			// 断开连接报文
@@ -150,6 +156,7 @@ typedef struct _SessionStr{
 	void(*DisConnect)(struct _SessionStr*)					;			// 与服务器断开连接
 	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
 	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
+	void(*AddSubscribe)(struct _SessionStr*,char*,u8);	// 添加主题订阅，之后需要调用订阅主题
 
 }SessionStr;
 
@@ -188,6 +195,9 @@ void myMQTT_Ping();			// 心跳包，PING包
 ControlStr*  		myMQTT_CreatMessage(SessionStr* ss);						// 创建报文
 void  				FixConnectVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充CONNECT报文可变报头
 void  				FixConnectPayload(ControlStr* cs,SessionStr* ss);			// 填充CONNECT报文有效载荷
+void  				FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充Subscribe报文可变报头
+void  				FixSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充Subscribe报文有效载荷
+
 DataMessageStr*  	myMQTT_CreatControlMessage(ControlStr* message);			// 组织发送控制报文数据
 
 // CONNECT报文，服务器回复回调函数

@@ -201,7 +201,7 @@ OS_Timer_CB(void)
 	if(ss->espconn->state == ESPCONN_CONNECT)
 	{
 		juge.start = 1;
-		if(Juge_counter(&juge, 400))
+		if(Juge_counter(&juge, 100))
 		{
 			ss->KeepAlive(ss);
 		}
