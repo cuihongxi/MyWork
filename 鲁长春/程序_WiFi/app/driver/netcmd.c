@@ -8,7 +8,7 @@
 extern SessionStr* ss;
 
 // 根据命令执行不同的网络命令
-void  RunNetCmd(char* str)
+void ICACHE_FLASH_ATTR RunNetCmd(char* str)
 {
 	if(CampareCMD(str,TCP_CONNECT)) 		// 连接到TCP_server命令
 	{
@@ -28,20 +28,30 @@ void  RunNetCmd(char* str)
 	}
 	if(CampareCMD(str,HTTP_GET)){		// HTTP get 请求
 
-		myHTTP_GET(str);								// HTTP GET命令获取资源
+		myHTTP_GET(str);				// HTTP GET命令获取资源
 	}
 
 	if(CampareCMD(str,MQTT_CONNET)){		// MQTT CONNECT报文
 
-		ss->Connect(ss);
+		debug("espconn->state = %d\r\n",ss->espconn->state);
+		if(ss->espconn->state != ESPCONN_CONNECT)
+		{
+			ss->espconn->proto.tcp->remote_port = ss->port;// 获取端口号
+			ss->messageType = CONNECT;
+			ESP8266_DNS_GetIP(ss->espconn,ss->url,DNS_Over_Cb_JX);//解析DNS获取地址
+		}else ss->Connect(ss);
+
 	}
 
 	if(CampareCMD(str,MQTT_DISCON)){		// MQTT 断开连接
 
-		ss->DisConnect();// 断开连接
+		ss->DisConnect(ss);// 断开连接
 	}
 
+	if(CampareCMD(str,MQTT_PING)){		// MQTT PING
 
+		ss->KeepAlive(ss);				// PING
+	}
 }
 
 

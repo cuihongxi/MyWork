@@ -354,13 +354,28 @@ ESP8266_LOCAL_IP(struct espconn *arg)
 //HTTP GET
 //---------
 
-void  ESP8266_Http_Get(struct espconn *ST_NetCon,const char* mes)
+void ICACHE_FLASH_ATTR ESP8266_Http_Get(struct espconn *ST_NetCon,const char* mes)
 {
 
 //	ESP8266_SendMessage(ST_NetCon,*ESP8266_REMOTE_IP(&ST_NetCon),80,mes);//
 }
 
-void ESP8266_SendtoService(uint8 *psent, uint16 length)
+void ICACHE_FLASH_ATTR ESP8266_SendtoService(uint8 *psent, uint16 length)
 {
 	espconn_send(&ST_NetCon,psent,length);
+}
+
+
+// 指示WIFI连接状态
+#include "mygpio.h"
+void ICACHE_FLASH_ATTR WiFi_StateLed(u8 state)
+{
+	if(state)
+	{
+		MYGPIO_RESET(WIFISTATE_LED);
+
+	}else
+	{
+		MYGPIO_SET(WIFISTATE_LED);
+	}
 }

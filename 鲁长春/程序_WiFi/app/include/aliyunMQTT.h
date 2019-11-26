@@ -25,9 +25,10 @@ typedef struct _AliyunStr{
 }AliyunStr;
 
 
-AliyunStr* ConnectAliyunMqtt(char* url,u16 port,char* productKey,char* deviceName,\
-		char* deviceSecret,char* clientId,char* timestamp);
+//AliyunStr* ConnectAliyunMqtt(char* url,u16 port,char* productKey,char* deviceName,\
+//		char* deviceSecret,char* clientId,char* timestamp);
 
+AliyunStr*  ConnectAliyunMqtt(char* url,u16 port,AliyunStr* as);	// 创建阿里云的MQTT会话
 
 #endif
 

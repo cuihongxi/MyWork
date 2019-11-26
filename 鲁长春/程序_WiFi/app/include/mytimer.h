@@ -65,6 +65,15 @@ typedef enum {
     NMI_SOURCE = 1,
 } FRC1_TIMER_SOURCE_TYPE;
 
+//定时判断数据类型
+typedef struct{
+	u8 start;			//启动定时
+	u8 switchon;		//定时到，开关打开
+	u32 counter;		//计数
+}JugeCStr;
+
+#define	IRQ_PERIOD	2
+
 typedef void hw_timer_cb_fun (void);
 /**
  * 硬件定时器初始化
@@ -77,6 +86,7 @@ void Mytimer_hw_timer_Init(hw_timer_cb_fun* fun, u32 time_us);
 void ESP8266_SNTP_Init(void);//
 
 char* Get_SNTPTime();			//
+bool Juge_counter(JugeCStr* juge, u32 swdat);
 
 #endif
 

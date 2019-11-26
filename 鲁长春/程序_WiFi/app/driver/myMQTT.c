@@ -6,7 +6,7 @@
  * 动态申请内存，并将申请的内存全部清零
  */
 
-void* ICACHE_FLASH_ATTR  Clearmalloc(u32 num)
+void* ICACHE_FLASH_ATTR ICACHE_FLASH_ATTR  Clearmalloc(u32 num)
 {
 	u8 *p = (u8*)my_malloc(num);
 	u32 i = 0;
@@ -16,17 +16,19 @@ void* ICACHE_FLASH_ATTR  Clearmalloc(u32 num)
 }
 
 // 断开连接
-void ICACHE_FLASH_ATTR  myMQTT_Disconnect()
+void ICACHE_FLASH_ATTR  myMQTT_Disconnect(struct _SessionStr* ss)
 {
 	u8 discmd[2] = {0xe0,00};
-	espconn_send(&ST_NetCon,discmd,2);
+	ss->messageType = DISCONNECT;
+	espconn_send(ss->espconn,discmd,2);
 }
 
 // 心跳包，PING包
-void ICACHE_FLASH_ATTR  myMQTT_Ping()
+void ICACHE_FLASH_ATTR  myMQTT_Ping(struct _SessionStr* ss)
 {
 	u8 pincmd[2] = {0xc0,00};
-	espconn_send(&ST_NetCon,pincmd,2);
+	ss->messageType = PINGREQ;
+	espconn_send(ss->espconn,pincmd,2);
 }
 
 
@@ -62,8 +64,24 @@ void ICACHE_FLASH_ATTR  FixConnectVariableHeader(ControlStr* cs,SessionStr* ss)
 	cs->variableHeader.pdat[8] = ss->keepAlivetime >> 8;
 	cs->variableHeader.pdat[9] = (u8)(ss->keepAlivetime);
 }
+// 填充订阅报文可变报头
+void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss)
+{
+	cs->variableHeader.pdat = malloc(10);
+	cs->variableHeader.length = 10;
+	cs->variableHeader.pdat[0] = 0;
+	cs->variableHeader.pdat[1] = 0x04;
+	cs->variableHeader.pdat[2] = 'M';
+	cs->variableHeader.pdat[3] = 'Q';
+	cs->variableHeader.pdat[4] = 'T';
+	cs->variableHeader.pdat[5] = 'T';
+	cs->variableHeader.pdat[6] = ss->protocolLevel;
+	cs->variableHeader.pdat[7] = ss->connectFlags;
+	cs->variableHeader.pdat[8] = ss->keepAlivetime >> 8;
+	cs->variableHeader.pdat[9] = (u8)(ss->keepAlivetime);
+}
 
-// 填充CONNECT报文有效载荷
+// 填充报文有效载荷
 void ICACHE_FLASH_ATTR  FixConnectPayload(ControlStr* cs,SessionStr* ss)
 {
 	cs->payload.length = GetStringByteNum(ss->clientId) + GetStringByteNum(ss->usrName) + GetStringByteNum(ss->passWord) +6;
@@ -104,7 +122,7 @@ void ICACHE_FLASH_ATTR  Free_ControlMessage(ControlStr* message)
 }
 
 /***
- * 组织发送控制报文数据
+ * 组织发送控制报文数据,并释放控制报文动态内存
  * 返回数据报的头
  */
 
@@ -140,7 +158,7 @@ DataMessageStr*  ICACHE_FLASH_ATTR  myMQTT_CreatControlMessage(ControlStr* messa
 
 //判断服务器回复的是不是之前发生的报文回复
 // 返回真，代表是之前的报文回复
-bool Juge_MessageType(SessionStr* ss,u8 dat)
+bool ICACHE_FLASH_ATTR Juge_MessageType(SessionStr* ss,u8 dat)
 {
 	return ((ss->messageType >> 4) +1  == (dat >>4));
 }
@@ -159,18 +177,23 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 	if(len != Change128ToInt((u8*)&pdata[1],&lenbyte) + 2) return;	// 首先校验数据长度对不对
 	if(Juge_MessageType(ss,pdata[0]) == FALSE) return;				// 判断收到的回复报文类型
 	switch(pdata[0]){
-	case CONNACK:
-		switch(pdata[3])		// 处理连接返回码
-		{
-			case CONNACK_OK:  				Connack_OkCB();					break;
-			case CONNACK_ERROR_PL:			Connack_ErrorPLCB();			break;
-			case CONNACK_ERROR_CLIENTID:	Connack_ErrorClientID();		break;
-			case CONNACK_ERROR_SERVICE:		Connack_ErrorServiceCB();		break;
-			case CONNACK_ERROR_USERNAME:	Connack_ErrorUserNameCB();		break;
-			case CONNACK_ERROR_AUTH:		Connack_ErrorAuthCB();			break;
-		}
-		break;
+		case CONNACK:
+			switch(pdata[3])		// 处理连接返回码
+			{
+				case CONNACK_OK:  				Connack_OkCB();					break;
+				case CONNACK_ERROR_PL:			Connack_ErrorPLCB();			break;
+				case CONNACK_ERROR_CLIENTID:	Connack_ErrorClientID();		break;
+				case CONNACK_ERROR_SERVICE:		Connack_ErrorServiceCB();		break;
+				case CONNACK_ERROR_USERNAME:	Connack_ErrorUserNameCB();		break;
+				case CONNACK_ERROR_AUTH:		Connack_ErrorAuthCB();			break;
+			}
+			break;
+		case PINGRESP:
+			if(pdata[1] == 0) debug("收到PING回复...\r\n");
+			else debug("PING回复出错...\r\n");
+			break;
 	}
+
 }
 
 // 订阅主题报文

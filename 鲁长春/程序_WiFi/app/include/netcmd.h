@@ -15,7 +15,7 @@
 #define		HTTP_GET			"get:"			// HTTP get 请求
 #define		MQTT_CONNET			"qtc:"			// MQTT CONNECT报文
 #define		MQTT_DISCON			"a_dis"			// MQTT DISCONNECT
-
+#define		MQTT_PING			"ping"			// PING
 
 
 /* 函数 */

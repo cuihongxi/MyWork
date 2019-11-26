@@ -3,6 +3,23 @@
 
 os_timer_t  os_timer1;	// 定义软件定时器变量
 
+
+bool Juge_counter(JugeCStr* juge, u32 swdat)
+{
+	if(juge->start)
+	{
+		juge->counter += IRQ_PERIOD;
+		if(juge->counter > swdat)
+		{
+			juge->counter = 0;
+			juge->switchon = 1;
+			juge->start = 0;
+			return (bool)TRUE;
+		}
+	}
+	return (bool)FALSE;
+}
+
 /**
  * timer_cb :回调函数
  * time_ms： 延时时间
@@ -31,7 +48,7 @@ in non autoload mode:
                         10 ~ 0x7fffff;
 * Returns      : NONE
 *******************************************************************************/
-void   hw_timer_arm(u32 val)
+void ICACHE_FLASH_ATTR  hw_timer_arm(u32 val)
 {
     RTC_REG_WRITE(FRC1_LOAD_ADDRESS, US_TO_RTC_TIMER_TICKS(val));
 }
@@ -44,19 +61,19 @@ static void  (* user_hw_timer_cb)(void) = NULL;
                         timer callback function,
 * Returns      : NONE
 *******************************************************************************/
-void   hw_timer_set_func(void (* user_hw_timer_cb_set)(void))
+void ICACHE_FLASH_ATTR  hw_timer_set_func(void (* user_hw_timer_cb_set)(void))
 {
     user_hw_timer_cb = user_hw_timer_cb_set;
 }
 
-static void  hw_timer_isr_cb(void *arg)
+static void ICACHE_FLASH_ATTR hw_timer_isr_cb(void *arg)
 {
     if (user_hw_timer_cb != NULL) {
         (*(user_hw_timer_cb))();
     }
 }
 
-static void  hw_timer_nmi_cb(void)
+static void ICACHE_FLASH_ATTR hw_timer_nmi_cb(void)
 {
     if (user_hw_timer_cb != NULL) {
         (*(user_hw_timer_cb))();
@@ -75,7 +92,7 @@ u8 req:
                         1,  autoload mode,
 * Returns      : NONE
 *******************************************************************************/
-void  hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
+void ICACHE_FLASH_ATTR hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
 {
     if (req == 1) {
         RTC_REG_WRITE(FRC1_CTRL_ADDRESS,
@@ -101,7 +118,7 @@ void  hw_timer_init(FRC1_TIMER_SOURCE_TYPE source_type, u8 req)
  */
 
 
-void  Mytimer_hw_timer_Init(hw_timer_cb_fun* fun, u32 time_us)
+void ICACHE_FLASH_ATTR Mytimer_hw_timer_Init(hw_timer_cb_fun* fun, u32 time_us)
 {
     hw_timer_init(FRC1_SOURCE,1);
     hw_timer_set_func(fun);
@@ -129,7 +146,7 @@ ESP8266_SNTP_Init(void)
 }
 
 //
-char*
+char* ICACHE_FLASH_ATTR
 Get_SNTPTime()
 {
 	char * Str_RealTime = 0;			//

@@ -128,6 +128,7 @@ typedef struct{
  * 会话结构体
  */
 typedef struct _SessionStr{
+	struct espconn* 		espconn;			// 网络连接结构体
 	char* 					url;				// 网址
 	u16 					port;				// 端口号
 	u8  					protocolLevel ;		//协议级别
@@ -145,8 +146,8 @@ typedef struct _SessionStr{
 	void(*Unsub)(struct _SessionStr*)		;			// 取消订阅
 	void(*Publish)(struct _SessionStr*)		;			// 发布消息
 	void(*Puback)(struct _SessionStr*)		;			// 发布确认
-	void(*KeepAlive)(void)					;			// Ping包
-	void(*DisConnect)(void)					;			// 与服务器断开连接
+	void(*KeepAlive)(struct _SessionStr*)					;			// Ping包
+	void(*DisConnect)(struct _SessionStr*)					;			// 与服务器断开连接
 	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
 	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
 

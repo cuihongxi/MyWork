@@ -2,6 +2,7 @@
 #include "myWifi.h"
 #include "myGPIO.H"
 #include "myMQTT.h"
+#include "myTimer.h"
 
 extern SessionStr* ss;
 
@@ -55,8 +56,10 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Connect_Cb_JX(void *arg)
 	debug("\r\n remote_ip = %d.%d.%d.%d\r\n",\
 			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3]);
-	//ESP8266_SendMessage(&ST_NetCon,*ESP8266_REMOTE_IP(&ST_NetCon),80,HTTP_Message_485Comm);//发送消息
-
+	if(ss->messageType == CONNECT)
+	{
+		ss->Connect(ss);
+	}
 }
 
 // DNS_域名解析结束_回调函数【参数1：域名字符串指针 / 参数2：IP地址结构体指针 / 参数3：网络连接结构体指针】
@@ -136,6 +139,8 @@ smartconfig_done(sc_status status, void *pdata)
     				debug("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
     			}
     		}
+
+
 			debug("\r\n---- ESP8266 Connect to WIFI Successfully ----\r\n");
 
 			//*****************************************************
@@ -146,7 +151,7 @@ smartconfig_done(sc_status status, void *pdata)
 }
 
 /***
- *
+ * 2s定时器回调函数
  */
 void ICACHE_FLASH_ATTR
 OS_Timer_CB(void)
@@ -154,8 +159,9 @@ OS_Timer_CB(void)
 	static u8 flag_sw = 0;
 	struct ip_info infoIP;
 	static u8 flag_time = 0;
+	static JugeCStr juge = {0};
 	uint8 S_WIFI_STA_Connect = wifi_station_get_connect_status();
-	//if(S_WIFI_STA_Connect != STATION_GOT_IP ) flag_time = 0;
+
 	if(flag_sw==0)
 	{
 		debug(".");
@@ -168,6 +174,7 @@ OS_Timer_CB(void)
 
 		  //  ESP8266_DNS_GetIP(&ST_NetCon,WWW_IP_ADDR,DNS_Over_Cb_JX);//解析DNS获取地址
 			debug("--> 成功连接到WIFI\n");
+			WiFi_StateLed(1);
 			ESP8266_SNTP_Init();
 			flag_sw = 1;
 
@@ -190,17 +197,19 @@ OS_Timer_CB(void)
 			}
 
 	}
-//	if(flag_time == 0 && flag_sw == 1)
-//	{
-//		if(Get_SNTPTime()!=0)
-//		{
-//			flag_time = 1;
-//			debug(" 当前时间: %s \n",Get_SNTPTime());
-//			//debug("-------------- 连接TCP-Server -------------\n");
-//			//ESP8266_STA_TCPClient_NetCon_ByStr(&ST_NetCon,"192.168.31.67:6666");
-//		}
-//
-//	}
+
+	if(ss->espconn->state == ESPCONN_CONNECT)
+	{
+		juge.start = 1;
+		if(Juge_counter(&juge, 400))
+		{
+			ss->KeepAlive(ss);
+		}
+	}else
+	{
+		juge.start = 0;
+		juge.counter = 0;
+	}
 
 }
 

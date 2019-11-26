@@ -147,7 +147,7 @@ void ICACHE_FLASH_ATTR truncate
 	}
 }
 
-void HmacSHA1(u8* secretkey,u32 lenkey,u8* dat, u32 lendat, u8* out,u32* t)
+void ICACHE_FLASH_ATTR HmacSHA1(u8* secretkey,u32 lenkey,u8* dat, u32 lendat, u8* out,u32* t)
 {
 	SHA1_CTX ictx, octx ;
 	char isha[SHA_DIGESTSIZE], osha[SHA_DIGESTSIZE] ;

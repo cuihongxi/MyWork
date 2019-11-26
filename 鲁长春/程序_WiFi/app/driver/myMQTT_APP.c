@@ -2,20 +2,32 @@
 #include "myWifi.h"
 
 // 会话的CONNECT报文
-void myMQTTConnect(SessionStr* ss)
+void ICACHE_FLASH_ATTR myMQTTConnect(SessionStr* ss)
 {
 	ss->messageType = CONNECT;
 	ss->FixPayload = FixConnectPayload;
 	ss->FixVariableHeader = FixConnectVariableHeader;
 	ControlStr* cs = myMQTT_CreatMessage(ss);								// 创建报文
 	DataMessageStr*  ds = myMQTT_CreatControlMessage(cs);					// 组织发送控制报文数据
-	ESP8266_SendtoService(ds->pdat,ds->length);								// 向网络发送数据
+	ESP8266_SendtoService(ds->pdat,ds->length);								// 如果成功获取到IP，则向网络发送数据
+}
+
+// 订阅主题报文
+void ICACHE_FLASH_ATTR myMQTTSubscribe(SessionStr* ss,char* sub)
+{
+	ss->messageType = SUBSCRIBE;
+	ss->FixPayload = FixConnectPayload;
+	ss->FixVariableHeader = FixConnectVariableHeader;
+
+	ControlStr* cs = myMQTT_CreatMessage(ss);								// 创建报文
+	DataMessageStr*  ds = myMQTT_CreatControlMessage(cs);					// 组织发送控制报文数据
+	ESP8266_SendtoService(ds->pdat,ds->length);								// 如果成功获取到IP，则向网络发送数据
 }
 
 /***
  * 初始化一个会话
  */
-void ICACHE_FLASH_ATTR  myMQTT_SessionStrInit(SessionStr* ss,char* url,u16 port, char* username, char* password, char* clientId)
+void ICACHE_FLASH_ATTR  myMQTT_SessionStrDefaultInit(SessionStr* ss,char* url,u16 port, char* username, char* password, char* clientId)
 {
 	ss->url = url;												// 网址
 	ss->port = port;											// 端口号
@@ -28,5 +40,7 @@ void ICACHE_FLASH_ATTR  myMQTT_SessionStrInit(SessionStr* ss,char* url,u16 port,
 	ss->DisConnect = myMQTT_Disconnect;
 	ss->KeepAlive = myMQTT_Ping;
 	ss->Connect = myMQTTConnect;
+	ss->espconn = &ST_NetCon;
+	ss->Subscribe =
 }
 

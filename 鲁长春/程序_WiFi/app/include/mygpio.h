@@ -8,6 +8,7 @@
 
 #include "uhead.h"
 #include "gpio.h"
+#include "eagle_soc.h"
 
 #define		MYGPIO_SET(pin)             GPIO_OUTPUT_SET(GPIO_ID_PIN(pin),1)
 #define		MYGPIO_RESET(pin)           GPIO_OUTPUT_SET(GPIO_ID_PIN(pin),0)
@@ -32,6 +33,8 @@
                     ETS_GPIO_INTR_ENABLE();\
 }while(0)
 
+
+#define		_MYGPIO_SETMODE_OUTPUT(pin)	MYGPIO_SETMODE_OUTPUT(pin)
 /**
  * 清除中断状态
  */

@@ -5,7 +5,7 @@
  * 返回结束指针
  * 剩余长度等于可变报头的长度（10字节）加上有效载荷的长度
  */
-u8*  IntTo128(u32 num ,u8* array)
+u8* ICACHE_FLASH_ATTR IntTo128(u32 num ,u8* array)
 {
     if (num <= 0xfffffff)           //不能超出最大数量
     {
@@ -26,7 +26,7 @@ u8*  IntTo128(u32 num ,u8* array)
  * 将128进制的数转换成int
  * numbyte记录占用的字节数
  */
-u32  Change128ToInt(u8* dat,u8* numbyte)
+u32 ICACHE_FLASH_ATTR Change128ToInt(u8* dat,u8* numbyte)
 {
 	u32 num = 0;
 	u8 i = 0;
@@ -48,7 +48,7 @@ u32  Change128ToInt(u8* dat,u8* numbyte)
  * 内存拷贝
  * 返回pd拷贝完的下一个指针
  */
-u8*  mymemcpy(void* pdat ,const void* psor,u32 len)
+u8* ICACHE_FLASH_ATTR mymemcpy(void* pdat ,const void* psor,u32 len)
 {
 	u32 i = 0;
 	u32 temp = len/sizeof(u32);
@@ -76,7 +76,7 @@ u8*  mymemcpy(void* pdat ,const void* psor,u32 len)
 
 // 在sor字符串的position个字符串后插入str
 // 缓存只有256个字节
-void  Str_Insert(char* sor,char* str,u32 position)
+void ICACHE_FLASH_ATTR Str_Insert(char* sor,char* str,u32 position)
 {
 
 	char* back = malloc(strlen(sor) - position + 1);	// 申请缓存
@@ -125,7 +125,7 @@ void ICACHE_FLASH_ATTR GetNetIPAddr(char* str)
 }
 
 // 将16进制转换成字符串,保存到hexbuf中，hexbuf 的大小至少是len*2+1
-void  ChangeHex2Str(u8* hexbuf,u32 len)
+void ICACHE_FLASH_ATTR ChangeHex2Str(u8* hexbuf,u32 len)
 {
 	u8* buff  = (u8*)malloc(len*2);
 	u32 i;
@@ -141,7 +141,7 @@ void  ChangeHex2Str(u8* hexbuf,u32 len)
 }
 
 //获得字符串的字节个数
-u32  GetStringByteNum(const char* str)
+u32 ICACHE_FLASH_ATTR GetStringByteNum(const char* str)
 {
 //	const char* p = str;
 //	u32 i = 0;

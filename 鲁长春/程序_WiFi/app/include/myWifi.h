@@ -39,6 +39,7 @@ if((cb) != 0){fun(con,cb);};\
 }while(0)
 
 
+#define		WIFISTATE_LED	2			//gpio2为WIFI指示灯
 
 /***
  * ：
@@ -73,6 +74,8 @@ u32* ESP8266_LOCAL_IP(struct espconn *arg);		// 本地IP
 void ICACHE_FLASH_ATTR
 ESP8266_SendMessage_B(struct espconn *arg,const char* str);//已建立连接后wifi发送消息
 void ESP8266_SendtoService(uint8 *psent, uint16 length);
+
+void ICACHE_FLASH_ATTR WiFi_StateLed(u8 state);	// 指示WIFI连接状态
 
 #endif
 

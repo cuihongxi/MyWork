@@ -12,7 +12,7 @@
 
 
 // 创建一个新会话
-void myMQTT_SessionStrInit(SessionStr* ss,char* url,u16 port, char* name, char* password, char* clientId);
+void myMQTT_SessionStrDefaultInit(SessionStr* ss,char* url,u16 port, char* name, char* password, char* clientId);
 
 
 #endif

@@ -25,10 +25,11 @@
 
 #include "uhead.h"
 #include "delay.h"
-//#include "mygpio.h"
+#include "myWifi.h"
+#include "mygpio.h"
 #include "mytimer.h"
 #include "myFlash.h"
-#include "myWifi.h"
+
 #include "AppCallBack.h"
 #include "myMQTT.h"
 #include "aliyunMQTT.h"
@@ -117,7 +118,7 @@ user_init(void)
 	uart_init(115200,115200);		//定义了两个串口的波特率和串口接收函数
 	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
     debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
-	//    MYGPIO_SETMODE_OUTPUT(2);
+    _MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
 	//    MYGPIO_SETMODE_OUTPUT(5);
 	//    MYGPIO_SETMODE_INPUT(4);
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
@@ -129,7 +130,13 @@ user_init(void)
     cbfun.reconnect_callback = ESP8266_TCP_Break_Cb_JX;
     ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);			// 依据协议注册回调函数
 
-    ss =  (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,"a1nVPohfr2X","LED0",\
+    AliyunStr* as = malloc(sizeof(AliyunStr));				// 申请一个ALIYUN结构体
+    as->clientId = "LED0";
+    as->deviceName = "LED0";
+    as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
+    as->productKey = "a1nVPohfr2X";
+    ss = (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
+//    ss =  (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,"a1nVPohfr2X","LED0",\
     		"AryIsyPotIS0giPat7wusZOEHJ0n90OI","afadfafdfewfr32q",0);
 
 }

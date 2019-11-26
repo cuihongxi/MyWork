@@ -4,7 +4,7 @@
 *   从某个地址读出数据，并保持到src_addr为首的地址中
 *   des_addr为相对地址：（0~FLASH_MAX_SIZE）
 */ 
-errorFlash  Flash_Read(uint32 des_addr , u8* src_addr,uint32 size)
+errorFlash ICACHE_FLASH_ATTR Flash_Read(uint32 des_addr , u8* src_addr,uint32 size)
 {
     u8 erro = ERRO_FLASH_OK;
     if((des_addr + size) > FLASH_MAX_SIZE) return ERRO_FLASH_OUTRANGE;
@@ -46,7 +46,7 @@ errorFlash  Flash_Read(uint32 des_addr , u8* src_addr,uint32 size)
 *   des_addr为FLASH相对地址：（0~FLASH_MAX_SIZE）
 */ 
 
-errorFlash  Flash_Write(uint32 des_addr , u8* src_addr,uint32 size)
+errorFlash ICACHE_FLASH_ATTR Flash_Write(uint32 des_addr , u8* src_addr,uint32 size)
 {
     u8 erro = ERRO_FLASH_OK;
     if((des_addr + size) > FLASH_MAX_SIZE) return ERRO_FLASH_OUTRANGE;
