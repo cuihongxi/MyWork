@@ -47,7 +47,7 @@ void ICACHE_FLASH_ATTR  FixHeader(ControlStr* cs,myMQTT_ControlType type)
 	cs->fixHeader.control = type;
 	IntTo128(cs->payload.length + cs->variableHeader.length,cs->fixHeader.leftNum);
 }
-
+/*********************CONNECT报文*****************************/
 // 填充CONNECT报文可变报头
 void ICACHE_FLASH_ATTR  FixConnectVariableHeader(ControlStr* cs,SessionStr* ss)
 {
@@ -77,14 +77,16 @@ void ICACHE_FLASH_ATTR  FixConnectPayload(ControlStr* cs,SessionStr* ss)
 	p = p + 2 + GetStringByteNum(ss->usrName);
 	Str2ByteSector(ss->passWord ,p);
 }
+/*********************CONNECT报文*****************************/
 
+/*********************Subscribe报文*****************************/
 // 填充订阅报文可变报头
 void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss)
 {
 	cs->variableHeader.length = 2;
 	cs->variableHeader.pdat = malloc(cs->variableHeader.length);
-	cs->variableHeader.pdat[0] = (u8)((ss->subList->num)>>8);
-	cs->variableHeader.pdat[1] = (u8)(ss->subList->num);
+	cs->variableHeader.pdat[0] = (u8)((ss->id)>>8);
+	cs->variableHeader.pdat[1] = (u8)(ss->id);
 }
 
 
@@ -93,14 +95,39 @@ void ICACHE_FLASH_ATTR  FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss
 void ICACHE_FLASH_ATTR  FixSubscribePayload(ControlStr* cs,SessionStr* ss)
 {
 
-	SingleListNode* nod = (SingleListNode*)ss->subList;
+	SingleListNode* nod = (SingleListNode*)ss->idList;
 	while(((SingleListNodeStr*)SingleList_Iterator(&nod))->next);		// 取出最后一个链表节点
-	u16 len = GetStringByteNum((const char*)(SingeListGetnode(subStr,nod)->subname));
+	u16 len = GetStringByteNum((const char*)(SingeListGetnode(idNodeStr,nod)->sub.subname));
 	cs->payload.length = 3 + len;
 	cs->payload.pdat =  (u8*)mymalloc(cs->payload.length);
-	Str2ByteSector(SingeListGetnode(subStr,nod)->subname,cs->payload.pdat);
-	cs->payload.pdat[cs->payload.length - 1] = SingeListGetnode(subStr,nod)->reqQos;
+	Str2ByteSector(SingeListGetnode(idNodeStr,nod)->sub.subname,cs->payload.pdat);
+	cs->payload.pdat[cs->payload.length - 1] = SingeListGetnode(idNodeStr,nod)->sub.reqQos;
+	ss->id ++;	//报文标识符自增一次
 }
+/*********************Subscribe报文*****************************/
+/*********************UnSubscribe报文*****************************/
+// 填充订阅报文可变报头
+void ICACHE_FLASH_ATTR  FixUnSubscribeVariableHeader(ControlStr* cs,SessionStr* ss)
+{
+	cs->variableHeader.length = 2;
+	cs->variableHeader.pdat = malloc(cs->variableHeader.length);
+	cs->variableHeader.pdat[0] = (u8)((ss->id)>>8);
+	cs->variableHeader.pdat[1] = (u8)(ss->id);
+}
+
+// 填充取消订阅报文有效载荷
+void ICACHE_FLASH_ATTR  FixUnSubscribePayload(ControlStr* cs,SessionStr* ss)
+{
+	SingleListNode* nod = (SingleListNode*)ss->idList;
+	while(((SingleListNodeStr*)SingleList_Iterator(&nod))->next);		// 取出最后一个链表节点
+	u16 len = GetStringByteNum((const char*)(SingeListGetnode(idNodeStr,nod)->sub.subname));
+	cs->payload.length = 2 + len;
+	cs->payload.pdat =  (u8*)mymalloc(cs->payload.length);
+	Str2ByteSector(SingeListGetnode(idNodeStr,nod)->sub.subname,cs->payload.pdat);
+	ss->id ++;	//报文标识符自增一次
+
+}
+/*********************UnSubscribe报文*****************************/
 
 /**
  * 创建报文
@@ -156,68 +183,29 @@ DataMessageStr*  ICACHE_FLASH_ATTR  myMQTT_CreatControlMessage(ControlStr* messa
 	//拷贝有效载荷
 	memcpy(pdat,message->payload.pdat,message->payload.length);
 
-//	debug("MQTT:\r\n");
-//	u16 j = 0;
-//	for( j = 0; j<dataMessage->length;j++)
-//	{
-//			debug("%x	",dataMessage->pdat[j]);
-//
-//	}
-//	debug(" <-MQTT end------------------------------>\r\n");
+/*
+	debug("MQTT:\r\n");
+	u16 j = 0;
+	for( j = 0; j<dataMessage->length;j++)
+	{
+			debug("%x	",dataMessage->pdat[j]);
+
+	}
+	debug(" <-MQTT end------------------------------>\r\n");
+*/
 
 	Free_ControlMessage(message);		//释放控制报文结构体内存
 	return dataMessage;
 }
 
-
-//判断服务器回复的是不是之前发生的报文回复
-// 返回真，代表是之前的报文回复
-bool ICACHE_FLASH_ATTR Juge_MessageType(SessionStr* ss,u8 dat)
+// 发送MQTT到服务器
+void ICACHE_FLASH_ATTR myMQTT_SendtoServer(SessionStr* ss)
 {
-	return ((ss->messageType >> 4) +1  == (dat >>4));
-}
-// CONNECT报文，服务器回复回调函数
-void ICACHE_FLASH_ATTR Connack_OkCB(){debug("Connack：ok\n");}
-void ICACHE_FLASH_ATTR Connack_ErrorPLCB(){debug("Connack：Error PL\n");}
-void ICACHE_FLASH_ATTR Connack_ErrorClientID(){debug("Connack：Error ClientID\n");}
-void ICACHE_FLASH_ATTR Connack_ErrorServiceCB(){debug("Connack_Error Service\n");}
-void ICACHE_FLASH_ATTR Connack_ErrorUserNameCB(){debug("Connack_Error UserName\n");}
-void ICACHE_FLASH_ATTR Connack_ErrorAuthCB(){debug("Connack：Error Auth\n");}
-
-// 服务器回复回调函数
-void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigned short len)
-{
-	u8 lenbyte = 0;
-	if(len != Change128ToInt((u8*)&pdata[1],&lenbyte) + 2) return;	// 首先校验数据长度对不对
-	if(Juge_MessageType(ss,pdata[0]) == FALSE) return;				// 判断收到的回复报文类型
-	switch(pdata[0]){
-		case CONNACK:
-			switch(pdata[3])		// 处理连接返回码
-			{
-				case CONNACK_OK:  				Connack_OkCB();					break;
-				case CONNACK_ERROR_PL:			Connack_ErrorPLCB();			break;
-				case CONNACK_ERROR_CLIENTID:	Connack_ErrorClientID();		break;
-				case CONNACK_ERROR_SERVICE:		Connack_ErrorServiceCB();		break;
-				case CONNACK_ERROR_USERNAME:	Connack_ErrorUserNameCB();		break;
-				case CONNACK_ERROR_AUTH:		Connack_ErrorAuthCB();			break;
-			}
-			break;
-		case PINGRESP:
-			if(pdata[1] == 0) debug("收到PING回复...\r\n");
-			else debug("PING回复出错...\r\n");
-			break;
-		case SUBACK:	//订阅主题回复
-			if(pdata[1] == 0x80)	debug("订阅报文：%d 失败\r\n",pdata[3]|((u16)pdata[2]<<8));//订阅失败
-			else debug("订阅报文：%d 成功\r\n",pdata[3]|((u16)pdata[2]<<8));//订阅失败
-			break;
-	}
-
+	DataMessageStr*  ds = myMQTT_CreatControlMessage(myMQTT_CreatMessage(ss));	// 组织发送控制报文数据
+	ESP8266_SendtoService(ds->pdat,ds->length);								// 则向网络发送数据
+	free(ds->pdat);
+	free(ds);
 }
 
-// 订阅主题报文
-void ICACHE_FLASH_ATTR  myMQTT_Subscrible()
-{
-
-}
 
 

@@ -29,4 +29,7 @@
 #define		strlen(a)		os_strlen((const char*)a)		// 获取字符串长度
 #define	 	memcpy			os_memcpy		//内存拷贝
 #define		mem_set			os_memset
+
+#define		GetU16LittleEnding(pdata)	(*((pdata)+1)|((u16)(*(pdata))<<8))	//获得16位的小端数值
+
 #endif

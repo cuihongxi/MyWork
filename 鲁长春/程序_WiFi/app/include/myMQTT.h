@@ -54,7 +54,7 @@ typedef enum{
 
 }myMQTT_ControlType;
 
-
+typedef	u8	IDTYPE;				// 报文标识符的类型
 
 //连接标志 Connect Flags
 #define ConnectFlags_Reserved           0x01   //必须为0
@@ -129,6 +129,12 @@ typedef struct{
 	 u8 reqQos;			// 服务质量要求
 }subStr;				// 订阅主题结构体
 
+typedef struct{
+	 subStr sub;
+	 IDTYPE id;			// 报文标识符
+}idNodeStr;				// 报文标识符链结构体
+
+
 /**
  * 会话结构体
  */
@@ -136,27 +142,29 @@ typedef struct _SessionStr{
 	struct espconn* 		espconn;			// 网络连接结构体
 	char* 					url;				// 网址
 	u16 					port;				// 端口号
-	u8  					protocolLevel ;		//协议级别
+	u8  					protocolLevel ;		// 协议级别
 	char*  					usrName;
 	char*  					passWord;
-	u8  					connectFlags;		//连接标志
-	u16 					keepAlivetime;		//保存连接，秒
-	char*  					clientId;			//客户端标识符 , 客户端ID
-	myMQTT_ControlType 		messageType;		//报文类型
-	SingleList*				subList;			//订阅主题链表
+	u8  					connectFlags;		// 连接标志
+	u16 					keepAlivetime;		// 保存连接，秒
+	char*  					clientId;			// 客户端标识符 , 客户端ID
+	myMQTT_ControlType 		messageType;		// 报文类型
+	SingleList*				subList;			// 订阅主题链表，已成功订阅的主题添加在这个链表下
+	SingleList*				idList;				// 报文标识符链表,idNodeStr添加在这个链表下
+	IDTYPE					id;					// 报文标识符，每发送一次报文则自增一次
 
 	void(*Connect)(struct _SessionStr*)		;			// 连接报文
 	void(*Disconnect)(struct _SessionStr*)	;			// 断开连接报文
 	void(*Ping)(struct _SessionStr*)		;			// PING报文
-	void(*Subscribe)(struct _SessionStr*)	;			// 订阅主题
-	void(*Unsub)(struct _SessionStr*)		;			// 取消订阅
+	void(*Subscribe)(struct _SessionStr*, char*, u8);	// 订阅主题
+	void(*Unsub)(struct _SessionStr*,char* sub)		;	// 取消订阅
 	void(*Publish)(struct _SessionStr*)		;			// 发布消息
 	void(*Puback)(struct _SessionStr*)		;			// 发布确认
 	void(*KeepAlive)(struct _SessionStr*)					;			// Ping包
 	void(*DisConnect)(struct _SessionStr*)					;			// 与服务器断开连接
 	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
 	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
-	void(*AddSubscribe)(struct _SessionStr*, char*, u8);	// 添加主题订阅，之后需要调用订阅主题
+
 
 }SessionStr;
 
@@ -197,19 +205,12 @@ void  				FixConnectVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充CONNEC
 void  				FixConnectPayload(ControlStr* cs,SessionStr* ss);			// 填充CONNECT报文有效载荷
 void  				FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充Subscribe报文可变报头
 void  				FixSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充Subscribe报文有效载荷
+void  				FixUnSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充UnSubscribe报文可变报头
+void  				FixUnSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充UnSubscribe报文有效载荷
 
 DataMessageStr*  	myMQTT_CreatControlMessage(ControlStr* message);			// 组织发送控制报文数据
 
-// CONNECT报文，服务器回复回调函数
-void Connack_OkCB();
-void Connack_ErrorPLCB();
-void Connack_ErrorClientID();
-void Connack_ErrorServiceCB();
-void Connack_ErrorUserNameCB();
-void Connack_ErrorAuthCB();
-
-// 服务器回复回调函数
-void  myMQTT_ServerReplyCB(SessionStr* ss, char * pdata, unsigned short len);
+void  				myMQTT_SendtoServer(SessionStr* ss);						// 发送MQTT到服务器
 
 
 

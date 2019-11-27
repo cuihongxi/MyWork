@@ -30,7 +30,7 @@ unsigned int ICACHE_FLASH_ATTR SingleList_InsertEnd(SingleList* list, SingleList
     return (unsigned int)newnode;
 }
 
-//返回移除节点的上一个节点
+//删掉节点，并释放空间，返回移除节点的上一个节点位置
 SingleListNode* ICACHE_FLASH_ATTR SingleList_DeleteNode(SingleList* list, SingleListNode* node)
 {
 
@@ -38,9 +38,10 @@ SingleListNode* ICACHE_FLASH_ATTR SingleList_DeleteNode(SingleList* list, Single
 	void* back;
     for(;current->next != 0; )
     {
-        if( ((SingleListNodeStr*)(current->next))->node == node )	break; 
+        if( ((SingleListNodeStr*)(current->next))->node == node ) break;
         current = current->next;
-    }  
+    }
+	if(current->next == 0) return (SingleListNode*)current;
 	back =  current->next;
     current->next = ((SingleListNodeStr*)(current->next))->next;
 	free(back);
@@ -79,15 +80,15 @@ void ICACHE_FLASH_ATTR SingleList_MoveEndNode(SingleList* list, SingleListNode* 
     {
         if( ((SingleListNodeStr*)(current->next))->node == node )
         	{
-        		debug("00000000000000000000000000000000\r\n");
+
         		break;
         	}
         current = current->next;
 
     }
+    if(current->next == 0)return;
 	if(((SingleListNodeStr*)(current->next))->next)
 	{
-		 debug("1111111111111111111111111111\r\n");
 		back = current->next;
 
 		current->next = ((SingleListNodeStr*)(current->next))->next;
@@ -95,12 +96,8 @@ void ICACHE_FLASH_ATTR SingleList_MoveEndNode(SingleList* list, SingleListNode* 
 	    {
 	        current = current->next;
 	    }
-	    debug("222222222222222222222222222\r\n");
 	    current->next = back;
 	    ((SingleList*)back)->next = 0;
 	}
-
-
-
 }
 

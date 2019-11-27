@@ -8,16 +8,16 @@
 
 #include "uhead.h"
 
-#define		TCP_CONNECT			"tcp_c:"		// TCP_CLIENT模式连接服务器的起始头  tcp_c:192.168.31.67:6666
+#define		TCP_CONNECT			"tcpcon:"		// TCP_CLIENT模式连接服务器的起始头  tcp_c:192.168.31.67:6666
 #define		MESSAGE				"mes:"			// 信息开始的起始头 mes:ni hao a
 #define		DIS_CONNECT			"disconnect"	// 断开与TCP_SERVER的连接
 #define		NET_CONNECT			"net:"			// 通过域名访问网址	net:www.baidu.com
 #define		HTTP_GET			"get:"			// HTTP get 请求
-#define		MQTT_CONNET			"qtc"			// MQTT CONNECT报文
-#define		MQTT_DISCON			"a_dis"			// MQTT DISCONNECT
+#define		MQTT_CONNET			"mqttcon"		// MQTT CONNECT报文
+#define		MQTT_DISCON			"mqttdis"			// MQTT DISCONNECT
 #define		MQTT_PING			"ping"			// PING
-#define		MQTT_ADDSUB			"addsub:"
-#define		MQTT_SUB			"subsend"
+#define		MQTT_SUB			"subsend:"
+#define		MQTT_UNSUB			"unsub:"
 /* 函数 */
 
 void Str_DelSpace(char* str);						// 字符串去掉空格，生成新的字符串

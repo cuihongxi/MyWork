@@ -52,15 +52,16 @@ void ICACHE_FLASH_ATTR RunNetCmd(char* str)
 
 		ss->KeepAlive(ss);				// PING
 	}
-	if(CampareCMD(str,MQTT_ADDSUB)){		// MQTT SUB
 
-		ss->AddSubscribe(ss,"/sys/a1nVPohfr2X/LED0/thing/service/property/set",0);
-		//ss->AddSubscribe(ss,"adfad",0);
-	}
 	if(CampareCMD(str,MQTT_SUB)){		// MQTT SUB
 
-		ss->Subscribe(ss);
+		ss->Subscribe(ss,str,0);
 	}
+	if(CampareCMD(str,MQTT_UNSUB)){
+
+		ss->Unsub(ss,str);
+	}
+
 }
 
 
