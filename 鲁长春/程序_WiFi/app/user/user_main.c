@@ -119,6 +119,7 @@ user_init(void)
 	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
     debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
     _MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
+    MYGPIO_RESET(WIFISTATE_LED);	//打开LED
 	//    MYGPIO_SETMODE_OUTPUT(5);
 	//    MYGPIO_SETMODE_INPUT(4);
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态

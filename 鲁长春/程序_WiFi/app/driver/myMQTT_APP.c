@@ -174,7 +174,7 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 {
 	u8 lenbyte = 0;
 	if(len != Change128ToInt((u8*)&pdata[1],&lenbyte) + 2) return;	// 首先校验数据长度对不对
-	if(Juge_MessageType(ss,pdata[0]) == FALSE) return;				// 判断收到的回复报文类型
+	// if(Juge_MessageType(ss,pdata[0]) == FALSE) return;				// 判断收到的回复报文类型
 	switch(pdata[0]){
 		case CONNACK:
 			switch(pdata[3])		// 处理连接返回码
@@ -206,6 +206,7 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 		case UNSUBACK:	//取消订阅主题回复
 				debug("取消报文ID：%d\r\n",GetU16LittleEnding(&pdata[2]));
 				UnSubscribeCallBack(ss,GetU16LittleEnding(&pdata[2]));
+
 	}
 
 }

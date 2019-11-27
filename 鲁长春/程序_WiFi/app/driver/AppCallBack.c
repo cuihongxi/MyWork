@@ -174,7 +174,7 @@ OS_Timer_CB(void)
 
 		  //  ESP8266_DNS_GetIP(&ST_NetCon,WWW_IP_ADDR,DNS_Over_Cb_JX);//解析DNS获取地址
 			debug("--> 成功连接到WIFI\n");
-			WiFi_StateLed(1);
+			WiFi_StateLed(0);	//关闭LED
 			ESP8266_SNTP_Init();
 			flag_sw = 1;
 
