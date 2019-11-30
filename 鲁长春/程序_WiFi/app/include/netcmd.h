@@ -18,6 +18,9 @@
 #define		MQTT_PING			"ping"			// PING
 #define		MQTT_SUB			"subsend:"
 #define		MQTT_UNSUB			"unsub:"
+#define		MQTT_PUBLISH		"publish:"
+
+
 /* 函数 */
 
 void Str_DelSpace(char* str);						// 字符串去掉空格，生成新的字符串

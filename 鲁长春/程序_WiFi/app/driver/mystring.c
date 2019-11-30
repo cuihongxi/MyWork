@@ -143,14 +143,14 @@ void ICACHE_FLASH_ATTR ChangeHex2Str(u8* hexbuf,u32 len)
 //获得字符串的字节个数
 u32 ICACHE_FLASH_ATTR GetStringByteNum(const char* str)
 {
-//	const char* p = str;
-//	u32 i = 0;
-//	while(*p!=0)
-//	{
-//		i++;
-//		p++;
-//	}
-//	return i;
+/*	const char* p = str;
+	u32 i = 0;
+	while(*p!=0)
+	{
+		i++;
+		p++;
+	}
+	return i;*/
 	return strlen(str);
 
 }

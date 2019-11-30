@@ -98,13 +98,7 @@ user_rf_pre_init(void)
 }
 
 
-//接收回调函数
-#include "netcmd.h"
-void RxOverCallBack(rxBuffStr* rxstr)
-{
-	os_printf("串口收到数据：len:%d,RX:%s\n",rxstr->len,rxstr->buff);
-	RunNetCmd(rxstr->buff);			// 根据串口命令执行不同的网络命令
-}
+
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
@@ -120,8 +114,6 @@ user_init(void)
     debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
     _MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
     MYGPIO_RESET(WIFISTATE_LED);	//打开LED
-	//    MYGPIO_SETMODE_OUTPUT(5);
-	//    MYGPIO_SETMODE_INPUT(4);
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
     ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);	// 路由器账号密码
     cbfun.sent_callback = ESP8266_WIFI_Send_Cb;
@@ -137,8 +129,6 @@ user_init(void)
     as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
     as->productKey = "a1nVPohfr2X";
     ss = (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
-//    ss =  (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,"a1nVPohfr2X","LED0",\
-    		"AryIsyPotIS0giPat7wusZOEHJ0n90OI","afadfafdfewfr32q",0);
 
 }
 

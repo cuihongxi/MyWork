@@ -16,13 +16,7 @@
 #define	 	my_malloc 	os_zalloc		//动态内存申请
 #define	 	myfree	    os_free			//释放
 #define		myrandom	os_random		//随机数生成
-
-
 #define	 	mymalloc	Clearmalloc		//动态申请并清零内存
-
-
-
-
 /*
  *
  *
@@ -54,7 +48,7 @@ typedef enum{
 
 }myMQTT_ControlType;
 
-typedef	u8	IDTYPE;				// 报文标识符的类型
+typedef	u16	IDTYPE;				// 报文标识符的类型
 
 //连接标志 Connect Flags
 #define ConnectFlags_Reserved           0x01   //必须为0
@@ -124,15 +118,42 @@ typedef struct{
 	u32 length;			//有效长度
 }DataMessageStr;
 
-typedef struct{
-	 u8* subname;		// 订阅主题
-	 u8 reqQos;			// 服务质量要求
-}subStr;				// 订阅主题结构体
+typedef enum{
+	 PUBLISH_QoS0 = 0,        	//发布消息控制报文,报文的服务质量等级标志
+	 PUBLISH_QoS2 = 0X04,       //发布消息控制报文,报文的服务质量等级标志,QoS0最多分发一次,QoS1至少发布一次
+	 PUBLISH_QoS1 = 0X02,       //发布消息控制报文,报文的服务质量等级标志
+}enumQos;
 
 typedef struct{
-	 subStr sub;
+	 u8* 		sub;		// 字符串
+	 enumQos 	reqQos;		// 服务质量要求
+}subStr;				// 订阅主题结构体
+
+typedef enum{
+	dup_no = 0,
+	dup_yes = 0x08,
+}enumdup;				// 是否重发标志
+
+typedef struct{
+	 u8* 		sub;		// 主题字符串
+	 enumQos 	reqQos;		// 服务质量要求
+	 u8* 		pub;		// 字符串
+	 bool		retain;		// publish报文中是否保存信息
+	 enumdup	dup;		// 是否重发标志
+}pubStr;				// publish结构体
+
+typedef struct{
+	 void*  mes;		// 信息头地址
 	 IDTYPE id;			// 报文标识符
+
 }idNodeStr;				// 报文标识符链结构体
+
+typedef	u8	ERROTYPE;
+
+/****错误编码****/
+#define	ERRO_OK			0		// 无错误
+#define	ERRO_QoS2		0x04	// 暂时不对QoS2进行处理
+#define	ERRO_MALLOC		0x08	// 动态内存申请失败
 
 
 /**
@@ -152,19 +173,20 @@ typedef struct _SessionStr{
 	SingleList*				subList;			// 订阅主题链表，已成功订阅的主题添加在这个链表下
 	SingleList*				idList;				// 报文标识符链表,idNodeStr添加在这个链表下
 	IDTYPE					id;					// 报文标识符，每发送一次报文则自增一次
+	ERROTYPE				erro;				// 保存错误代码
 
 	void(*Connect)(struct _SessionStr*)		;			// 连接报文
 	void(*Disconnect)(struct _SessionStr*)	;			// 断开连接报文
 	void(*Ping)(struct _SessionStr*)		;			// PING报文
-	void(*Subscribe)(struct _SessionStr*, char*, u8);	// 订阅主题
+	void(*Subscribe)(struct _SessionStr*, char*, enumQos);	// 订阅主题
 	void(*Unsub)(struct _SessionStr*,char* sub)		;	// 取消订阅
-	void(*Publish)(struct _SessionStr*)		;			// 发布消息
 	void(*Puback)(struct _SessionStr*)		;			// 发布确认
 	void(*KeepAlive)(struct _SessionStr*)					;			// Ping包
 	void(*DisConnect)(struct _SessionStr*)					;			// 与服务器断开连接
 	void(*FixVariableHeader)(ControlStr*,struct _SessionStr*);			// 填充报文可变报头
 	void(*FixPayload)(ControlStr*,struct _SessionStr*);					// 填充报文有效载荷
-
+	void(*ServerCB)(struct _SessionStr* ss,char * pdata, unsigned short len);	// 服务器回复的回调函数
+	void(*Publish)(struct _SessionStr* ss,char* sub,char* pubdata,enumQos reqQos,bool retain,enumdup dup);// 发布消息
 
 }SessionStr;
 
@@ -177,10 +199,7 @@ typedef struct _SessionStr{
  *
  */
 //Flag Bits，0~3位
-#define PUBLISH_DUP         0X08        //发布消息控制报文,重复分发标志,0 表示这是客户端或服务端第一次请求发送这个PUBLISH报文
-#define PUBLISH_QoS1        0X04        //发布消息控制报文,报文的服务质量等级标志,QoS0最多分发一次,QoS1至少发布一次
-#define PUBLISH_QoS0        0X02        //发布消息控制报文,报文的服务质量等级标志
-#define	PUBLISH_RETAIN		0x01		//保留标志,1 服务器保留为问候消息
+
 
 
 
@@ -195,24 +214,28 @@ typedef struct _SessionStr{
 /**
  * 函数
  */
-u8* IntTo128(u32 num ,u8* array);   											// 变换成128进制存储
-
-void myMQTT_Disconnect();	// 断开链接
-void myMQTT_Ping();			// 心跳包，PING包
-
-ControlStr*  		myMQTT_CreatMessage(SessionStr* ss);						// 创建报文
-void  				FixConnectVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充CONNECT报文可变报头
-void  				FixConnectPayload(ControlStr* cs,SessionStr* ss);			// 填充CONNECT报文有效载荷
-void  				FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充Subscribe报文可变报头
-void  				FixSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充Subscribe报文有效载荷
-void  				FixUnSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充UnSubscribe报文可变报头
-void  				FixUnSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充UnSubscribe报文有效载荷
-
-DataMessageStr*  	myMQTT_CreatControlMessage(ControlStr* message);			// 组织发送控制报文数据
-
-void  				myMQTT_SendtoServer(SessionStr* ss);						// 发送MQTT到服务器
 
 
+
+
+ControlStr*  	myMQTT_CreatMessage(SessionStr* ss);						// 创建报文
+void  			FixConnectVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充CONNECT报文可变报头
+void  			FixConnectPayload(ControlStr* cs,SessionStr* ss);			// 填充CONNECT报文有效载荷
+void  			FixSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充Subscribe报文可变报头
+void  			FixSubscribePayload(ControlStr* cs,SessionStr* ss);			// 填充Subscribe报文有效载荷
+void  			FixUnSubscribeVariableHeader(ControlStr* cs,SessionStr* ss);// 填充UnSubscribe报文可变报头
+void  			FixUnSubscribePayload(ControlStr* cs,SessionStr* ss);		// 填充UnSubscribe报文有效载荷
+void  			FixPublishVariableHeader(ControlStr* cs,SessionStr* ss);	// 填充Publish报文可变报头
+void  			FixPublishPayload(ControlStr* cs,SessionStr* ss);			// 填充Publish报文有效载荷
+
+void 			myMQTT_Disconnect();										// 断开链接
+void 			myMQTT_Ping();												// 心跳包，PING包
+
+ERROTYPE  		myMQTT_SendtoServer(SessionStr* ss);						// 发送MQTT到服务器
+
+void 			FreeSubnodInLink(SessionStr* ss,SingleList* list,void* nod);	//释放链表下的主题节点
+void  			FreePubnodInIdLink(SessionStr* ss,void* nod);					//释放id链表下的publish节点
+pubStr* 		myMQTT_PublishCB(SessionStr* ss,char * pdata, unsigned short len);	// 接收到服务器的推送,需要释放返回的空间
 
 #endif
 

@@ -24,6 +24,6 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Connect_Cb_JX(void *arg);		// TCP连接建立成功
 void ICACHE_FLASH_ATTR DNS_Over_Cb_JX(const char * name, ip_addr_t *ipaddr, void *arg);// DNS_域名解析结束_回调函数
 void ICACHE_FLASH_ATTR smartconfig_done(sc_status status, void *pdata);// SmartConfig状态发生改变时，进入此回调函数
 void ICACHE_FLASH_ATTR	OS_Timer_CB(void);							// 定时器回调函数
-
+void ICACHE_FLASH_ATTR RxOverCallBack(rxBuffStr* rxstr);			// 串口接收数据回调函数
 
 #endif

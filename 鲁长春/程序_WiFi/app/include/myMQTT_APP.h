@@ -13,7 +13,7 @@
 
 // 创建一个新会话
 void myMQTT_SessionStrDefaultInit(SessionStr* ss,char* url,u16 port, char* name, char* password, char* clientId);
-void myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigned short len);// 服务器回复回调函数
+
 
 #endif
 

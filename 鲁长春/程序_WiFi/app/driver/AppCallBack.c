@@ -41,9 +41,10 @@ void  ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
 	for(i = 0;i<len;i++)
 		debug(" %X ",pdata[i]);
-	debug("\n");
+	debug("\n 字节: %d 个\r\n",len);
 
-	myMQTT_ServerReplyCB(ss,pdata,len);		// MQTT处理服务器回复报文
+	ss->ServerCB(ss,pdata,len);// MQTT处理服务器回复报文
+
 }
 
 // TCP连接建立成功的回调函数
@@ -213,3 +214,10 @@ OS_Timer_CB(void)
 
 }
 
+//接收回调函数
+#include "netcmd.h"
+void ICACHE_FLASH_ATTR RxOverCallBack(rxBuffStr* rxstr)
+{
+	os_printf("串口收到数据：len:%d,RX:%s\n",rxstr->len,rxstr->buff);
+	RunNetCmd(rxstr->buff);			// 根据串口命令执行不同的网络命令
+}
