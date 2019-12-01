@@ -278,6 +278,16 @@ void PublishSuccessfule(SessionStr* ss,IDTYPE id)
 			}
 	}
 }
+
+// 匹配主题和推送字符串
+bool MatchStringinSub(pubStr* pub,char* sub,char* dat)
+{
+	if(strstr(pub->sub,sub))
+	{
+		if(strstr(pub->pub,dat)) return true;
+	}
+	return false;
+}
 // 服务器回复回调函数
 void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigned short len)
 {
@@ -324,6 +334,8 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 				pubStr* pub = myMQTT_PublishCB(ss,pdata,len);
 				debug("主题：%s\r\n",pub->sub);
 				debug("内容：%s\r\n",pub->pub);
+				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":1}"))WiFi_StateLed(1);	// LED
+				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":0}"))WiFi_StateLed(0);
 				free(pub->pub);
 				free(pub->sub);
 				free(pub);

@@ -10,7 +10,7 @@
 
 u8* IntTo128(u32 num ,u8* array);							// 变换成128进制存储
 u32 Change128ToInt(u8* dat,u8* numbyte); 					// 将128进制的数转换成int
-u8* mymemcpy(void* pdat ,const void* psor ,u32 len);				// 内存拷贝
+u8* mymemcpy(void* pdat ,const void* psor ,u32 len);		// 内存拷贝
 void Str_Insert(char* sor,char* str,u32 position);			// 在sor字符串的position个字符串后插入str
 void GetNetIPAddr(char* str);								// 去掉端口号将字符串变成网址,要保证是严格的 ip:port 格式的字符串
 u16 GetNetPort(char* str);									// 获取端口号,要保证是严格的 ip:port 格式的字符串
@@ -20,5 +20,6 @@ u32 GetStringByteNum(const char* str);						// 获得字符串的字节个数
 bool CampareString(char* str1,char* str2);					// 比较两个字符串是否相等
 char* GetSubAndPub(char* str);								// 将字符串拆分成主题和publish,在“{”位置插入0，生成双0字符串str,返回第二个字符串开始的位置
 
+char*  MallocStr_Insert(char* sor,char* str,u32 position);	// 在sor字符串的position个字符串后插入str，返回新字符串，该字符串需要free
 #endif
 

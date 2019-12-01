@@ -22,8 +22,9 @@ ESP8266_WIFI_Send_Cb(void *arg)
 void ICACHE_FLASH_ATTR  ESP8266_TCP_Disconnect_Cb_JX(void *arg)
 {
 
-	debug("\nESP8266_TCP_Disconnect,重新连接\n");
-	ss->Connect(ss);
+	debug("\nESP8266_TCP_Disconnect\n");
+	WiFi_StateLed(1);	// LED
+	flag_sw = 2;
 }
 
 // TCP连接异常断开时的回调函数

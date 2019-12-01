@@ -88,6 +88,15 @@ void ICACHE_FLASH_ATTR Str_Insert(char* sor,char* str,u32 position)
 	free(back);
 }
 
+// 在sor字符串的position个字符串后插入str，返回新字符串，该字符串需要free
+char* ICACHE_FLASH_ATTR MallocStr_Insert(char* sor,char* str,u32 position)
+{
+	char* buff = (char*)malloc(strlen(sor) + strlen(str) + 1);
+	Str_Insert(buff,sor,0);
+	Str_Insert(buff,str,position);
+	return buff;
+}
+
 //首部匹配字符串,去掉匹配的首部和回车换行，生成新的字符串
 bool ICACHE_FLASH_ATTR CampareCMD(char* str,char* cmd)
 {

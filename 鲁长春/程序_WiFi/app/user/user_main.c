@@ -29,7 +29,7 @@
 #include "mygpio.h"
 #include "mytimer.h"
 #include "myFlash.h"
-
+#include "mystring.h"
 #include "AppCallBack.h"
 #include "myMQTT.h"
 #include "aliyunMQTT.h"
@@ -128,11 +128,13 @@ user_init(void)
 //    as->deviceName = "LED0";
 //    as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
 //    as->productKey = "a1nVPohfr2X";
-    as->clientId = "LED0";
-    as->deviceName = "LED0";
-    as->deviceSecret = "iqSxse2t0W145ain2rrmzW23N468pRMs";
-    as->productKey = "a1LaAic2Uae";
-    ss = (SessionStr*)ConnectAliyunMqtt("a1LaAic2Uae.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
+    as->clientId = "haha";
+    as->deviceName = "d001";
+    as->deviceSecret = "CIqtOYBSsGAxwJH8IR5282XcoaXDYtDU";
+    as->productKey = "a1uouYHFRAc";
+    char* urlstr = MallocStr_Insert(as->productKey,".iot-as-mqtt.cn-shanghai.aliyuncs.com",strlen(as->productKey));
+    ss = (SessionStr*)ConnectAliyunMqtt(urlstr,1883,as);
+
 
 }
 
