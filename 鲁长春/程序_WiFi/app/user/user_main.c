@@ -124,11 +124,15 @@ user_init(void)
     ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);			// 依据协议注册回调函数
 
     AliyunStr* as = malloc(sizeof(AliyunStr));				// 申请一个ALIYUN结构体
+//    as->clientId = "LED0";
+//    as->deviceName = "LED0";
+//    as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
+//    as->productKey = "a1nVPohfr2X";
     as->clientId = "LED0";
     as->deviceName = "LED0";
-    as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
-    as->productKey = "a1nVPohfr2X";
-    ss = (SessionStr*)ConnectAliyunMqtt("a1nVPohfr2X.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
+    as->deviceSecret = "iqSxse2t0W145ain2rrmzW23N468pRMs";
+    as->productKey = "a1LaAic2Uae";
+    ss = (SessionStr*)ConnectAliyunMqtt("a1LaAic2Uae.iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
 
 }
 

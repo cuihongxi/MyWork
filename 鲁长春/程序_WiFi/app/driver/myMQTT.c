@@ -351,8 +351,15 @@ pubStr* myMQTT_PublishCB(SessionStr* ss,char * pdata, unsigned short len)
 	memcpy(pu->sub,&pdata[3+lenbyte],sublen);						// 保存字符串
 	if(pu->reqQos)
 	{
+		u8 buff[4] = {0};
 		pu->pub = (u8*)malloc(1 + length-sublen-2-2);
 		memcpy(pu->pub,&pdata[3+lenbyte+sublen + 2],length-sublen-2-2);				// 保存字符串
+		// 回复确认
+		buff[0] = PUBACK;
+		buff[1] = 2;
+		buff[2] = pdata[3+lenbyte+sublen];
+		buff[3] = pdata[3+lenbyte+sublen + 1];
+		ESP8266_SendtoService(buff,4);											// 则向网络发送数据
 	}
 	else
 	{

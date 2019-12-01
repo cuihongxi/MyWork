@@ -167,3 +167,28 @@ bool ICACHE_FLASH_ATTR CampareString(char* str1,char* str2)
 	if(str2[i] == 0) return true;
 	return false;
 }
+
+// 互换两个数的值
+#define	EXCHANGE(a,b)	do{(a)^=(b);(b)^=(a);(a)^=(b);}while(0);
+
+// 将字符串拆分成主题和publish,在“{”位置插入0，生成双0字符串str,返回第二个字符串开始的位置
+char* ICACHE_FLASH_ATTR GetSubAndPub(char* str)
+{
+	u8 i = 0;
+	u8 j = 0;
+	char* p = 0;
+	while(str[i]!=0 && str[i]!='{') i++;
+	if(str[i] == 0) return 0;
+	p = &str[i+1];
+	while(str[i]!=0)
+	{
+		EXCHANGE(str[i],j);
+		i++;
+	}
+	EXCHANGE(str[i],j);
+	i++;
+	str[i] = 0;
+	return p;
+}
+
+

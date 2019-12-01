@@ -39,22 +39,6 @@ char*  ICACHE_FLASH_ATTR CreatAliyunPassWord(AliyunStr* as)
 	free(buff);
 	return as->ss.passWord;
 }
-//创建阿里云的MQTT会话
-//AliyunStr*  ConnectAliyunMqtt(	char* url,u16 port,char* productKey,char* deviceName,char* deviceSecret,char* clientId,char* timestamp)
-//{
-//	AliyunStr* as = malloc(sizeof(AliyunStr));						// 需要free
-//	as->deviceName  = deviceName;									// 设备名
-//	as->deviceSecret = deviceSecret;								// 密钥
-//	as->productKey = productKey;									//
-//	as->clientId = clientId;										// ${clientId}为设备的ID信息。可取任意值，长度在64字符以内。建议使用设备的MAC地址或SN码。
-////	as->ss.usrName = CreatAliyunUserName(as->deviceName,as->productKey);	// 需要free
-////	as->ss.passWord = CreatAliyunPassWord(as);								// 需要free
-////	as->ss.clientId = CreatAliyunClientId(as->clientId);					// 需要free
-//
-//	myMQTT_SessionStrInit(&(as->ss), url,port,CreatAliyunUserName(as->deviceName,as->productKey),\
-//			CreatAliyunPassWord(as), CreatAliyunClientId(as->clientId));
-//	return as;
-//}
 
 AliyunStr*  ICACHE_FLASH_ATTR ConnectAliyunMqtt(char* url,u16 port,AliyunStr* as)
 {

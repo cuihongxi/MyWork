@@ -5,7 +5,7 @@
 #include "myTimer.h"
 
 extern SessionStr* ss;
-
+ u8 flag_sw = 0;
 /**
  * 发送成功回调函数
  * */
@@ -13,6 +13,7 @@ void ICACHE_FLASH_ATTR
 ESP8266_WIFI_Send_Cb(void *arg)
 {
 	debug("Send ok\n");
+
 }
 
 
@@ -21,27 +22,32 @@ ESP8266_WIFI_Send_Cb(void *arg)
 void ICACHE_FLASH_ATTR  ESP8266_TCP_Disconnect_Cb_JX(void *arg)
 {
 
-	debug("\nESP8266_TCP_Disconnect_OK\n");
+	debug("\nESP8266_TCP_Disconnect,重新连接\n");
+	ss->Connect(ss);
 }
 
 // TCP连接异常断开时的回调函数
 //====================================================================
 void ICACHE_FLASH_ATTR  ESP8266_TCP_Break_Cb_JX(void *arg,sint8 err)
 {
-	debug("\nESP8266_TCP_Break! Err : %d重新连接TCP-server ^！\n",err);
-	espconn_connect(&ST_NetCon);	// 连接TCP-server
+	//debug("\nESP8266_TCP_Break! Err : %d重新连接TCP-server ^！\n",err);
+	//ss->messageType = CONNECT;
+	//espconn_connect(&ST_NetCon);	// 连接TCP-server
+	WiFi_StateLed(1);	// LED
+	flag_sw = 2;
+
 }
 
 //收到数据的回调函数
 void  ESP8266_WIFI_Recv_Cb(void * arg, char * pdata, unsigned short len)
 {
 	u8 i = 0;
-	debug("\r\n %d.%d.%d.%d:%d ->HEX:",\
+	debug("\r\n %d.%d.%d.%d:%d ->HEX:\r\n",\
 			ST_NetCon.proto.tcp->remote_ip[0],	ST_NetCon.proto.tcp->remote_ip[1],\
 			ST_NetCon.proto.tcp->remote_ip[2],ST_NetCon.proto.tcp->remote_ip[3],ST_NetCon.proto.tcp->remote_port);
 	for(i = 0;i<len;i++)
 		debug(" %X ",pdata[i]);
-	debug("\n 字节: %d 个\r\n",len);
+	debug("\n 共  %d 个字节\r\n",len);
 
 	ss->ServerCB(ss,pdata,len);// MQTT处理服务器回复报文
 
@@ -61,6 +67,7 @@ void ICACHE_FLASH_ATTR ESP8266_TCP_Connect_Cb_JX(void *arg)
 	{
 		ss->Connect(ss);
 	}
+	WiFi_StateLed(0);	// LED
 }
 
 // DNS_域名解析结束_回调函数【参数1：域名字符串指针 / 参数2：IP地址结构体指针 / 参数3：网络连接结构体指针】
@@ -138,6 +145,17 @@ smartconfig_done(sc_status status, void *pdata)
     			if(ESP8266_Save_LocalIP(&ST_NetCon,STA_MOD) == true)
     			{
     				debug("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
+
+    			}
+    			debug("--> 成功连接到WIFI <---\n");
+    			WiFi_StateLed(0);	// 关闭LED
+    			ESP8266_SNTP_Init();// 获取网络时间
+    			flag_sw = 3;
+    			if(ss->espconn->state != ESPCONN_CONNECT)
+    			{
+    				ss->espconn->proto.tcp->remote_port = ss->port;// 获取端口号
+    				ss->messageType = CONNECT;
+    				ESP8266_DNS_GetIP(ss->espconn,ss->url,DNS_Over_Cb_JX);//解析DNS获取地址
     			}
     		}
 
@@ -157,7 +175,7 @@ smartconfig_done(sc_status status, void *pdata)
 void ICACHE_FLASH_ATTR
 OS_Timer_CB(void)
 {
-	static u8 flag_sw = 0;
+
 	struct ip_info infoIP;
 	static u8 flag_time = 0;
 	static JugeCStr juge = {0};
@@ -175,10 +193,15 @@ OS_Timer_CB(void)
 
 		  //  ESP8266_DNS_GetIP(&ST_NetCon,WWW_IP_ADDR,DNS_Over_Cb_JX);//解析DNS获取地址
 			debug("--> 成功连接到WIFI\n");
-			WiFi_StateLed(0);	//关闭LED
-			ESP8266_SNTP_Init();
-			flag_sw = 1;
-
+			WiFi_StateLed(0);	// 关闭LED
+			ESP8266_SNTP_Init();// 获取网络时间
+			flag_sw = 3;
+			if(ss->espconn->state != ESPCONN_CONNECT)
+			{
+				ss->espconn->proto.tcp->remote_port = ss->port;// 获取端口号
+				ss->messageType = CONNECT;
+				ESP8266_DNS_GetIP(ss->espconn,ss->url,DNS_Over_Cb_JX);//解析DNS获取地址
+			}
 		}
 		else if(S_WIFI_STA_Connect==STATION_NO_AP_FOUND 	||		// 未找到指定WIFI
 				S_WIFI_STA_Connect==STATION_WRONG_PASSWORD 	||		// WIFI密码错误
@@ -192,11 +215,31 @@ OS_Timer_CB(void)
 				//wifi_set_opmode(STATION_MODE);			// 设为STA模式						//【第①步】
 
 				smartconfig_set_type(SC_TYPE_AIRKISS); 	// ESP8266配网方式【AIRKISS】			//【第②步】
-
 				smartconfig_start(smartconfig_done);	// 进入【智能配网模式】,并设置回调函数	//【第③步】
 				flag_sw = 1;
 			}
 
+	}
+	if(flag_sw == 2)
+	{
+		debug(".");
+		if(S_WIFI_STA_Connect == STATION_GOT_IP )
+		{
+			if(ESP8266_Save_LocalIP(&ST_NetCon,STA_MOD) == true)
+			{
+				debug("ESP8266_IP = %d.%d.%d.%d\n",ST_NetCon.proto.tcp->local_ip[0],ST_NetCon.proto.tcp->local_ip[1],ST_NetCon.proto.tcp->local_ip[2],ST_NetCon.proto.tcp->local_ip[3]);
+			}
+
+		  //  ESP8266_DNS_GetIP(&ST_NetCon,WWW_IP_ADDR,DNS_Over_Cb_JX);//解析DNS获取地址
+			debug("重连WIFI\n");
+			flag_sw = 3;
+			if(ss->espconn->state != ESPCONN_CONNECT)
+			{
+				//ss->espconn->proto.tcp->remote_port = ss->port;// 获取端口号
+				ss->messageType = CONNECT;
+				espconn_connect(&ST_NetCon);// 重新连接
+			}
+		}
 	}
 
 	if(ss->espconn->state == ESPCONN_CONNECT)

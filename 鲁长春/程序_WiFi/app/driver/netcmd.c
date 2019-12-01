@@ -62,11 +62,9 @@ void ICACHE_FLASH_ATTR RunNetCmd(char* str)
 		ss->Unsub(ss,str);
 	}
 	if(CampareCMD(str,MQTT_PUBLISH)){
-
-		ss->Publish(ss,"/sys/a1nVPohfr2X/LED0/thing/event/property/post",\
-				"{\"method\":\"thing.event.property.post\",\"id\":\"365816514\",\"params\":{\"LightSwitch\":1},\"version\":\"1.0.0\"}",\
-				0,0,0);
-
+		char* pubstr = GetSubAndPub(str);
+		ss->Publish(ss,str,pubstr,PUBLISH_QoS1,0,0);
+		debug("-->str2:%s\r\n",pubstr);
 	}
 }
 

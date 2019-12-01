@@ -18,7 +18,7 @@ bool CampareCMD(char* str,char* cmd);						// Ê×²¿Æ¥Åä×Ö·û´®,È¥µôÆ¥ÅäµÄÊ×²¿ºÍ»Ø³
 void ChangeHex2Str(u8* hexbuf,u32 len);						// ½«16½øÖÆ×ª»»³É×Ö·û´®,±£´æµ½hexbufÖĞ£¬hexbuf µÄ´óĞ¡ÖÁÉÙÊÇlen*2+1
 u32 GetStringByteNum(const char* str);						// »ñµÃ×Ö·û´®µÄ×Ö½Ú¸öÊı
 bool CampareString(char* str1,char* str2);					// ±È½ÏÁ½¸ö×Ö·û´®ÊÇ·ñÏàµÈ
-
+char* GetSubAndPub(char* str);								// ½«×Ö·û´®²ğ·Ö³ÉÖ÷ÌâºÍpublish,ÔÚ¡°{¡±Î»ÖÃ²åÈë0£¬Éú³ÉË«0×Ö·û´®str,·µ»ØµÚ¶ş¸ö×Ö·û´®¿ªÊ¼µÄÎ»ÖÃ
 
 #endif
 

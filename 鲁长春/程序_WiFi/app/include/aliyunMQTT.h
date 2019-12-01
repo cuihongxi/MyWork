@@ -1,6 +1,9 @@
 /**
  * 2019年10月16日09:59:59
  * 阿里云关于MQTT
+ * 该文件配置了阿里云相关参数
+ * 使用方法：
+ * 		使用 ss = (SessionStr*)ConnectAliyunMqtt(...) 来初始化会话结构体ss
  */
 
 
@@ -23,10 +26,6 @@ typedef struct _AliyunStr{
 
 
 }AliyunStr;
-
-
-//AliyunStr* ConnectAliyunMqtt(char* url,u16 port,char* productKey,char* deviceName,\
-//		char* deviceSecret,char* clientId,char* timestamp);
 
 AliyunStr*  ConnectAliyunMqtt(char* url,u16 port,AliyunStr* as);	// 创建阿里云的MQTT会话
 
