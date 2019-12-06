@@ -334,8 +334,20 @@ void ICACHE_FLASH_ATTR myMQTT_ServerReplyCB(SessionStr* ss,char * pdata, unsigne
 				pubStr* pub = myMQTT_PublishCB(ss,pdata,len);
 				debug("Ö÷Ìâ£º%s\r\n",pub->sub);
 				debug("ÄÚÈİ£º%s\r\n",pub->pub);
-				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":1}"))WiFi_StateLed(1);	// LED
-				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":0}"))WiFi_StateLed(0);
+				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":1}"))
+					{
+						u8 ledState = 1;
+						Switch_State(1);
+						//WiFi_StateLed(1);	// LED
+						//Flash_Write(LED_STATE_ADDR, &ledState,1);
+					}
+				if(MatchStringinSub(pub,"thing/service/property/set","\"params\":{\"LightSwitch\":0}"))
+					{
+						u8 ledState = 0;
+						Switch_State(0);
+						//WiFi_StateLed(0);
+						//Flash_Write(LED_STATE_ADDR, &ledState,1);
+					}
 				free(pub->pub);
 				free(pub->sub);
 				free(pub);

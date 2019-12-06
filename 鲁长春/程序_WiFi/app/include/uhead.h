@@ -12,6 +12,11 @@
 #include "os_type.h"
 #include "mem.h"
 
+#define		SWITCH				5		// gpio5为继电器控制引脚
+#define		LED_STATE_ADDR		100		// 保存LED灯状态的地址
+
+void Switch_State(u8 state);	// 开关状态设置
+
 #define	DEBUG_LEVEL 1
 
 #if  DEBUG_LEVEL > 0

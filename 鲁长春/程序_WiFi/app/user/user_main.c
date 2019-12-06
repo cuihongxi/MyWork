@@ -98,6 +98,17 @@ user_rf_pre_init(void)
 }
 
 
+void ICACHE_FLASH_ATTR Switch_State(u8 state)
+{
+	if(state)
+	{
+		MYGPIO_SET(SWITCH);
+
+	}else
+	{
+		MYGPIO_RESET(SWITCH);
+	}
+}
 
 /******************************************************************************
  * FunctionName : user_init
@@ -109,13 +120,19 @@ void ICACHE_FLASH_ATTR
 user_init(void)
 {
 	RegCBStr cbfun;
+	u8 ledState = 1;
 	uart_init(115200,115200);		//定义了两个串口的波特率和串口接收函数
 	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
     debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
     _MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
+    _MYGPIO_SETMODE_OUTPUT(SWITCH);
+
+    //Flash_Read(LED_STATE_ADDR, &ledState,1);
+    Switch_State(ledState);				// 开灯
     MYGPIO_RESET(WIFISTATE_LED);	//打开LED
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
     ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);	// 路由器账号密码
+    //ESP8266_STA_Init(&ST_NetCon,"aa","12345678");
     cbfun.sent_callback = ESP8266_WIFI_Send_Cb;
     cbfun.recv_callback = ESP8266_WIFI_Recv_Cb;
     cbfun.connect_callback = ESP8266_TCP_Connect_Cb_JX;
@@ -124,16 +141,13 @@ user_init(void)
     ESP8266_Regitst_Fun_Init(&ST_NetCon,&cbfun);			// 依据协议注册回调函数
 
     AliyunStr* as = malloc(sizeof(AliyunStr));				// 申请一个ALIYUN结构体
-//    as->clientId = "LED0";
-//    as->deviceName = "LED0";
-//    as->deviceSecret = "AryIsyPotIS0giPat7wusZOEHJ0n90OI";
-//    as->productKey = "a1nVPohfr2X";
-    as->clientId = "haha";
-    as->deviceName = "d001";
-    as->deviceSecret = "CIqtOYBSsGAxwJH8IR5282XcoaXDYtDU";
-    as->productKey = "a1uouYHFRAc";
-    char* urlstr = MallocStr_Insert(as->productKey,".iot-as-mqtt.cn-shanghai.aliyuncs.com",strlen(as->productKey));
-    ss = (SessionStr*)ConnectAliyunMqtt(urlstr,1883,as);
+
+    as->clientId = "aabb";
+    as->deviceName = "LED0";
+    as->deviceSecret = "iqSxse2t0W145ain2rrmzW23N468pRMs";
+    as->productKey = "a1LaAic2Uae";
+
+    ss = (SessionStr*)ConnectAliyunMqtt(".iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
 
 
 }

@@ -118,6 +118,7 @@ smartconfig_done(sc_status status, void *pdata)
         case SC_STATUS_FIND_CHANNEL:				// 发现【WIFI信号】（8266在这种状态下等待配网）
             debug("\r\nSC_STATUS_FIND_CHANNEL\r\n");
     		debug("\r\n---- Please Use WeChat to SmartConfig ------\r\n\r\n");
+    		flag_sw = 4;
     	break;
         case SC_STATUS_GETTING_SSID_PSWD: 			// 正在获取【SSID】【PSWD】（8266正在抓取并解密【SSID+PSWD】）
             debug("\r\nSC_STATUS_GETTING_SSID_PSWD\r\n");
@@ -133,7 +134,7 @@ smartconfig_done(sc_status status, void *pdata)
             struct station_config *sta_conf = pdata;	// 获取【STA参数】指针
 			//ESP8266_STA_Save2Flash(sta_conf ,Sector_STA_INFO); // 将【SSID】【PASS】保存到【外部Flash】中
 			 Flash_Write(Sector_STA_INFO, (u8*) sta_conf,96);
-
+			 debug("\r\n-----》 完成flash保存\r\n");
 			wifi_station_set_config(sta_conf);			// 设置STA参数【Flash】
 	        wifi_station_disconnect();					// 断开STA连接
 	        wifi_station_connect();						// ESP8266连接WIFI
@@ -220,6 +221,12 @@ OS_Timer_CB(void)
 				flag_sw = 1;
 			}
 
+	}
+	if(flag_sw == 4)	// 配网时LED闪烁
+	{
+		static bool i = 0;
+		i = !i;
+		WiFi_StateLed(i);
 	}
 	if(flag_sw == 2)
 	{

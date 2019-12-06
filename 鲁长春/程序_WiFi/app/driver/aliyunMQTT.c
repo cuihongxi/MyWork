@@ -45,7 +45,9 @@ AliyunStr*  ICACHE_FLASH_ATTR ConnectAliyunMqtt(char* url,u16 port,AliyunStr* as
 //	as->ss.usrName = CreatAliyunUserName(as->deviceName,as->productKey);	// 需要free
 //	as->ss.passWord = CreatAliyunPassWord(as);								// 需要free
 //	as->ss.clientId = CreatAliyunClientId(as->clientId);					// 需要free
-	myMQTT_SessionStrDefaultInit(&(as->ss), url,port,CreatAliyunUserName(as->deviceName,as->productKey),\
+
+    char* urlstr = MallocStr_Insert(as->productKey,url,strlen(as->productKey));
+	myMQTT_SessionStrDefaultInit(&(as->ss),urlstr,port,CreatAliyunUserName(as->deviceName,as->productKey),\
 			CreatAliyunPassWord(as), CreatAliyunClientId(as->clientId));
 	return as;
 }
