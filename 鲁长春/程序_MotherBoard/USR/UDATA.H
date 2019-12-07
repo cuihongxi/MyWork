@@ -8,26 +8,26 @@
 ********************************************************************************/
 #define			VALVE_BAT_GREEN		8.3	// v,＞8.3V时绿灯常亮。
 #define			VALVE_BAT_SHARP3	7.4	// v,＞7.4V绿灯闪亮3次；＜7.4V红灯闪亮3次。后转为每3秒闪亮一次红灯欠压指示。
-#define         	VALVE_BAT_Motor         6.8     // v,电池马达关窗阀值，低于该值动作
-#define         	VALVE_BAT_NoBACK        4.9    	// v,不再响应反转信号
+#define         VALVE_BAT_Motor         6.8     // v,电池马达关窗阀值，低于该值动作
+#define         VALVE_BAT_NoBACK        4.9    	// v,不再响应反转信号
 #define			VALVE_BAT_CHECK		7.4	// v,大于此电压，间隔TIM_BAT_CHECKH检测一次，小于则间隔TIM_BAT_CHECKL检测一次
 #define			TIM_BAT_CHECKH		10000	// ms,大于VALVE_BAT_CHECK电压，检测间隔
 #define			TIM_BAT_CHECKL		2000	// ms,小于VALVE_BAT_CHECK电压，检测间隔
 #define			VALVE_BAT_CHARGE	8.3	// v,充电大于则蓝灯常量
 #define			TIM_MOTOR_Z		1000	// ms,马达BC出现后继续前进时间，
 #define			TIM_MOTOR_F		500	// ms,马达停转时反转时间，解锁离合
-#define         	VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
-#define         	TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
-#define         	TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
-#define         	VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
-#define         	MOTOR_F_SAFE            20000   // ms,正转保护
+#define         VALVE_YS_D              2     	// V，雨水传感器的感应电压阀值
+#define         TIM__YS_D              	4000    // ms，雨水传感器的滤波间隔
+#define         TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
+#define         VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
+#define         MOTOR_F_SAFE            20000   // ms,正转保护
 #define			TIM_SLEEP		5000	// ms,休眠倒计时时间
 #define			TIM_KEY			1000	// ms，连击间隔
-#define         	TIM_CHECKEYS          	2000    // ms,YS检测时间
-#define         	BH_SAFE                 5000    // ms, BH方波检测
-#define         	TIM_BH0                 4000    // ms, BH反向运动时间
-#define         	TIM_30                  1	// 30分钟不响应
-#define         	TIM_BAT                 5000    // ms ,检测BAT电压周期
+#define         TIM_CHECKEYS          	2000    // ms,YS检测时间
+#define         BH_SAFE                 5000    // ms, BH方波检测
+#define         TIM_BH0                 4000    // ms, BH反向运动时间
+#define         TIM_30                  1	// 30分钟不响应
+#define         TIM_BAT                 5000    // ms ,检测BAT电压周期
 #define			TIM_AM_ON		3000	// ms,AM有效时对应的LED指示点亮时间
 #define			TIM_AM_OFF		500	// ms,AM无效时对应的LED指示点亮时间
 
@@ -50,7 +50,7 @@
 #define			TIM_ALARM_BH		10000	// ms,BH无方波和马达超时报警间隔
 #define			TIM_SHACHE			500	// ms,刹车时间
 
-#define			USE_NRF				1	// NRF模块 ：0，不使用，1 使用	
+#define			USE_NRF				0	// NRF模块 ：0，不使用，1 使用	
 #define 		DEBUG_LEVEL 		1	// 串口调试接口
 
 #define         DM_NUM              10     	//对码次数，超过次数没对码成功，退出对码模式 

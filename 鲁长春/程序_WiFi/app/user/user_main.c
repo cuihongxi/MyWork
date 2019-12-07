@@ -128,8 +128,8 @@ user_init(void)
     _MYGPIO_SETMODE_OUTPUT(SWITCH);
 
     //Flash_Read(LED_STATE_ADDR, &ledState,1);
-    Switch_State(ledState);				// 开灯
-    MYGPIO_RESET(WIFISTATE_LED);	//打开LED
+    Switch_State(ledState);									// 开灯
+    MYGPIO_RESET(WIFISTATE_LED);							//打开LED
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
     ESP8266_STA_Init_FromFlash(&ST_NetCon,Sector_STA_INFO);	// 路由器账号密码
     //ESP8266_STA_Init(&ST_NetCon,"aa","12345678");
@@ -143,9 +143,9 @@ user_init(void)
     AliyunStr* as = malloc(sizeof(AliyunStr));				// 申请一个ALIYUN结构体
 
     as->clientId = "aabb";
-    as->deviceName = "LED0";
-    as->deviceSecret = "iqSxse2t0W145ain2rrmzW23N468pRMs";
-    as->productKey = "a1LaAic2Uae";
+    as->deviceName = "d003";
+    as->deviceSecret = "8dCldtdwaj1X3CoNg59VNPUhsyAhbBLi";
+    as->productKey = "a1OKFgeque8";
 
     ss = (SessionStr*)ConnectAliyunMqtt(".iot-as-mqtt.cn-shanghai.aliyuncs.com",1883,as);
 
