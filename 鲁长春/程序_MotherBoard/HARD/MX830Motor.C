@@ -302,7 +302,7 @@ void WindowStateOpendown()
 
 void ResetBHErro()
 {
-    	counter_BH = 0;
+    counter_BH = 0;
 	motorStruct.erro &= ~ERROR_BH;
 }
 void MotorHold()
@@ -384,7 +384,8 @@ void MotorControl()
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,IRQ_PERIOD,MotorBHAppear);	//恢复原来的转向
 				OS_AddFunction(taskMotor,ResetBHErro,IRQ_PERIOD);	
 				OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
-				OS_AddJudegeFunction(taskMotor,MotorHoldNoRunBack,TIM_MOTO_HOLD,MotorProtectHold);
+				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,JugeBTStop);// 刹车
+				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}

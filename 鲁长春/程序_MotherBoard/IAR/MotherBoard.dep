@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2066644628</fileChecksum>
+  <fileChecksum>2835593544</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -240,6 +240,7 @@
       <file>$PROJ_DIR$\..\HARD\ADC_CHECK.C</file>
       <file>$PROJ_DIR$\..\HARD\FL.C</file>
       <file>$PROJ_DIR$\..\LIB\src\stm8l15x_pwr.c</file>
+      <file>$PROJ_DIR$\..\README.txt</file>
       <file>$PROJ_DIR$\..\USR\main.c</file>
       <file>$PROJ_DIR$\..\USR\stm8l15x_it.c</file>
       <file>$PROJ_DIR$\..\LIB\src\stm8l15x_syscfg.c</file>
@@ -249,6 +250,8 @@
       <file>$PROJ_DIR$\..\LIB\src\stm8l15x_gpio.c</file>
       <file>$PROJ_DIR$\..\LIB\src\stm8l15x_usart.c</file>
       <file>$PROJ_DIR$\..\LIB\src\stm8l15x_wwdg.c</file>
+      <file>$PROJ_DIR$\Debug\Exe\&#x4e3B;&#x677F;18-NRF&#x901F;&#x7387; &#x6539;&#x6210;250.hex</file>
+      <file>$PROJ_DIR$\Debug\Exe\&#x4e3B;&#x677F;18.hex</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\HARD\24l01.c</name>
@@ -384,7 +387,7 @@
         </tool>
         <tool>
           <name>OBJCOPY</name>
-          <file> 146</file>
+          <file> 244</file>
         </tool>
       </outputs>
       <inputs>
@@ -942,7 +945,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 194 148 51 186 121 4 38 193 53 178 156 136 115 99 55 114 106 133 196 89 174 207 219 44 144 60 95 230 180 27 52 158 154 142 11 103 204 151 74 198 112 173 214 116 152 26 88 176 111 35 203 71</file>
+          <file> 194 151 180 44 186 27 142 173 193 158 103 198 136 115 99 55 219 230 52 154 11 204 74 112 214 114 106 144 60 95 121 38 4 51 53 133 178 196 148 89 156 174 207 116 152 26 88 176 111 35 203 71</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
@@ -996,7 +999,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 53 194 156 178 186 99 71 129 121 4 51 148 38 116 152 219 193 192 114 106 133 196 89 174 207 26 136 95 176 60 144 230 180 27 44 52 158 154 142 11 103 204 151 74 198 112 173 214 115 111 35 203 88</file>
+          <file> 158 198 103 194 186 99 71 129 180 27 44 142 151 173 116 152 219 193 192 230 52 154 11 204 74 112 214 26 136 95 176 60 144 121 38 4 51 114 53 106 133 178 196 148 89 156 174 207 115 111 35 203 88</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
@@ -1158,7 +1161,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 38 4 194 121 51 148 144 19 53 178 156 186 35 203 55 114 106 133 196 89 174 207 219 99 230 180 27 44 52 158 154 142 11 103 204 151 74 198 112 173 214 111 136 71 140 116 152 26 115 88</file>
+          <file> 173 27 121 142 194 180 44 151 186 144 19 158 103 198 136 115 55 52 154 11 204 74 112 214 114 88 219 99 230 38 4 51 53 106 133 178 196 148 89 156 174 207 116 152 26 140 111 35 203 71</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>
@@ -1293,7 +1296,7 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 129 196 194 38 95 106 174 219 116 152 114 148 55 133 89 207 186 99 71 23 176 178 121 4 51 53 156 26 136 44 144 193 192 60 19 140 230 180 27 52 158 154 142 11 103 204 151 74 198 112 173 214 115 191 111 35 203 88</file>
+          <file> 207 103 140 158 198 194 116 152 114 144 60 180 27 44 142 151 173 186 99 71 219 193 192 19 230 52 154 11 204 74 112 214 26 136 95 23 148 176 129 55 178 121 38 4 51 53 106 133 196 89 156 174 115 191 111 35 203 88</file>
         </tool>
         <tool>
           <name>ICCSTM8</name>

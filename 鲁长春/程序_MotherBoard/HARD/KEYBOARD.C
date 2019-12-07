@@ -496,6 +496,7 @@ INTERRUPT_HANDLER(EXTI1_IRQHandler,9)
 			DM_Risingtime = ScanKey(&key_DM);
 			key_val = KEY_VAL_DM;
 		}
+		debug("--KEY_VAL_DM\r\n");
 		if(key_val)flag_exti = 1; 	
     }
 	EXTI_ClearITPendingBit (EXTI_IT_Pin1);
@@ -513,6 +514,7 @@ INTERRUPT_HANDLER(EXTI7_IRQHandler,15)
 		{
 			DM_Risingtime = ScanKey(&key_DM);
 			key_val = KEY_VAL_DM;
+			debug("KEY_VAL_DM\r\n");
 		}
 		if(key_val)flag_exti = 1; 
 	

@@ -14,7 +14,7 @@
 
 
 
-//#define DM_LED_RESET    
+//#define DM_LED_RESET    //原始的需要defien,新的去掉
 
 #define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC3
 

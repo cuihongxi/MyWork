@@ -55,35 +55,16 @@ void RCC_Config()
 // 指示灯初始化
 void Init_LedGPIO(void)
 {
-	GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
+	//GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
 	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
-	GPIO_RESET(Z_LED);
+	//GPIO_RESET(Z_LED);
 	GPIO_RESET(T_LED);
 	delay_ms(1000);
-	GPIO_SET(Z_LED);
+	//GPIO_SET(Z_LED);
 	GPIO_SET(T_LED);
 	  
 }
-//快闪3S
-//void SharpLED(GPIO_TypeDef* GPIOx, uint8_t GPIO_Pin,u8* times)
-//{
-//
-//	if((*times)!=0)
-//	{
-//		if((*times)&0x01)
-//		{
-//			GPIO_SetBits(GPIOx,GPIO_Pin);
-//			//debug("LED OFF\r\n");
-//		}
-//		else 
-//		{
-//			GPIO_ResetBits(GPIOx,GPIO_Pin);	
-//			//debug("LED ON\r\n");
-//		}
-//		(*times) --;
-//	}
-//
-//}
+
 //让系统休眠
 void Make_SysSleep()
 {
@@ -235,12 +216,12 @@ void main()
     NRF24L01_GPIO_Lowpower();
 	Make_SysSleep();
 	
-	IWDG_Enable();
-	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-	IWDG_SetPrescaler(IWDG_Prescaler_256);
-	IWDG_SetReload(0xFF);
-    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
-	Init_TOUCHGPIO();
+//	IWDG_Enable();
+//	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+//	IWDG_SetPrescaler(IWDG_Prescaler_256);
+//	IWDG_SetReload(0xFF);
+//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
+	//Init_TOUCHGPIO();
 
     while(1)
     {    
@@ -342,7 +323,7 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
           DM_num--;
           if(DM_num == 0)flag_duima = 0;
         }
-		IWDG_ReloadCounter() ;
+		//IWDG_ReloadCounter() ;
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 

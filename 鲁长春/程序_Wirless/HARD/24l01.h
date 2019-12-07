@@ -108,7 +108,7 @@
 #define	RF_PWR_sub_6dBm		0x01
 #define	RF_PWR_sub_12dBm	0x00
 
-#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|((dr&0x02)<<5)))
+#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|(((dr>>1)<<5))))
 
 /*以下宏定义为了移植方便而定义*/		
 

@@ -28,39 +28,43 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	if(bat->flag)
 	{
 		bat->flag = 0;
-		bat->val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
-		if( GPIO_READ(CHARGE_PRO_PIN) != RESET)		//³äµç×´Ì¬
+		if(motorStruct.dir != FORWARD && motorStruct.dir != BACK)
 		{
-		    	motorStruct.erro |= ERROR_CHARG;
-		    	bat->threshold = GetSysTime(taskBatControl->timerlink) + 1000;	//1Ãë1´Î
-			if(bat->val >= VALVE_BAT_CHARGE)state = BAT_STATE_CHARGE_H;
-			else state = BAT_STATE_CHARGE_L;
-		}else 	
-		{
-		    	motorStruct.erro &= ~ERROR_CHARG;
-			if(bat->val >=VALVE_BAT_CHECK) 
-			    bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// ¼ÆËã¼ì²â¼ä¸ô
-			else bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKL;
-			if(bat->val > VALVE_BAT_GREEN)			
-			    state = BAT_STATE_GREEN;									
-			else if(bat->val > VALVE_BAT_SHARP3)	
-			    state = BAT_STATE_GREENSHARP3;
-			else if(bat->val > VALVE_BAT_Motor) 	
-			    state = BAT_STATE_REDSHARP3;								
-			else if(bat->val > VALVE_BAT_NoBACK)	
-			    state = BAT_STATE_38BC1;							
-			else					
+			bat->val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));
+			if( GPIO_READ(CHARGE_PRO_PIN) != RESET)		//³äµç×´Ì¬
 			{
-				state = BAT_STATE_NoBACK;
-				motorStruct.erro |= ERROR_BAT;
-			}	
-		
+					motorStruct.erro |= ERROR_CHARG;
+					bat->threshold = GetSysTime(taskBatControl->timerlink) + 1000;	//1Ãë1´Î
+				if(bat->val >= VALVE_BAT_CHARGE)state = BAT_STATE_CHARGE_H;
+				else state = BAT_STATE_CHARGE_L;
+			}else 	
+			{
+				motorStruct.erro &= ~ERROR_CHARG;
+				if(bat->val >=VALVE_BAT_CHECK) 
+					bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKH;	// ¼ÆËã¼ì²â¼ä¸ô
+				else bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_CHECKL;
+				if(bat->val > VALVE_BAT_GREEN)			
+					state = BAT_STATE_GREEN;									
+				else if(bat->val > VALVE_BAT_SHARP3)	
+					state = BAT_STATE_GREENSHARP3;
+				else if(bat->val > VALVE_BAT_Motor) 	
+					state = BAT_STATE_REDSHARP3;								
+				else if(bat->val > VALVE_BAT_NoBACK)	
+					state = BAT_STATE_38BC1;							
+				else					
+				{
+					state = BAT_STATE_NoBACK;
+					motorStruct.erro |= ERROR_BAT;
+				}	
+			
+			}
+
+			if(motorStruct.erro & ERROR_BAT)
+			{
+				if(bat->val > VALVE_BAT_NoBACK) motorStruct.erro &= ~ERROR_BAT;
+			}		
 		}
 
-		if(motorStruct.erro & ERROR_BAT)
-		{
-			if(bat->val > VALVE_BAT_NoBACK) motorStruct.erro &= ~ERROR_BAT;
-		}
 	}
 	if((bat->state != state) && (taskBatControl->state == Stop)) // taskBatControl->state == Wait ||
 	{
