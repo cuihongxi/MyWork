@@ -297,7 +297,6 @@ void KeyFun()
 		switch(key_val)
 		{
 		    case KEY_VAL_DER_Z:	
-		    //debug("flag_DM = %d ,windowstate = %d\n",flag_DM,windowstate);
 		    if((flag_DM == 0 && windowstate != SHUTDOWN) || (flag_DM != 0 && windowstate != OPENDOWN))flag_KEY_Z = 1;
                       else key_Z.counter = 0;
 		    BeepStart();
@@ -402,33 +401,70 @@ void ChangeNRFCmd(u8* buf)
     break;
       case CMD_Z:
 			key_val = KEY_VAL_DER_Z;
-			key_Z.counter = GetSysTime(&timer2);
+			
 			if(buf[6] == MES_Z)
 			{
-				if(key_Z.val != off) 
+			  	if(key_Z.counter == 0)
 				{
+				  	key_Z.counter = GetSysTime(&timer2);
+					key_Z.val = on;
+					key_Y.counter = 0;
+					debug("key on\r\n");
+				}else
+				{
+					key_Z.val = off;	//ֹͣ
 					key_Z.counter = 0;
-					key_Z.val = off;
+					debug("key off\r\n");
 				}
-				else key_Z.val = on;
-			}else if(buf[6] == MES_Z_3_1) key_Z.val = two;
-			else if(buf[6] == MES_Z_3_2) key_Z.val = three;
-			else if(buf[6] == MES_Z_3_3) key_Z.val = four;
+
+			}else
+			{	
+			  	key_Z.counter = GetSysTime(&timer2);
+				if(buf[6] == MES_Z_3_1) key_Z.val = two;
+				else if(buf[6] == MES_Z_3_2) key_Z.val = three;
+				else if(buf[6] == MES_Z_3_3) key_Z.val = four;
+			} 
+
     break;
       case CMD_Y:
+//			key_val = KEY_VAL_DER_Y;
+//			key_Y.counter = GetSysTime(&timer2);
+//			if(buf[6] == MES_Y)
+//			{
+//				if(key_Y.val != off)
+//				{
+//					key_Y.counter = 0;
+//					key_Y.val = off;
+//				} 
+//				else key_Y.val = on;
+//			}else if(buf[6] == MES_Y_3_1) key_Y.val = two;
+//			else if(buf[6] == MES_Y_3_2) key_Y.val = three;
+//			else if(buf[6] == MES_Y_3_3) key_Y.val = four;
 			key_val = KEY_VAL_DER_Y;
-			key_Y.counter = GetSysTime(&timer2);
+			
 			if(buf[6] == MES_Y)
 			{
-				if(key_Y.val != off)
+			  	if(key_Y.counter == 0)
 				{
+				  	key_Y.counter = GetSysTime(&timer2);
+					key_Y.val = on;
+					key_Z.counter = 0;
+					debug("key on\r\n");
+				}else
+				{
+					key_Y.val = off;	//ֹͣ
 					key_Y.counter = 0;
-					key_Y.val = off;
-				} 
-				else key_Y.val = on;
-			}else if(buf[6] == MES_Y_3_1) key_Y.val = two;
-			else if(buf[6] == MES_Y_3_2) key_Y.val = three;
-			else if(buf[6] == MES_Y_3_3) key_Y.val = four;
+					debug("key off\r\n");
+				}
+
+			}else
+			{	
+			  	key_Y.counter = GetSysTime(&timer2);
+				if(buf[6] == MES_Y_3_1) key_Y.val = two;
+				else if(buf[6] == MES_Y_3_2) key_Y.val = three;
+				else if(buf[6] == MES_Y_3_3) key_Y.val = four;
+			} 		
+		
     break;
       case CMD_I30:
 		if(buf[6] == MES_I30_ALARM)

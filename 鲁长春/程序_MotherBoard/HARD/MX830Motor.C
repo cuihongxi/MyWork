@@ -89,7 +89,7 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 		{
 			//debug("Âí´ï»»Ïò\r\n");  
 			motorStruct->dir = motorStruct->command;
-			motorStruct->counter = 0;
+			
 		
 			switch(motorStruct->dir)
 			{
@@ -106,6 +106,7 @@ void MX830Motor_StateDir(Motor_Struct* motorStruct)
 				case STOP       :  
 				  {       
 						debug("dir = STOP\r\n");
+						motorStruct->_counter = 0;
 						GPIO_ResetBits(MX830Motor_GPIO_FI);
 						GPIO_ResetBits(MX830Motor_GPIO_BI);
 				  }          
@@ -265,8 +266,7 @@ bool MotorProtectAM()	//AMÄ£Ê½ÏÂ£¬³ýÁËY30µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬´ïµ
 
 bool YS_MotorProtect()	//µç»ú×ª¶¯±£»¤£¬³äµç±£»¤£¬BH·½²¨±£»¤£¬Y30ÑÓÊ±,¹Ø´°µ½ÏÞÎ»
 {
-	bool juge = (bool)((motorStruct.counter > MOTOR_F_SAFE) \
-		|| GPIO_READ(CHARGE_PRO_PIN) != RESET || counter_BH > BH_SAFE || YS_30.start == 1 ||flag_KEY_Z||flag_KEY_Y||BoolShutEdge());
+	bool juge = (bool)(motorStruct.erro || YS_30.start == 1 ||flag_KEY_Z||flag_KEY_Y||BoolShutEdge());
 	if(juge)
 	{
 		jugeYS.switchon = 0;

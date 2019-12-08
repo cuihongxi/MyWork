@@ -126,9 +126,14 @@ void FunInSleap()
 	if(motorStruct.dir == FORWARD || motorStruct.dir == BACK)// 马达运行计时	
 	{
 	    
-		motorStruct.counter += IRQ_PERIOD;		// 马达运行超过阀值，停转
+		motorStruct._counter += IRQ_PERIOD;		// 马达运行超过阀值，停转
+		
 		counter_BH += IRQ_PERIOD;			// BH超过阀值没有触发，停转
-		if(motorStruct.counter > MOTOR_F_SAFE) motorStruct.erro |= ERROR_MOTOR;
+		if(motorStruct._counter > MOTOR_F_SAFE)
+		{
+			motorStruct.erro |= ERROR_MOTOR;
+			debug("---->运行超时\r\n");
+		} 
 		if(counter_BH > BH_SAFE) motorStruct.erro |= ERROR_BH;
 
 	}

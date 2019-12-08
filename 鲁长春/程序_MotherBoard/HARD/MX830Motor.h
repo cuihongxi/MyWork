@@ -36,13 +36,13 @@ typedef enum
 
 typedef struct
 {
-    	u32  		counter;        // 标记马达运行计时
+    u32  	_counter;        // 标记马达运行计时
 	u32		opentime ;	// 记录马达完整开窗时间
 	u32		closetime ;	// 记录马达完整关窗时间
 	int		hasrun ;	// 记录马达目前的位置，关窗位置为0，开窗BC2为 dm_counter
-	int 		needrun;	// 需要走的步数
-    	State_Dir   	dir;          	// 马达方向
-	State_Dir	dirBack;	// 记录马达方向，停止除外	
+	int 	needrun;	// 需要走的步数
+    State_Dir   	dir;          	// 马达方向
+	State_Dir		dirBack;	// 记录马达方向，停止除外	
 	State_Dir   	command;	// 指令
 	u8 		flag_BC;	// BC到位检测标志
 	u8 		flag_shutdown ;	// 关窗标志

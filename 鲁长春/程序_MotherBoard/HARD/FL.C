@@ -134,7 +134,7 @@ void BH_Check()
 			{
 				motorStruct.hasrun ++;
 
-				debug("马达.hasrun ++\r\n");
+				debug("++\r\n");
 				if(flag_DM == 0)
 				{
 					if(windowstate == SHUTDOWN)	//检测手动开窗
@@ -181,7 +181,7 @@ void BH_Check()
 			{
 			   
 				motorStruct.hasrun --;
-				debug("马达.hasrun --\r\n");
+				debug("--\r\n");
 				if(flag_DM == 0)
 				{
 					if(windowstate == OPENDOWN)	//检测手动关窗
