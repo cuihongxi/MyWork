@@ -24,8 +24,7 @@ extern 		u8					LEDtimes;
 extern 		u32					sendtime;
 
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
-void DM_Mode();
-void ClearDM();// 清除DM
+
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
 {
@@ -143,22 +142,7 @@ u8  Keyscan()
     return(KEY_VAL_NULL);
     
 }
-//触摸松手检测
-void Key_TouchtLeave()
-{
 
-	if(GPIO_READ(TOUCH_IO) == RESET)
-	{
-		GPIO_SET(Z_LED);
-		flag_touch = 0;
-		NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_SLEEP);
-	}else
-  	if((systime - sendtime)>=9000)
-	{
-		NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
-	}	  
-	  
-}
 //松手程序
 void Key_ScanLeave()
 {
@@ -171,7 +155,7 @@ void Key_ScanLeave()
 	    if((systime - AM_time) > DELAY_TIME)
 	    {
 			//debug("切换AM\r\n");	
-			NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM);//NRF发送AM命令
+			NRF_SendCMD(&ptx,ADDRESS2,CMD_AM, MES_AM);//NRF发送AM命令
 			keyval = KEY_VAL_NULL; 
 	    } 
 	}  
@@ -193,7 +177,7 @@ void Key_ScanLeave()
 	    if((systime - Y30_time) > DELAY_TIME)
 	    {
 			//debug("Y30取消\r\n");
-			NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CLEAR); 
+			NRF_SendCMD(&ptx,ADDRESS2,CMD_Y30, MES_Y30_CLEAR); 
 			keyval = KEY_VAL_NULL;
 	    }
 	} 
@@ -217,27 +201,28 @@ void Key_ScanLeave()
 		  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
 			if((systime - DM_time)< 2000)
 			{
+			  		flag_duima = 1;
 					//debug("DM 模式\r\n");
-					DM_Mode();
+					
 
 			}
-			if((systime - DM_time) > 6000)
-				{
-				  ClearDM();
-				}
+//			if((systime - DM_time) > 6000)
+//				{
+//				  ClearDM();
+//				}
 			DM_time = 0;
 			pressKey = 1;
 		}
 		if(keyval == KEY_VAL_AM)
 		{
 			if((systime - AM_time) < 3000)
-				NRF_SendCMD(&ptx,ADDRESS3,CMD_AM, MES_AM_CHECK);//NRF发送AM命令	
+				NRF_SendCMD(&ptx,ADDRESS2,CMD_AM, MES_AM_CHECK);//NRF发送AM命令	
 		}
 		if(keyval == KEY_VAL_Y30)
 		{
 			if((systime - Y30_time) < 3000)
 			{
-				NRF_SendCMD(&ptx,ADDRESS3,CMD_Y30, MES_Y30_CHECK); 
+				NRF_SendCMD(&ptx,ADDRESS2,CMD_Y30, MES_Y30_CHECK); 
 				//debug("MES_Y30_CHECK\r\n");
 			}
 				

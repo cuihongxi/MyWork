@@ -209,7 +209,7 @@ void main()
 
 
 #if	USE_NRF > 0
-	NRF_CreatNewAddr(ADDRESS2);
+	NRF_CreatNewAddr(ADDRESS3);
 
 #endif
 	NRF24L01_PWR(0);

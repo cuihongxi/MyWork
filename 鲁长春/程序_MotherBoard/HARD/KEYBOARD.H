@@ -21,7 +21,7 @@
 #define		GPIO_DER_Y			GPIOB,GPIO_Pin_1		// >Y´¥Ãþ°å
 #define		GPIO_AM				GPIOB,GPIO_Pin_2 		// AM ´¥Ãþ°å
 #define		GPIO_Y30			GPIOB,GPIO_Pin_3 		// Y30 ´¥Ãþ°å
-#ifndef  DM_LED_RESET               
+#ifndef  	DM_LED_RESET               
 #define		GPIO_DM				GPIOD,GPIO_Pin_1		// ¶ÔÂë¼ü
 #else
 #define		GPIO_DM				GPIOD,GPIO_Pin_7		// ¶ÔÂë¼ü

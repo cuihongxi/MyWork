@@ -38,10 +38,17 @@
 #define debug(...)   
 #endif
 
-
+#define         IRQ_PERIOD      500  
 #define delay_ms(x)     LSI_delayms(x/8)
 #define delay_us(x)     LSI_delayus(x/8)
+//定时判断数据类型
+typedef struct{
+	u8 start;			//启动定时
+	u8 switchon;		//定时到，开关打开
+	u32 counter;		//计数
+}JugeCStr;
 
+bool Juge_counter(JugeCStr* juge, u32 swdat);
 
 //nrf 命令 
 #define		CMD_DM		0X5A

@@ -154,8 +154,9 @@
 #define	REPEAT_DELAY	15		//重复间隔，单位250uS
 
 extern u8 RF_CH_HZ ; 
-extern u8  ADDRESS1[TX_ADR_WIDTH]; //发送地址
+extern u8  ADDRESS1[TX_ADR_WIDTH]; 
 extern u8  ADDRESS2[RX_ADR_WIDTH]; 
+extern u8  ADDRESS3[5];
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化

@@ -155,7 +155,7 @@
 extern u8 RF_CH_HZ ; 
 extern u8  ADDRESS1[TX_ADR_WIDTH]; // DM地址
 extern u8  ADDRESS2[RX_ADR_WIDTH]; // DM成功后通讯地址
-extern u8  ADDRESS3[5]; //保存本地地址
+//extern u8  ADDRESS3[5]; //保存本地地址
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
