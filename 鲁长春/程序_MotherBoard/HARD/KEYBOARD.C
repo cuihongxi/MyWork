@@ -111,7 +111,7 @@ void SwitchAM()
 // 指示当前AM状态
 void ShowAMState()
 {
-  debug("ShowAMState\r\n");
+  	debug("ShowAMState\r\n");
 	ledSharpTimes = 2;
 	led_ontime = 2000;
 	led_offtime = TIM_LED_SHARP_OFF;

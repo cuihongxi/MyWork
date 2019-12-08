@@ -197,16 +197,16 @@ void Key_ScanLeave()
 			keyval = KEY_VAL_NULL;
 	    }
 	} 
-	if(keyval == KEY_VAL_I30)
-	{
-	    if((systime - I30_time) > DELAY_TIME)
-	    {
-			//debug("开窗报警\r\n");
-			NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM); 
-			keyval = KEY_VAL_NULL;
-	    }
-	    
-	} 	
+//	if(keyval == KEY_VAL_I30)
+//	{
+//	    if((systime - I30_time) > DELAY_TIME)
+//	    {
+//			//debug("开窗报警\r\n");
+//			NRF_SendCMD(&ptx,ADDRESS3,CMD_I30, MES_I30_ALARM); 
+//			keyval = KEY_VAL_NULL;
+//	    }
+//	    
+//	} 	
     if(Read_Valu() == 0x07)	//无按键按下
     {       
 
@@ -243,6 +243,7 @@ void Key_ScanLeave()
 				
 		}
 		flag_exti = 0;
+		GPIO_SET(Z_LED);
 		keyval = KEY_VAL_NULL;
     }
 }
@@ -268,12 +269,12 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
-                    //  debug(".");
+            GPIO_RESET(Z_LED);
 		}
   }
 
-  // EXTI_ClearITPendingBit (EXTI_IT_Pin0);
-   EXTI->SR1 = (uint8_t) (EXTI_IT_Pin0);
+   EXTI_ClearITPendingBit (EXTI_IT_Pin0);
+
 } 
  
 
@@ -286,23 +287,23 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
-                        //debug(".");
+            GPIO_RESET(Z_LED);
 		}
    }
-   //EXTI_ClearITPendingBit (EXTI_IT_Pin3);
-   EXTI->SR1 = (uint8_t) (EXTI_IT_Pin3);
+   EXTI_ClearITPendingBit (EXTI_IT_Pin3);
+
 } 
 
 INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
 {
-  if(flag_touch == 0)
-   {
-   	    if(GPIO_READ(TOUCH_IO)) 
-		{ 
-			GPIO_RESET(Z_LED);
-			 NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
-			 flag_touch = 1; 
-		}
-   } 	
+//  if(flag_touch == 0)
+//   {
+//   	    if(GPIO_READ(TOUCH_IO)) 
+//		{ 
+//			GPIO_RESET(Z_LED);
+//			 NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
+//			 flag_touch = 1; 
+//		}
+//   } 	
  	EXTI_ClearITPendingBit (EXTI_IT_Pin5);
 }

@@ -47,21 +47,21 @@ extern 		u32 		DM_time;
 
 void RCC_Config()
 {
-  //CLK_INIT(HIS_DIV1,CPU_DIV1);
-  CLK_Change2HSI();				//切换HSI时钟 
+ // CLK_INIT(HIS_DIV1,CPU_DIV1);
+  //CLK_Change2HSI();				//切换HSI时钟 
 }
 
 
 // 指示灯初始化
 void Init_LedGPIO(void)
 {
-	//GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
-	GPIO_Init(T_LED,GPIO_Mode_Out_PP_High_Slow);
-	//GPIO_RESET(Z_LED);
-	GPIO_RESET(T_LED);
+	GPIO_Init(Z_LED,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_Init(_T_LED,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_RESET(Z_LED);
+	GPIO_RESET(_T_LED);
 	delay_ms(1000);
-	//GPIO_SET(Z_LED);
-	GPIO_SET(T_LED);
+	GPIO_SET(Z_LED);
+	GPIO_SET(_T_LED);
 	  
 }
 
@@ -90,7 +90,7 @@ void Make_SysSleep()
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
     NRF24L01_PWR(1);
-	NRF24L01_ClearFIFO();
+
     ptx->txbuf[0] = addr[0];
     ptx->txbuf[1] = addr[1];
     ptx->txbuf[2] = addr[2];
@@ -99,7 +99,8 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     ptx->txbuf[5] = cmd;
     ptx->txbuf[6] = mes;
 	sendtime = systime;
-	GPIO_RESET(T_LED);
+	GPIO_RESET(_T_LED);
+	NRF24L01_ClearTXFIFO();
     NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
@@ -156,7 +157,7 @@ void dmRXD_CallBack(Nrf24l01_PRXStr* prx)
             flag_duima = 0;
            // debug("\r\n---DM完成---\r\n");
       }
-      	if(prx->rxlen)
+      if(prx->rxlen)
 	{
 		prx->rxlen = 0;
 	}
@@ -200,7 +201,7 @@ void Init_TOUCHGPIO(void)
 
 void main()
 {    
-
+	RCC_Config();
 	Key_GPIO_Init();
 	UART_INIT(115200);	
 //#if  DEBUG_LEVEL == 0
@@ -213,7 +214,6 @@ void main()
     ptx.rxbuf = TXrxbuf;
 		
 	NRF_CreatNewAddr(ADDRESS3);
-    NRF24L01_GPIO_Lowpower();
 	Make_SysSleep();
 	
 //	IWDG_Enable();
@@ -229,7 +229,7 @@ void main()
 		
 	  //按键检测
 	   if(flag_exti) Key_ScanLeave();
-	   if(flag_touch)Key_TouchtLeave();
+	  // if(flag_touch)Key_TouchtLeave();
 	   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
 	   {
 		 switch(keyval)

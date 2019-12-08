@@ -201,7 +201,7 @@ u8 NRF24L01_Check(void)
 u8 NRF24L01_Write_Reg(u8 reg,u8 value)
 {
 	u8 status;
-        SCLK_OUT_0;    
+    SCLK_OUT_0;    
    	CSN_OUT_0;                              //使能SPI传输
   	status =SPI2_ReadWriteByte(reg);        //发送寄存器号 
   	SPI2_ReadWriteByte(value);              //写入寄存器的值
@@ -321,10 +321,19 @@ void NRF24L01_TX_Mode(void)
     //  CE_OUT_0; 
 }
 
-void NRF24L01_ClearFIFO(void)
+void NRF24L01_ClearTXFIFO(void)
 {	
         CE_OUT_0; 
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        	//清除TX_FIFO寄存器 
+	//	NRF24L01_Write_Reg(FLUSH_RX,0x00);	        	//清除rX_FIFO寄存器 
+		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff); 	//清除中断标志
+		//CE_OUT_1; 
+}
+
+void NRF24L01_ClearRXFIFO(void)
+{	
+        CE_OUT_0; 
+       // NRF24L01_Write_Reg(FLUSH_TX,0x00);	        	//清除TX_FIFO寄存器 
 		NRF24L01_Write_Reg(FLUSH_RX,0x00);	        	//清除rX_FIFO寄存器 
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,0xff); 	//清除中断标志
 		//CE_OUT_1; 

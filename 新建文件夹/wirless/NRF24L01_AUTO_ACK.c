@@ -72,7 +72,7 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	}
 	else 
 	{
-	 	GPIO_SET(T_LED);
+	 	GPIO_SET(_T_LED);
 		NRF24L01_PWR(0);
 	}
 }
@@ -92,7 +92,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
 		//NRF24L01_PWR(0);
 				//NRF24L01_ClearFIFO();
-		GPIO_SET(T_LED);
+		GPIO_SET(_T_LED);
 		NRF24L01_PWR(0);
 }
 
@@ -117,7 +117,7 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 		//debug("send OK");
 	}
 	//NRF24L01_ClearFIFO();
-	GPIO_SET(T_LED);
+	GPIO_SET(_T_LED);
 	NRF24L01_PWR(0);
 }
 

@@ -30,7 +30,7 @@
 #define         Heng_2                  GPIOB,GPIO_Pin_2
 
 #define         Z_LED                   GPIOB,GPIO_Pin_1		// 感应灯
-#define         T_LED                   GPIOC,GPIO_Pin_1		// 感应灯
+#define         _T_LED                   GPIOC,GPIO_Pin_1		// 感应灯
 
 #define			TOUCH_IO				GPIOC,GPIO_Pin_5		// 触摸中断引脚 GPIOC,GPIO_Pin_5
 #define			GPIO_MODE_TOUCH			GPIO_Mode_In_FL_IT		
