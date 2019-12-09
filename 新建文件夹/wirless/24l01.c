@@ -399,7 +399,7 @@ u8 NRF24L01_GetStatus(void)
 //设置射频数据率，发射功率
 void NRF24L01_SetRF_SETUP(u8 dr,u8 pwr)
 {
-    	CE_OUT_0; 
+    CE_OUT_0; 
 	NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(dr,pwr));
 }
 

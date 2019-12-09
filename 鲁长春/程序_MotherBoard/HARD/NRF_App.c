@@ -35,6 +35,13 @@ void NRF_Function()
           {
             address = ADDRESS2;
             InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//配置接收模式
+			debug("当前的通讯地址：");
+			u8 i = 0;
+			for(i =0;i<5;i++)
+			{
+				debug("%X	",address[i]);
+			}
+			debug("\r\n");
             RXprx.rxbuf = RXrxbuf;
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
@@ -47,34 +54,29 @@ void NRF_Function()
               NRFpowoff.start = 0;
               address = ADDRESS1;
               InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//配置接收模式
+			  RXprx.txbuf[0] = ADDRESS3[0];
+			  RXprx.txbuf[1] = ADDRESS3[1];
+			  RXprx.txbuf[2] = ADDRESS3[2];
+			  RXprx.txbuf[3] = ADDRESS3[3];
+			  RXprx.txbuf[4] = ADDRESS3[4];
+			  RXprx.txbuf[5] = 'D';
+			  RXprx.txbuf[6] = 'M';
+      		  NRF24L01_RX_AtuoACKPip(RXprx.txbuf,7,RXprx.pip);	//填充应答信号
               RXprx.RXDCallBack =  DMRXD_CallBack;
 			  RXprx.rxbuf = RXrxbuf;
+			  
               DM_num = DM_NUM;
 			  NRF24L01_PWR(1);
 			  NRFpowon.start = 0;
 			  NRFpowon.counter = 0;
 			  NRFpowoff.start = 0;
 			  NRFpowoff.counter = 0;
-              OS_AddJudegeFunction(taskNRF,NRF_DM,800,JugeDM);
+              OS_AddJudegeFunction(taskNRF,NRF_DM,1000,JugeDM);
           }
            OS_AddTask(tasklink,taskNRF);	
         }
 }
 
-void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
-{
-    NRF24L01_PWR(1);
-    ptx->txbuf[0] = addr[0];
-    ptx->txbuf[1] = addr[1];
-    ptx->txbuf[2] = addr[2];
-    ptx->txbuf[3] = addr[3];
-    ptx->txbuf[4] = addr[4];
-    ptx->txbuf[5] = cmd;
-    ptx->txbuf[6] = mes;
-    
-  	NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
-  
-}
 
 void ChangeNRFCmd(u8* buf);
 // 主循环中运行的，显示接收到的数据
@@ -108,19 +110,22 @@ bool JugeRX()
 //保存地址到flash
 void SaveFlashAddr(u8* buf)
 {
-  #if  DEBUG_LEVEL == 0
   ADDRESS2[0] = buf[0];
   ADDRESS2[1] = buf[1];
   ADDRESS2[2] = buf[2];
   ADDRESS2[3] = buf[3];
   ADDRESS2[4] = buf[4];
-
+   		u8 i = 0;
+	for(i =0;i<7;i++)
+	{
+		debug("buf[%d] = 0x%x\r\n",i,buf[i]);
+	}
   FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS2[0]);
   FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS2[1]);
   FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS2[2]);
   FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS2[3]);
   FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS2[4]);
-#endif
+
 }
 
 // 清除DM
@@ -182,11 +187,12 @@ void DMRXD_CallBack(Nrf24l01_PRXStr* prx)
 	prx->rxlen = NRF24L01_GetRXLen();	
 	NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据   	
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
- 
+
 	if(prx->rxbuf[5] == CMD_DM && prx->rxbuf[6] == MES_DM) 
 	{ 
 		SaveFlashAddr(prx->rxbuf);
 		flag_duima = 0;
+		StateSuccess();
 	    debug("\r\n---DM完成---\r\n");
 	}
 	prx->rxlen = 0;

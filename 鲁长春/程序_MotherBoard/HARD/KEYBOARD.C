@@ -113,7 +113,7 @@ void ShowAMState()
 {
   	debug("ShowAMState\r\n");
 	ledSharpTimes = 2;
-	led_ontime = 2000;
+	led_ontime = SHOW_STATE_TIME;
 	led_offtime = TIM_LED_SHARP_OFF;
 	if(key_AM.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
@@ -152,7 +152,7 @@ void SwitchY30()
 void ShowY30State()
 {
 	ledSharpTimes = 2;
-	led_ontime = 2000;
+	led_ontime = SHOW_STATE_TIME;
 	led_offtime = 100;
 	if(key_Y30.val == off)is_suc = (bool)FALSE;
 	else is_suc = (bool)TRUE;
@@ -420,6 +420,7 @@ void ChangeNRFCmd(u8* buf)
 			}else
 			{	
 			  	key_Z.counter = GetSysTime(&timer2);
+				key_Y.counter = 0;
 				if(buf[6] == MES_Z_3_1) key_Z.val = two;
 				else if(buf[6] == MES_Z_3_2) key_Z.val = three;
 				else if(buf[6] == MES_Z_3_3) key_Z.val = four;
@@ -427,21 +428,7 @@ void ChangeNRFCmd(u8* buf)
 
     break;
       case CMD_Y:
-//			key_val = KEY_VAL_DER_Y;
-//			key_Y.counter = GetSysTime(&timer2);
-//			if(buf[6] == MES_Y)
-//			{
-//				if(key_Y.val != off)
-//				{
-//					key_Y.counter = 0;
-//					key_Y.val = off;
-//				} 
-//				else key_Y.val = on;
-//			}else if(buf[6] == MES_Y_3_1) key_Y.val = two;
-//			else if(buf[6] == MES_Y_3_2) key_Y.val = three;
-//			else if(buf[6] == MES_Y_3_3) key_Y.val = four;
 			key_val = KEY_VAL_DER_Y;
-			
 			if(buf[6] == MES_Y)
 			{
 			  	if(key_Y.counter == 0)
@@ -460,6 +447,7 @@ void ChangeNRFCmd(u8* buf)
 			}else
 			{	
 			  	key_Y.counter = GetSysTime(&timer2);
+				key_Z.counter = 0;
 				if(buf[6] == MES_Y_3_1) key_Y.val = two;
 				else if(buf[6] == MES_Y_3_2) key_Y.val = three;
 				else if(buf[6] == MES_Y_3_3) key_Y.val = four;

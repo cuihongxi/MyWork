@@ -66,11 +66,11 @@
         <option>
           <name>GenLibInFormatter</name>
           <version>0</version>
-          <state>0</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenLibInFormatterDescription</name>
-          <state>Automatic choice of formatter.</state>
+          <state>Full formatting, without multibytes.</state>
         </option>
         <option>
           <name>GenLibOutFormatter</name>
@@ -114,11 +114,11 @@
         <option>
           <name>GenMathFunctionVariant</name>
           <version>0</version>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>GenMathFunctionDescription</name>
-          <state>Smaller size, higher execution speed, less precision, smaller input range.</state>
+          <state>Default variants of cos, sin, tan, log, log10, pow, and exp.</state>
         </option>
       </data>
     </settings>
@@ -139,7 +139,7 @@
         </option>
         <option>
           <name>IccCharIs</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccMultibyteSupport</name>
@@ -494,7 +494,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>&#x9065;&#x63A7;6.-DM&#x6539;&#x4e3A;&#x9065;&#x63A7;&#x4e3B;&#x673A;.hex</state>
+          <state>&#x9065;&#x63A7;7.1-&#x6539;&#x7248;DM&#xFF0C;&#x4Fee;&#x590D;BUG.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -549,7 +549,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>STM8L051lowpower.out</state>
+          <state>$PROJ_FNAME$.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>
@@ -787,11 +787,11 @@
         </option>
         <option>
           <name>IarchiveOverride</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>D:\MyWork\MyWork\&#x9C81;&#x957F;&#x6625;\&#x7A0B;&#x5e8F;_Wirless\IAR\Debug\Exe\libcui.a</state>
+          <state>###Unitialized###</state>
         </option>
       </data>
     </settings>
@@ -865,7 +865,7 @@
         <option>
           <name>GenLibInFormatter</name>
           <version>0</version>
-          <state>5</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenLibInFormatterDescription</name>
@@ -874,7 +874,7 @@
         <option>
           <name>GenLibOutFormatter</name>
           <version>0</version>
-          <state>5</state>
+          <state>2</state>
         </option>
         <option>
           <name>GenLibOutFormatterDescription</name>
@@ -960,7 +960,7 @@
         <option>
           <name>IccOptAllowList</name>
           <version>0</version>
-          <state>111111</state>
+          <state>111110</state>
         </option>
         <option>
           <name>IccGenerateDebugInfo</name>
@@ -1611,14 +1611,8 @@
     <file>
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
     </file>
-  </group>
-  <group>
-    <name>L</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\24l01.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\NRF24L01_AUTO_ACK.c</name>
+      <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
     </file>
   </group>
   <group>
@@ -1636,9 +1630,6 @@
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_itc.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_iwdg.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_pwr.c</name>
     </file>
     <file>
@@ -1649,12 +1640,18 @@
     </file>
   </group>
   <group>
+    <name>lib</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\24l01.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\NRF24L01_AUTO_ACK.c</name>
+    </file>
+  </group>
+  <group>
     <name>MAIN</name>
     <file>
       <name>$PROJ_DIR$\..\USR\main.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\USR\stm8l15x_it.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\USR\UHEAD.C</name>

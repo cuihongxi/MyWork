@@ -163,11 +163,18 @@ void Key_ScanLeave()
 	{
 	    if((systime - POW_CA_time) > DELAY_TIME)
 	    {
-			flag_funPOW_CA= ~flag_funPOW_CA;
+			//flag_funPOW_CA= ~flag_funPOW_CA;
 			debug("POW_CA\r\n");
 			//NRF信号强度设定
-			if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_sub_12dBm);}
-			else{ NRF24L01_SetRF_SETUP(RF_DR_2M,RF_PWR_7dBm  );}
+			static u8 db = 7;
+			db --;
+			db &= 7;
+			//if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_250K,RF_PWR_4dBm);}
+			//else
+			//{ 
+			  NRF24L01_SetRF_SETUP(RF_DR_250K,db);
+			//}
+			LEDtimes = 2*(db+1);
 			keyval = KEY_VAL_NULL;
 	    }
 	}
@@ -228,7 +235,7 @@ void Key_ScanLeave()
 				
 		}
 		flag_exti = 0;
-		GPIO_SET(Z_LED);
+		//GPIO_SET(Z_LED);
 		keyval = KEY_VAL_NULL;
     }
 }
@@ -254,7 +261,7 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
 		{
 			flag_exti = 1;
 			keyval = Keyscan();  
-            GPIO_RESET(Z_LED);
+         //   GPIO_RESET(Z_LED);
 		}
   }
 
@@ -272,7 +279,7 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 		{
 			flag_exti = 1;  
 			keyval = Keyscan();
-            GPIO_RESET(Z_LED);
+           // GPIO_RESET(Z_LED);
 		}
    }
    EXTI_ClearITPendingBit (EXTI_IT_Pin3);

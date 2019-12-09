@@ -18,7 +18,7 @@
           <extraArgs></extraArgs>
           <analyzeTimeout>600</analyzeTimeout>
           <enableParallel>0</enableParallel>
-          <parallelThreads>1</parallelThreads>
+          <parallelThreads>2</parallelThreads>
         </cstatargs>
         <cstatsettings>
           <package checked="true" name="STDCHECKS">
@@ -987,7 +987,7 @@
           <extraArgs></extraArgs>
           <analyzeTimeout>600</analyzeTimeout>
           <enableParallel>0</enableParallel>
-          <parallelThreads>1</parallelThreads>
+          <parallelThreads>2</parallelThreads>
         </cstatargs>
         <cstatsettings>
           <package checked="true" name="STDCHECKS">
@@ -1957,14 +1957,8 @@
     <file>
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
     </file>
-  </group>
-  <group>
-    <name>L</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\24l01.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\NRF24L01_AUTO_ACK.c</name>
+      <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
     </file>
   </group>
   <group>
@@ -1982,9 +1976,6 @@
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_itc.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\LIB\src\stm8l15x_iwdg.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\LIB\src\stm8l15x_pwr.c</name>
     </file>
     <file>
@@ -1995,12 +1986,18 @@
     </file>
   </group>
   <group>
+    <name>lib</name>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\24l01.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\NRF24L01_AUTO_ACK.c</name>
+    </file>
+  </group>
+  <group>
     <name>MAIN</name>
     <file>
       <name>$PROJ_DIR$\..\USR\main.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\USR\stm8l15x_it.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\USR\UHEAD.C</name>

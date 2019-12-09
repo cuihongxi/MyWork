@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051lowpower.Debug.general.xcl" --backend -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051lowpower.Debug.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051_Wirless.Debug.general.xcl" --backend -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051_Wirless.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051lowpower.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051lowpower.Debug.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051_Wirless.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\MyWork\MyWork\鲁长春\程序_Wirless\IAR\settings\STM8L051_Wirless.Debug.driver.xcl" 
 
 @echo off 
 :end
