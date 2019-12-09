@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>2133654757</fileChecksum>
+  <fileChecksum>2291714459</fileChecksum>
   <configuration>
     <name>Debug</name>
     <outputs>
@@ -124,6 +124,7 @@
       <file>$PROJ_DIR$\Debug\Obj\main.o</file>
       <file>$PROJ_DIR$\Debug\Obj\KEYBOARD.pbi</file>
       <file>$PROJ_DIR$\Debug\Obj\stm8l15x_usart.__cstat.et</file>
+      <file>$PROJ_DIR$\Debug\Exe\&#x9065;&#x63A7;7.2-POW.hex</file>
       <file>$PROJ_DIR$\Debug\Exe\&#x9065;&#x63A7;7.1-&#x6539;&#x7248;DM&#xFF0C;&#x4Fee;&#x590D;BUG.hex</file>
     </outputs>
     <file>
@@ -396,6 +397,10 @@
       </outputs>
       <inputs>
         <tool>
+          <name>BICOMP</name>
+          <file> 64 52 50 43 51 68 36 55 35 12 113 49 42 41 34 58 44 57 37 112 110 94 48 45 61 65 67 69 70 39 59 63 71 40 78 77 74 60 76 62 75</file>
+        </tool>
+        <tool>
           <name>ICCSTM8</name>
           <file> 58 64 49 42 45 43 61 41 65 36 67 34 69 50 70 39 55 59 44 63 51 71 57 40 35 78 37 77 12 110 113 62 68 60 94 75 76 112 52 74 48</file>
         </tool>
@@ -541,7 +546,7 @@
         </tool>
         <tool>
           <name>OBJCOPY</name>
-          <file> 73 118</file>
+          <file> 118</file>
         </tool>
       </outputs>
       <inputs>
