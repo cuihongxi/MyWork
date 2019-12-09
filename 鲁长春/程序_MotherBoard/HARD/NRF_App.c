@@ -9,8 +9,7 @@ u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrf发送缓存
 u8 			RXrxbuf[7] 	= {0};				        // nrf接收缓存			        
 u8          DM_num = 0;
 
-extern  u8 		            flag_duima  		;	//对码状态
-extern  u8 		            flag_duima_clear  	;	//清除对码
+extern  u8 		            flag_duima  		;	// �����־
 extern  TaskStr* 	        taskNRF	            ;
 extern  TaskLinkStr* 		tasklink            ;
 extern  JugeCStr 		    NRFpowon 	        ;

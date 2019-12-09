@@ -6,6 +6,7 @@
 #include "stmflash.h"
 #include "24l01.h"
 #include "MX830Motor.h"
+
 u8 			flag_exti	= 0;
 u8 			key_val 	= 0;
 keyStr 		key_Z 		= {0};
@@ -49,6 +50,10 @@ extern 	u16				nrf_sleeptime 	;
 extern 	u16				nrf_worktime	;
 extern 	u16				led_ontime		;
 extern 	u16				led_offtime		;
+
+// 清除DM
+void ClearDM();
+
 void BeepStart()
 {
 	beep.start = 1;
@@ -204,6 +209,8 @@ void Key_ScanLeave()
 		{
 			flag_duima_clear = 1;	//清除对码
 			StateFalse();
+			// 清除DM
+ 			ClearDM();
 			debug("清除对码\r\n");
 		}
 		DM_Risingtime = 0;
