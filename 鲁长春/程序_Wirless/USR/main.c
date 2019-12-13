@@ -37,15 +37,25 @@ u8      DM_num = 0;
 u8		LEDtimes = 0;
 u32		sendtime = 0;
 u8 		flag = 0;
-//JugeCStr delayDM = {0};
+u8 		db 	= 	1;
 
 
 void LEN_GREEN_Open()
 {
-	GPIO_RESET(Z_LED);
+	GPIO_RESET(_T_LED);
 }
 
 void LEN_GREEN_Close()
+{
+	GPIO_SET(_T_LED);
+}
+
+void LEN_RED_Open()
+{
+	GPIO_RESET(Z_LED);
+}
+
+void LEN_RED_Close()
 {
 	GPIO_SET(Z_LED);
 }
@@ -72,8 +82,10 @@ void Make_SysSleep()
 	RTC_WakeUpCmd(DISABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);      	// RTC时钟门控使能
 	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
-	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
-	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
+	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           // 开启中断
+	RTC_WakeUpCmd(DISABLE);
+	RTC_SetWakeUpCounter(2375);                     		// 唤醒间隔	250mS
+//	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
 	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  
 	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
@@ -132,12 +144,12 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 // 触摸IO初始化，上升沿触发
 void Init_TOUCHGPIO(void)
 {
-//	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
-//	disableInterrupts();
-//    EXTI_SelectPort(EXTI_Port_B);
-//	EXTI_SetPinSensitivity(EXTI_Pin_5,EXTI_Trigger_Rising);   
-//	GPIO_RESET(TOUCH_IO);
-//    enableInterrupts();                                           //使能中断
+	GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
+	disableInterrupts();
+    EXTI_SelectPort(EXTI_Port_B);
+	EXTI_SetPinSensitivity(EXTI_Pin_5,EXTI_Trigger_Falling);   
+	GPIO_RESET(TOUCH_IO);
+    enableInterrupts();  
 }
 
 void main()
@@ -155,6 +167,7 @@ void main()
     address = ADDRESS2;
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
     ptx.txbuf = TXtxbuf;
+	Init_TOUCHGPIO();
 	Make_SysSleep();
 	
 //	IWDG_Enable();
@@ -171,15 +184,24 @@ void main()
 	   if(LEDtimes)
 	   {
 		  LEDtimes --;
-	   	  if(LEDtimes&0x01)
-			LEN_GREEN_Open();
-		  else LEN_GREEN_Close();
+		  if(db == 1)
+		  {
+			  if(LEDtimes&0x01)
+				LEN_GREEN_Open();
+			  else LEN_GREEN_Close();		  
+		  }else
+		  {
+			  if(LEDtimes&0x01)
+				LEN_RED_Open();
+			  else LEN_RED_Close();			  	
+		  }
 		  
 	   }
 	   if(flag_duima == 0)			// 非对码状态
 	   {
 		 	  //按键检测
 	   		if(flag_exti) Key_ScanLeave();
+			if(flag_touch)Key_TouchtLeave();
 		   if(keyval != KEY_VAL_NULL && keyval != KEY_VAL_DUIMA && keyval != KEY_VAL_AM && keyval != KEY_VAL_POW_CA)
 		   {
 			 switch(keyval)

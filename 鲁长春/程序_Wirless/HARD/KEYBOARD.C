@@ -22,6 +22,7 @@ extern 		u8 					pressKey;
 extern 		u8	                flag_duima;
 extern 		u8					LEDtimes;
 extern 		u32					sendtime;
+extern 		u8 					db ;
 
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
 
@@ -142,7 +143,23 @@ u8  Keyscan()
     return(KEY_VAL_NULL);
     
 }
+//?????????ì??
+void Key_TouchtLeave()
+{
 
+//	if(GPIO_READ(TOUCH_IO))
+//	{
+//		flag_touch = 0;
+//		NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_SLEEP);
+//	}else
+  	if((systime - sendtime)>=1000)
+	{
+	  GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
+	  flag_touch = 0;
+		//NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_UP);
+	}	  
+	  
+}
 //松手程序
 void Key_ScanLeave()
 {
@@ -165,16 +182,11 @@ void Key_ScanLeave()
 	    {
 			//flag_funPOW_CA= ~flag_funPOW_CA;
 			debug("POW_CA\r\n");
-			//NRF信号强度设定
-			static u8 db = 7;
-			db --;
-			db &= 7;
-			//if(flag_funPOW_CA){ LEDtimes = 6; NRF24L01_SetRF_SETUP(RF_DR_250K,RF_PWR_4dBm);}
-			//else
-			//{ 
-			  NRF24L01_SetRF_SETUP(RF_DR_250K,db);
-			//}
-			LEDtimes = 2*(db+1);
+			//NRF?????????è?¨
+
+			db ^= 6;
+			LEDtimes = 2*LEDPOWTIM;
+			NRF24L01_SetRF_SETUP(RF_DR_250K,db);
 			keyval = KEY_VAL_NULL;
 	    }
 	}
@@ -288,14 +300,16 @@ INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
 
 INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
 {
-//  if(flag_touch == 0)
-//   {
-//   	    if(GPIO_READ(TOUCH_IO)) 
-//		{ 
-//			GPIO_RESET(Z_LED);
-//			 NRF_SendCMD(&ptx,ADDRESS3,CMD_WAKE, MES_WAKE_UP);
-//			 flag_touch = 1; 
-//		}
-//   } 	
+  if(flag_touch == 0)
+   {
+   	    if(GPIO_READ(TOUCH_IO) == 0) 
+		{ 
+		     flag_touch = 1; 
+			 LEDtimes = LEDPOWTIM*2;	
+			 NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_UP);
+			 
+			 GPIO_Init(TOUCH_IO,GPIO_Mode_In_PU_No_IT);
+		}
+   } 
  	EXTI_ClearITPendingBit (EXTI_IT_Pin5);
 }
