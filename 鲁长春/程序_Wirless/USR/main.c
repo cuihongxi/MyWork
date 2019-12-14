@@ -5,14 +5,11 @@
 */
 #include "uhead.h"
 #include "MYCLK.h"
-//#include "stm8l15x_flash.h"
 #include "24l01.h"
 #include "NRF24L01_AUTO_ACK.H"
 #include "keyboard.h"
-//#include "stmflash.h"
 #include "UDATA.H"
 #include "stm8l15x_rtc.h"
-//#include "stm8l15x_iwdg.h"
 #include "stm8l15x_itc.h"
 
 #define		PRESS_Y30	0X01
@@ -164,8 +161,7 @@ void main()
 	{
 		debug("ADDRESS2[%d] = %x\r\n",i,ADDRESS2[i]);
 	}
-    address = ADDRESS2;
-	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
+	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
     ptx.txbuf = TXtxbuf;
 	Init_TOUCHGPIO();
 	Make_SysSleep();
@@ -278,11 +274,9 @@ void main()
 	   }else
 	   {
 			debug("DM ģʽ\r\n");
-			address = ADDRESS1;
-			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);			  	
-			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);
-			address = ADDRESS2;					
-			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);			  	
+			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);			
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
 			flag_duima = 0;
 			GPIO_SET(_T_LED);
 	   }

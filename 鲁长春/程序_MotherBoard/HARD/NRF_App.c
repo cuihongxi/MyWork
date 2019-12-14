@@ -8,7 +8,7 @@ Nrf24l01_PRXStr 	RXprx 		= {0};				// NRFæ¥æ”¶ç»“æ„ä½“
 u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrfå‘é€ç¼“å­˜
 u8 			RXrxbuf[7] 	= {0};				        // nrfæ¥æ”¶ç¼“å­˜			        
 u8          DM_num = 0;
-
+u8  		ADDRESS4[RX_ADR_WIDTH]={2,2,2,2,2};  		//Óë´«¸ĞÆ÷Í¨Ñ¶µØÖ· 
 extern  u8 		            flag_duima  		;	// ¶ÔÂë±êÖ¾
 extern  TaskStr* 	        taskNRF	            ;
 extern  TaskLinkStr* 		tasklink            ;
@@ -32,15 +32,15 @@ void NRF_Function()
         {
           if(flag_duima == 0)
           {
-            address = ADDRESS2;
-            InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//ÅäÖÃ½ÓÊÕÄ£Ê½
+            InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//ÅäÖÃ½ÓÊÕÄ£Ê½
 			debug("µ±Ç°µÄÍ¨Ñ¶µØÖ·£º");
 			u8 i = 0;
 			for(i =0;i<5;i++)
 			{
-				debug("%X	",address[i]);
+				debug("%X	",ADDRESS2[i]);
 			}
 			debug("\r\n");
+			 NRF24L01_RX_Mode(BIT_PIP1,ADDRESS4);                //ÅäÖÃ½ÓÊÕÄ£Ê½ 
             RXprx.rxbuf = RXrxbuf;
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
@@ -51,8 +51,7 @@ void NRF_Function()
           {		
               NRFpowon.start = 0;
               NRFpowoff.start = 0;
-              address = ADDRESS1;
-              InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//ÅäÖÃ½ÓÊÕÄ£Ê½
+              InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);	//ÅäÖÃ½ÓÊÕÄ£Ê½
 			  RXprx.txbuf[0] = ADDRESS3[0];
 			  RXprx.txbuf[1] = ADDRESS3[1];
 			  RXprx.txbuf[2] = ADDRESS3[2];
@@ -141,8 +140,7 @@ void ClearDM()
     ADDRESS2[2] = ADDRESS1[2];
     ADDRESS2[3] = ADDRESS1[3];
     ADDRESS2[4] = ADDRESS1[4];
-    address = ADDRESS2;
-    InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	//ÅäÖÃ½ÓÊÕÄ£Ê½
+    InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//ÅäÖÃ½ÓÊÕÄ£Ê½
 
 }
 void NRF_DM()

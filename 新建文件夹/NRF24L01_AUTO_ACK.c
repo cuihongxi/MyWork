@@ -118,7 +118,7 @@ void Default_IRQCallBack_PTX(Nrf24l01_PTXStr* ptx)
 }
 
 //初始化发射模式
-void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch)
+void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch,u8* addr)
 {
 	ptx->rxbuf = rxbuf;
 	ptx->rxlen = rxlen;
@@ -127,14 +127,17 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	ptx->pip = pip;
 	ptx->rf_ch = rf_ch;
 	ptx->hasrxlen = 0;
+	ptx->txaddr = addr;
 	
 	Init_NRF24L01(ptx->pip,ptx->rf_ch);
+    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,ptx->txaddr,TX_ADR_WIDTH); 	//如果需要接收方应答，则需要写本地收地址
 	NRF24L01_GPIO_IRQ();
+	NRF24L01_EnabelDPL(ptx->pip);					//使能通道自动应答，动态长度 , 发射模式也要加上这个
 	ptx->IRQCallBack = Default_IRQCallBack_PTX;
 	ptx->RXDCallBack = RXD_CallBack_PTX;
 	ptx->TXDCallBack = TXD_CallBack_PTX;
 	ptx->MAXTXCallBack = MAXTX_CallBack_PTX;
-	NRF24L01_TX_Mode();				// 配置为发送模式
+	NRF24L01_TX_Mode(ptx->txaddr);				// 配置为发送模式
 
 
 }
@@ -147,6 +150,7 @@ void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
 	ptx->hastxlen = 0;
 	ptx->hasrxlen = 0;
 	ptx->flag_sendfinish  = FALSE;
+	ptx->reuse_times = REUSE_TIMES;
 	NRF24L01_TxPacket(ptx->txbuf,ptx->txlen);
 	ptx->hastxlen += ptx->txlen;	
 }
@@ -204,7 +208,7 @@ void Default_IRQCallBack_PRX(Nrf24l01_PRXStr* prx)
 
 
 //初始化接收模式
-u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch)
+u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,u8 rf_ch,u8* addr)
 {
     u8 erro = 0;
 	prx->rxbuf = rxbuf;
@@ -215,7 +219,8 @@ u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,
 	prx->hasrxlen = 0;
 	if(Init_NRF24L01(prx->pip,prx->rf_ch))
     {
-        NRF24L01_RX_Mode();                         //配置接收模式 
+	    NRF24L01_EnabelDPL(prx->pip);					//使能通道自动应答，动态长度
+        NRF24L01_RX_Mode(prx->pip,addr);                //配置接收模式 
         NRF24L01_GPIO_IRQ();  
         erro = 1;
     }

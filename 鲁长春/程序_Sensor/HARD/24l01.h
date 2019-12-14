@@ -49,7 +49,7 @@
 #define RX_ADDR_P3      0x0D  //数据通道3接收地址,最低字节可设置,高字节,必须同RX_ADDR_P1[39:8]相等;
 #define RX_ADDR_P4      0x0E  //数据通道4接收地址,最低字节可设置,高字节,必须同RX_ADDR_P1[39:8]相等;
 #define RX_ADDR_P5      0x0F  //数据通道5接收地址,最低字节可设置,高字节,必须同RX_ADDR_P1[39:8]相等;
-#define TX_ADDR         0x10  //发送地址(低字节在前),ShockBurstTM模式下,RX_ADDR_P0与此地址相等
+#define TX_ADDR         0x10  //发射方的发射地址(LSByte最先写入)，如果发射放需要收ACK确认信号，则需要配置RX_ADDR_P0的值等于TX_ADDR，并使能ARQ
 #define RX_PW_P0        0x11  //接收数据通道0有效数据宽度(1~32字节),设置为0则非法
 #define RX_PW_P1        0x12  //接收数据通道1有效数据宽度(1~32字节),设置为0则非法
 #define RX_PW_P2        0x13  //接收数据通道2有效数据宽度(1~32字节),设置为0则非法
@@ -108,7 +108,7 @@
 #define	RF_PWR_sub_6dBm		0x01
 #define	RF_PWR_sub_12dBm	0x00
 
-#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|((dr&0x02)<<5)))
+#define	VALUE_RF_SETUP(dr,pwr)	(pwr|(((dr&0x01)<<3)|(((dr>>1)<<5))))
 
 /*以下宏定义为了移植方便而定义*/		
 
@@ -159,9 +159,9 @@ extern u8  ADDRESS3[5]; //保存本地地址
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-void Init_NRF24L01(u8 pip,u8 rf_ch);                            //初始化
-void NRF24L01_RX_Mode(void);					//配置为接收模式
-void NRF24L01_TX_Mode(void);					//配置为发送模式
+u8 Init_NRF24L01(u8 pip,u8 rf_ch);                            //初始化
+void NRF24L01_RX_Mode(u8 pip);					//配置为接收模式
+void NRF24L01_TX_Mode(u8* addr);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区
 u8 NRF24L01_Read_Buf(u8 reg, u8 *pBuf, u8 u8s);	                //读数据区		  
 u8 NRF24L01_Read_Reg(u8 reg);							//读寄存器
@@ -198,7 +198,11 @@ void NRF_CreatNewAddr(u8* addr);//依据唯一ID，产生一个新地址
 void NRF24L01_GPIO_Lowpower(void);
 /********************2019年11月16日增加函数*********************************/
 void NRF24L01_RESUSE_TX();	// 重发上一包数据
-void NRF24L01_ClearFIFO(void);
+void NRF24L01_ClearTXFIFO(void);
+void NRF24L01_ClearRXFIFO(void);
+/********************2019年12月14日增加函数*********************************/
+u8 NRD24L01_GetPip(u8 status);//获取接收到数据的通道号，输入STATUS值,返回值为0~5，如果为7则RXFIFO为空
+void NRF24L01_EnabelDPL(u8 pipNum);//使能DPL动态长度
 #endif
 
 

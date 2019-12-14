@@ -4,6 +4,9 @@
     需要配置TXRX的长度
 	2019-8-16 更新：
 		增加配置24L01模块的选择，根据选择配置 RF_SETUP_DAT
+	2019年12月14日更新：
+	    修改NRF24L01_EnabelDPL函数，使其能使能多个通道号
+		增加查询接收到数据的通道号函数NRD24L01_GetPip
 */
 
 #ifndef __24L01_H
@@ -160,9 +163,9 @@ extern u8  ADDRESS3[5];
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-u8 Init_NRF24L01(u8 pip,u8 rf_ch);             //初始化
-void NRF24L01_RX_Mode(void);					//配置为接收模式
-void NRF24L01_TX_Mode(void);					//配置为发送模式
+u8 Init_NRF24L01(u8 pip,u8 rf_ch);              //初始化
+void NRF24L01_RX_Mode(u8 pip,u8* rxaddr);					//配置为接收模式
+void NRF24L01_TX_Mode(u8* addr);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区
 u8 NRF24L01_Read_Buf(u8 reg, u8 *pBuf, u8 u8s);	                //读数据区		  
 u8 NRF24L01_Read_Reg(u8 reg);							//读寄存器
@@ -199,7 +202,9 @@ void NRF24L01_GPIO_Lowpower(void);
 /********************2019年11月16日增加函数*********************************/
 void NRF24L01_RESUSE_TX();	// 重发上一包数据
 void NRF24L01_ClearFIFO(void);
-
+/********************2019年12月14日增加函数*********************************/
+u8 NRD24L01_GetPip(u8 status);//获取接收到数据的通道号，输入STATUS值,返回值为0~5，如果为7则RXFIFO为空
+void NRF24L01_EnabelDPL(u8 pipNum);//使能DPL动态长度
 #endif
 
 

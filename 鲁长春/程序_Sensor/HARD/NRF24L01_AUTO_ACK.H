@@ -23,6 +23,7 @@ typedef struct PTXStr{
 	u8 hasrxlen;						// 已接收的长度
 	u8 flag_sendfinish;					// 发送完成标志
 	u8 reuse_times;						// 发送不成功时重发的次数
+	u8* txaddr;							// 发射地址
 	void(*IRQCallBack)(struct PTXStr*);	// 回调函数，放在IRQ中断中
 	void(*RXDCallBack)(struct PTXStr*);	// 接收完成回调函数
 	void(*TXDCallBack)(struct PTXStr*);	// 发送完成回调函数
@@ -53,7 +54,7 @@ typedef struct PRXStr{
  */
 #define		IRQ_EXTI_SET()	do{\
 								disableInterrupts();\
-								EXTI_SetPinSensitivity(EXTI_Pin_4,EXTI_Trigger_Falling);\
+								EXTI_SetPinSensitivity(EXTI_Pin_0,EXTI_Trigger_Falling);\
 								enableInterrupts();\
 							}while(0)
 
@@ -61,7 +62,7 @@ typedef struct PRXStr{
 
 /*函数*/
 /*发射模式*/
-void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch);	// 初始化发射模式
+void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch,u8* addr);	// 初始化发射模式
 void NRF24L01_PTXInMain(Nrf24l01_PTXStr* ptx, u8* txbuf,u8 txlen); 			// 主函数中的发送函数
 void NRF24L01_PTXInMainReset(Nrf24l01_PTXStr* ptx);					// 复位主函数的发送
 void NRF_AutoAck_TxPacket(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size);			// 发射模式，发送短消息

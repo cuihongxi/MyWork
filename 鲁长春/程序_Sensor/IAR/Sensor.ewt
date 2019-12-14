@@ -1952,31 +1952,16 @@
   <group>
     <name>HARD</name>
     <file>
-      <name>$PROJ_DIR$\..\HARD\ADC_CHECK.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\BAT.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\FL.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\LED_SHOW.C</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\HARD\MYCLK.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
     </file>
   </group>
   <group>
     <name>L</name>
     <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\24l01.c</name>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\24l01.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\wirless\NRF24L01_AUTO_ACK.c</name>
+      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\NRF24L01_AUTO_ACK.c</name>
     </file>
   </group>
   <group>

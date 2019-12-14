@@ -1,7 +1,7 @@
 
 #include "NRF24L01_AUTO_ACK.H"
 #include "stm8l15x_exti.h"
-#include "keyboard.h"
+
 
 //初始化24L01的IRQ IO口
 void NRF24L01_GPIO_IRQ(void)
@@ -72,7 +72,6 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	}
 	else 
 	{
-	 	GPIO_SET(_T_LED);
 		NRF24L01_PWR(0);
 	}
 }
@@ -90,9 +89,6 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 //				debug(" %d ",ptx->rxbuf[i]);
 //			  }   
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
-		//NRF24L01_PWR(0);
-				//NRF24L01_ClearFIFO();
-		GPIO_SET(_T_LED);
 		NRF24L01_PWR(0);
 }
 
@@ -114,10 +110,7 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	}else
 	{
 		ptx->flag_sendfinish = TRUE;
-		//debug("send OK");
 	}
-	//NRF24L01_ClearFIFO();
-	GPIO_SET(_T_LED);
 	NRF24L01_PWR(0);
 }
 
