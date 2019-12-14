@@ -10,7 +10,7 @@
 #include "UDATA.H"
 #include "stm8l15x_rtc.h"
 #include "stm8l15x_itc.h"
-
+u8  		ADDRESS4[RX_ADR_WIDTH]={2,2,2,2,2};  		//与传感器通讯地址 
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
 
 u8      TXrxbuf[7] = {0};
@@ -18,11 +18,46 @@ u8      TXtxbuf[7] = {0};
 
 u8      nrfaddr[5];
 u32 	systime = 0;
+u32 	DM_time = 0;
 u8		flag_duima = 0;
 u8      DM_num = 0;
+u8		flag_exti = 0;
 
 extern 		u32 		DM_time;
+#define         LED_RED            	GPIOC,GPIO_Pin_4         //红灯
+#define         LED_GREEN           GPIOB,GPIO_Pin_1         
 
+#define			KEY_DM				GPIOC,GPIO_Pin_5
+
+void LEN_RED_Open()
+{
+	GPIO_SET(LED_RED);
+}
+
+void LEN_RED_Close()
+{
+	GPIO_RESET(LED_RED);
+}	
+void LEN_GREEN_Open()
+{
+	GPIO_RESET(LED_GREEN);
+}
+
+void LEN_GREEN_Close()
+{
+	GPIO_SET(LED_GREEN);
+}
+//双色LED初始化
+void LED_GPIO_Init()
+{
+    GPIO_Init(LED_RED,GPIO_Mode_Out_PP_Low_Slow);
+	GPIO_Init(LED_GREEN,GPIO_Mode_Out_OD_HiZ_Slow);
+	LEN_GREEN_Open();
+	LEN_RED_Open();
+	delay_ms(1000);
+	LEN_RED_Close();
+	LEN_GREEN_Close();
+}
 //让系统休眠
 void Make_SysSleep()
 {
@@ -33,12 +68,12 @@ void Make_SysSleep()
 	while (CLK_GetFlagStatus(CLK_FLAG_LSIRDY) == RESET);        	// 等待LSI就绪
 	RTC_WakeUpCmd(DISABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);      	// RTC时钟门控使能
-	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
+	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   			// 19K时钟频率
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 开启中断
-	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
+	RTC_SetWakeUpCounter(9500);                     				// 唤醒间隔	500mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
 	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  
-	PWR_UltraLowPowerCmd(ENABLE); 					// 使能电源的低功耗模式
+	PWR_UltraLowPowerCmd(ENABLE); 									// 使能电源的低功耗模式
 	PWR_FastWakeUpCmd(ENABLE);
 }
 
@@ -54,103 +89,49 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     ptx->txbuf[4] = addr[4];
     ptx->txbuf[5] = cmd;
     ptx->txbuf[6] = mes;
+	LEN_RED_Open();
     NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
   
 }
 
-//保存地址到flash
-void SaveFlashAddr(u8* buf)
+void Key_GPIO_Init()
 {
-//  #if  DEBUG_LEVEL == 0
-//  ADDRESS2[0] = buf[0];
-//  ADDRESS2[1] = buf[1];
-//  ADDRESS2[2] = buf[2];
-//  ADDRESS2[3] = buf[3];
-//  ADDRESS2[4] = buf[4];
-//
-//  FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS2[0]);
-//  FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS2[1]);
-//  FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS2[2]);
-//  FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS2[3]);
-//  FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS2[4]);
-//#endif
+	GPIO_Init(KEY_DM,GPIO_Mode_In_PU_No_IT);
+    flag_exti = 0;
 }
 
-// 清除DM
-void ClearDM()
+//松手程序
+void Key_ScanLeave()
 {
-//     // debug("clear DM \r\n");
-//  #if  DEBUG_LEVEL == 0
-//
-//    FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS1[0]);
-//    FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS1[1]);
-//    FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
-//    FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS1[3]);
-//    FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
-//    ADDRESS2[0] = ADDRESS1[0];
-//    ADDRESS2[1] = ADDRESS1[1];
-//    ADDRESS2[2] = ADDRESS1[2];
-//    ADDRESS2[3] = ADDRESS1[3];
-//    ADDRESS2[4] = ADDRESS1[4];
-//    address = ADDRESS2;
-//    InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
-//    NRF24L01_GPIO_Lowpower();
-//#endif
-}
-//DM模式自动接收完成回调函数
-void dmRXD_CallBack(Nrf24l01_PRXStr* prx) 
-{
-//      prx->rxlen = NRF24L01_GetRXLen();	
-//      NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf,prx->rxlen);	//读取数据   	
-//      NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
-//  
-//      if(prx->rxbuf[5] == CMD_DM && prx->rxbuf[6] == MES_DM) 
-//      { 
-//            SaveFlashAddr(prx->rxbuf);
-//            flag_duima = 0;
-//           // debug("\r\n---DM完成---\r\n");
-//      }
-//      	if(prx->rxlen)
-//	{
-//		prx->rxlen = 0;
-//	}
-}
-void DM_Mode()
-{
-//      flag_duima = 1;
-//      address = ADDRESS1;
-//      InitNRF_AutoAck_PRX(&prx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ);	
-//      
-//      NRF24L01_PWR(1);
-//      prx.txbuf[0] = ADDRESS3[0];
-//      prx.txbuf[1] = ADDRESS3[1];
-//      prx.txbuf[2] = ADDRESS3[2];
-//      prx.txbuf[3] = ADDRESS3[3];
-//      prx.txbuf[4] = ADDRESS3[4];
-//      prx.txbuf[5] = 'D';
-//      prx.txbuf[6] = 'M';
-//      
-//      NRF24L01_RX_AtuoACKPip(prx.txbuf,7,prx.pip);	//填充应答信号
-//      prx.RXDCallBack = dmRXD_CallBack;
-//      DM_num = DM_NUM;
-//      
-//      while(flag_duima);
-//      address = ADDRESS2;
-//	  InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
-//      NRF24L01_GPIO_Lowpower();     
+    if(GPIO_READ(KEY_DM)) //无按键按下
+    {       
+	   LEN_GREEN_Close();
+		if((systime - DM_time)< 2000)
+		{
+				flag_duima = 1;
+				
+		}
+		DM_time = 0;
+		flag_exti = 0;
+    }
 }
 
-
+void Key_Scan()
+{
+	if(GPIO_READ(KEY_DM) == 0)
+	{
+		DM_time = systime;
+		flag_exti = 1;
+		LEN_GREEN_Open();
+	} 
+}
 void main()
-{    
-
-	
+{    	
 	UART_INIT(115200);	
-//#if  DEBUG_LEVEL == 0
-//    FlashData_Init();
-//    LED_GPIO_Init();    
-//#endif
+	Key_GPIO_Init();
+	LED_GPIO_Init();
 	
+	NRF_CreatNewAddr(ADDRESS2);
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS2);
     ptx.rxbuf = TXrxbuf;
 	debug("当前的通讯地址：");
@@ -160,21 +141,33 @@ void main()
 		debug("%X	",ptx.txaddr[i]);
 	}
 	debug("\r\n");
-	NRF_CreatNewAddr(ADDRESS3);
-    NRF24L01_GPIO_Lowpower();
-//	Make_SysSleep();
 	
-//	IWDG_Enable();
-//	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-//	IWDG_SetPrescaler(IWDG_Prescaler_256);
-//	IWDG_SetReload(0xFF);
-//    IWDG_WriteAccessCmd(IWDG_WriteAccess_Disable);
+    NRF24L01_GPIO_Lowpower();
+	Make_SysSleep();
 
     while(1)
     {    
-	//  NRF_SendCMD(&ptx,ADDRESS2,CMD_Z, MES_Z);
-	  delay_ms(800);
-        //halt();
+       halt();	
+//	   static u8 i = 0;
+//	   i = !i;
+//	   if(i) LEN_RED_Close();
+//	   else LEN_RED_Open();
+	   if(flag_duima == 0)			// 非对码状态
+	   {
+		 	  //按键检测
+	   		if(flag_exti) Key_ScanLeave();
+			else Key_Scan();
+	   }else
+	   {
+			debug("DM 模式\r\n");
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);			  	
+			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);			
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS2);
+			flag_duima = 0;
+			LEN_RED_Close();
+	   }
+
+        
 	}   
     
 }

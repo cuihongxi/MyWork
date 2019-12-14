@@ -14,9 +14,9 @@
 
 
    
-#define DEBUG_LEVEL 1		//调试接口
+#define DEBUG_LEVEL 0		//调试接口
 
-#define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC3
+#define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC5
 
 #if 	SWAPPER_UART > 0 
 #define	SWAPPER_UART_PA2_PC3()		SYSCFG_REMAPPinConfig(REMAP_Pin_USART1TxRxPortA,ENABLE);	//端口重映射，去掉注释之后USART1为PA2-TX、PA3-RX；注释之后USART1为TX-PC5、RX-PC6；复位之后USART会自动恢复至PC5、PC6
@@ -83,7 +83,7 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		ERROR_BH		(0x10)	// BH没有波形
 
 //nrf 命令 
-#define		CMD_DM		0X5A
+#define		CMD_DM		'C'
 #define		CMD_AM		0X3A
 #define		CMD_Y30		0X2A
 #define		CMD_Z		0X1A
@@ -107,7 +107,7 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		MES_Y_3_2	0X0A
 #define		MES_Y_3_3	0X0B
 #define		MES_Y		0X10
-#define		MES_DM	    0X0C
+#define		MES_DM	    'G'
 #define		MES_CLEARDM	0X0D
 #define		MES_I30_ALARM		0X11
 #define		MES_WAKE_UP		0X13

@@ -5,10 +5,11 @@
 #ifdef DMA_SPI
 #include "stm8l15x_spi.h"
 #endif
-u8 RF_CH_HZ =10;                                  //频率0~125
+u8 RF_CH_HZ =111;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1};			// DM地址
 u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1};  		// DM成功后通讯地址 
 u8  ADDRESS3[5]={0};                            //保存本地地址
+u8  ADDRESS4[RX_ADR_WIDTH]={2,2,2,2,2};  		//与传感器通讯地址 
 u8* address = ADDRESS1;
 
 void NRF24L01_ResetAddr(u8* add)
@@ -157,7 +158,7 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 	NRF24L01_Write_Reg(NRF_WRITE_REG + DYNPD, NRF24L01_Read_Reg(NRF_READ_REG + DYNPD)|(1<<pipNum));	//使能通道动态长度 ,Requires EN_DPL and ENAA_P0
 }
 //初始化配置
-u8 Init_NRF24L01(u8 pip,u8 rf_ch)
+u8 Init_NRF24L01(u8 rf_ch)
 {
     u8 i = 10;
     NRF24L01_GPIO_Init();
@@ -166,8 +167,6 @@ u8 Init_NRF24L01(u8 pip,u8 rf_ch)
         debug("NRF24L01_Check EEROR\r\n"); 
         delay_ms(1000);
     }
-//    NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,address,TX_ADR_WIDTH); ;    //写本地发射地址	
-//    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,address,RX_ADR_WIDTH); 	//写本地收地址
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_CH,rf_ch);            //设置信道工作频率，收发必须一致
     NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,VALUE_RF_SETUP(RF_DR_250K,RF_PWR_7dBm));// NRF24L01_Write_Reg(NRF_WRITE_REG+RF_SETUP,0x6f);   //SPI_RW_Reg(WRITE_REG + RF_SETUP, 0x0f); //设置发射速率为2MHZ，发射功率为最大值0dB	
 	return i;

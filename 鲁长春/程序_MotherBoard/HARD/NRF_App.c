@@ -4,11 +4,11 @@
 #include "CUI_RTOS.H"
 #include "LED_SHOW.H"
 #include "stmflash.h"
-Nrf24l01_PRXStr 	RXprx 		= {0};				// NRFÊé•Êî∂ÁªìÊûÑ‰Ωì
-u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		// nrfÂèëÈÄÅÁºìÂ≠ò
-u8 			RXrxbuf[7] 	= {0};				        // nrfÊé•Êî∂ÁºìÂ≠ò			        
+Nrf24l01_PRXStr 	RXprx 		= {0};				//
+u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		//
+u8 			RXrxbuf[7] 	= {0};				        //
 u8          DM_num = 0;
-u8  		ADDRESS4[RX_ADR_WIDTH]={2,2,2,2,2};  		//”Î¥´∏–∆˜Õ®—∂µÿ÷∑ 
+
 extern  u8 		            flag_duima  		;	// ∂‘¬Î±Í÷æ
 extern  TaskStr* 	        taskNRF	            ;
 extern  TaskLinkStr* 		tasklink            ;
@@ -40,13 +40,20 @@ void NRF_Function()
 				debug("%X	",ADDRESS2[i]);
 			}
 			debug("\r\n");
-			 NRF24L01_RX_Mode(BIT_PIP1,ADDRESS4);                //≈‰÷√Ω” ’ƒ£ Ω 
+			 //NRF24L01_RX_Mode(BIT_PIP1,ADDRESS4);                //≈‰÷√Ω” ’ƒ£ Ω 
+			 InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS4);	//≈‰÷√Ω” ’ƒ£ Ω
+			debug("¥´∏–∆˜Õ®—∂µÿ÷∑£∫");
+			for(i =0;i<5;i++)
+			{
+				debug("%X	",ADDRESS4[i]);
+			}
+			debug("\r\n");
             RXprx.rxbuf = RXrxbuf;
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
             RXprx.RXDCallBack = RXD_CallBack;
             OS_AddJudegeFunction(taskNRF,NRFReceived,100,JugeRX);
-          }
+		  }
           else
           {		
               NRFpowon.start = 0;
@@ -59,7 +66,7 @@ void NRF_Function()
 			  RXprx.txbuf[4] = ADDRESS3[4];
 			  RXprx.txbuf[5] = 'D';
 			  RXprx.txbuf[6] = 'M';
-      		  NRF24L01_RX_AtuoACKPip(RXprx.txbuf,7,RXprx.pip);	//ÃÓ≥‰”¶¥–≈∫≈
+      		  NRF24L01_RX_AtuoACKPip(RXprx.txbuf,7,0);	//ÃÓ≥‰”¶¥–≈∫≈
               RXprx.RXDCallBack =  DMRXD_CallBack;
 			  RXprx.rxbuf = RXrxbuf;
 			  
@@ -82,15 +89,8 @@ void NRFReceived()
 {
 	if(RXprx.hasrxlen)
 	{
-//		debug("\r\n");		
-//		for(u8 i=0;i<RXprx.hasrxlen;i++)
-//		  {
-//			debug("[%d]=%d	",i,RXprx.rxbuf[i]);
-//		  }		
-//		debug("\r\n------\r\n\r\n");
 		//∏˘æ› ’µΩµƒ◊÷Ω⁄£¨”≥…‰≥ˆœ‡”¶µƒøÿ÷∆√¸¡Ó
-	   debug("WAKE_UP\r\n");
-	   NRF24L01_ClearFIFO();
+	    NRF24L01_ClearFIFO();
 		nrf_sleeptime = GZ_SLEEP_TIME;
 		nrf_worktime = GZ_WORK_TIME;
 		NRFsleep.start = 1;
@@ -113,16 +113,27 @@ void SaveFlashAddr(u8* buf)
   ADDRESS2[2] = buf[2];
   ADDRESS2[3] = buf[3];
   ADDRESS2[4] = buf[4];
-   		u8 i = 0;
-	for(i =0;i<7;i++)
-	{
-		debug("buf[%d] = 0x%x\r\n",i,buf[i]);
-	}
   FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS2[0]);
   FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS2[1]);
   FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS2[2]);
   FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS2[3]);
   FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS2[4]);
+
+}
+
+void SaveFlashCGAddr(u8* buf)
+{
+  ADDRESS4[0] = buf[0];
+  ADDRESS4[1] = buf[1];
+  ADDRESS4[2] = buf[2];
+  ADDRESS4[3] = buf[3];
+  ADDRESS4[4] = buf[4];
+
+  FLASH_ProgramByte(EEPROM_CGADDRESS0,ADDRESS4[0]);
+  FLASH_ProgramByte(EEPROM_CGADDRESS1,ADDRESS4[1]);
+  FLASH_ProgramByte(EEPROM_CGADDRESS2,ADDRESS4[2]);
+  FLASH_ProgramByte(EEPROM_CGADDRESS3,ADDRESS4[3]);
+  FLASH_ProgramByte(EEPROM_CGADDRESS4,ADDRESS4[4]);
 
 }
 
@@ -167,12 +178,12 @@ void RXD_CallBack(Nrf24l01_PRXStr* prx)
         prx->txbuf[4] = prx->rxbuf[4];
         prx->txbuf[5] = 'O';
         prx->txbuf[6] = 'K';
-        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);//ÃÓ≥‰”¶¥–≈∫≈	
+        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,NRD24L01_GetPip(RXprx.status));//ÃÓ≥‰”¶¥–≈∫≈	
         prx->rxlen = NRF24L01_GetRXLen();
         NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//∂¡»° ˝æ›
         prx->hasrxlen += prx->rxlen;		
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// «Â≥˝RX_DS÷–∂œ±Í÷æ
-        debug("RX_OK ");
+		debug("-->RX_OK ,pip:%d\r\n",NRD24L01_GetPip(prx->status));
 }
 
 
@@ -190,7 +201,14 @@ void DMRXD_CallBack(Nrf24l01_PRXStr* prx)
 		SaveFlashAddr(prx->rxbuf);
 		flag_duima = 0;
 		StateSuccess();
-	    debug("\r\n---DMÕÍ≥…---\r\n");
+	    debug("\r\n---“£øÿDMÕÍ≥…---\r\n");
+	}else
+	 if(prx->rxbuf[5] == 'C' && prx->rxbuf[6] == 'G') 
+	{ 
+		SaveFlashCGAddr(prx->rxbuf);
+		flag_duima = 0;
+		StateSuccess();
+	    debug("\r\n---¥´∏–DMÕÍ≥…---\r\n");
 	}
 	prx->rxlen = 0;
 }

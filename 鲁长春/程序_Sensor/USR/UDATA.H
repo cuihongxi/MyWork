@@ -15,6 +15,6 @@
 #define         TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
 #define			TIM_FL_FILTER		20	// ms, FL滤波时间
 
-#define         IRQ_PERIOD      500
+#define         IRQ_PERIOD      	500
 
 #endif

@@ -33,7 +33,7 @@ typedef struct PTXStr{
 
 //接收模式结构体
 typedef struct PRXStr{
-	u8 pip;								// 通道号
+//	u8 pip;								// 通道号 接收模式有可能有多个通道号
 	u8 rf_ch;							// 频率
 	u8 status;
 	u8* txbuf;							// 发射缓存

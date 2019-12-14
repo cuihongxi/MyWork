@@ -109,35 +109,6 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 }
 
 
-////DM模式自动接收完成回调函数
-//void dmRXD_CallBack(Nrf24l01_PTXStr* ptx) 
-//{
-//	ptx->rxlen = NRF24L01_GetRXLen();	
-//	NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf,ptx->rxlen);	//读取数据   	
-//	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
-////		u8 i = 0;
-////	for(i =0;i<7;i++)
-////	{
-////		debug("ptx->rxbuf[%d] = 0x%x\r\n",i,ptx->rxbuf[i]);
-////	}
-//	debug("-------->收到数据\n");
-//	if(ptx->rxbuf[5] == 'D' && ptx->rxbuf[6] == 'M')  
-//	{
-//	  	debug("配对成功\n");
-//		LEN_GREEN_Close();
-//		address = ADDRESS2;
-//		ptx->RXDCallBack = RXD_CallBack_PTX;
-//		InitNRF_AutoAck_PTX(ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ);
-//	  	flag_duima = 0;
-//		flag = 0;
-//	}   
-//}
-//void DM_Mode()
-//{   
-//
-//}
-
-
 // 触摸IO初始化，上升沿触发
 void Init_TOUCHGPIO(void)
 {

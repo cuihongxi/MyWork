@@ -5,7 +5,7 @@
 #ifdef DMA_SPI
 #include "stm8l15x_spi.h"
 #endif
-u8 RF_CH_HZ =10;                                  //频率0~125
+u8 RF_CH_HZ =111;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1};         // DM地址
 u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1};         // DM成功后通讯地址 
 u8  ADDRESS3[5]={0};                            //保存本地地址

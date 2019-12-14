@@ -19,6 +19,12 @@
 #define         EEPROM_ADDRESS0     	0x1090 
 #define         EEPROM_ADDRESS1     	0x10A0 
 
+#define         EEPROM_CGADDRESS2     	0x10B0 
+#define         EEPROM_CGADDRESS3     	0x10C0  
+#define         EEPROM_CGADDRESS4     	0x10D0 
+#define         EEPROM_CGADDRESS0     	0x10E0 
+#define         EEPROM_CGADDRESS1     	0x10F0 
+
 void FlashData_Init();
 
 #endif

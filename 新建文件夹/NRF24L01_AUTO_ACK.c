@@ -129,7 +129,7 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	ptx->hasrxlen = 0;
 	ptx->txaddr = addr;
 	
-	Init_NRF24L01(ptx->pip,ptx->rf_ch);
+	Init_NRF24L01(ptx->rf_ch);
     NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,ptx->txaddr,TX_ADR_WIDTH); 	//如果需要接收方应答，则需要写本地收地址
 	NRF24L01_GPIO_IRQ();
 	NRF24L01_EnabelDPL(ptx->pip);					//使能通道自动应答，动态长度 , 发射模式也要加上这个
@@ -167,7 +167,8 @@ void RXD_ACK_CallBack(Nrf24l01_PRXStr* prx)
 void RXD_CallBack_PRX(Nrf24l01_PRXStr* prx) 
 {
   	//	RXD_ACK_CallBack(prx);
-  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,prx->pip);	//填充应答信号	
+  
+  		NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,NRD24L01_GetPip(prx->status));	//填充应答信号	
 		
 		prx->rxlen = NRF24L01_GetRXLen();
 		while(prx->rxlen)
@@ -212,15 +213,15 @@ u8 InitNRF_AutoAck_PRX(Nrf24l01_PRXStr* prx,u8* rxbuf,u8* txbuf,u8 txlen,u8 pip,
 {
     u8 erro = 0;
 	prx->rxbuf = rxbuf;
-	prx->pip = pip;
+//	prx->pip = pip;
 	prx->rf_ch = rf_ch;
 	prx->txbuf = txbuf;
 	prx->txlen = txlen;
 	prx->hasrxlen = 0;
-	if(Init_NRF24L01(prx->pip,prx->rf_ch))
+	if(Init_NRF24L01(prx->rf_ch))
     {
-	    NRF24L01_EnabelDPL(prx->pip);					//使能通道自动应答，动态长度
-        NRF24L01_RX_Mode(prx->pip,addr);                //配置接收模式 
+	    NRF24L01_EnabelDPL(pip);					//使能通道自动应答，动态长度
+        NRF24L01_RX_Mode(pip,addr);                //配置接收模式 
         NRF24L01_GPIO_IRQ();  
         erro = 1;
     }
