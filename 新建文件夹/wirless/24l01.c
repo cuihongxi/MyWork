@@ -161,7 +161,7 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 //初始化配置
 //初始化配置
 //初始化配置
-u8 Init_NRF24L01(u8 pip,u8 rf_ch)
+u8 Init_NRF24L01(u8 rf_ch)
 {
     u8 i = 10;
     NRF24L01_GPIO_Init();

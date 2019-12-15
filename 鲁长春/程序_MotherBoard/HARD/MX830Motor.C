@@ -548,6 +548,7 @@ void MotorControl()
 				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务				
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列			
+
 			}
 			else
 			if(jugeYS_No.switchon)								//无YS,FL开窗

@@ -26,30 +26,36 @@ u8 		flag_KEY_Y 		= 0;
 u8		flag_I30_en		= 0;	// 开窗报警使能
 
 extern	TimerLinkStr 		timer2 ;	// 任务的定时器
-extern	JugeCStr 		YS_30 ;
-extern	TaskStr* 		taskKeyScan;
-extern	u16			amtime ;
+extern	JugeCStr 			YS_30 ;
+extern	TaskStr* 			taskKeyScan;
+extern	u16					amtime ;
 
-extern	JugeCStr 		LEDAM_juge ;
-extern	JugeCStr 		LEDY30_juge ;
-extern	JugeCStr 		beep;
-extern 	u8			flag_DM;
+extern	JugeCStr 			LEDAM_juge ;
+extern	JugeCStr 			LEDY30_juge ;
+extern	JugeCStr 			beep;
+extern 	u8					flag_DM;
 extern 	TaskLinkStr* 		tasklink;
 extern 	u8 			ledSharpTimes;
-extern 	bool			is_suc;
-extern 	u32 			shut_time;
-extern 	u32 			systime;
+extern 	bool		is_suc;
+extern 	u32 		shut_time;
+extern 	u32 		ystime;
 extern 	u8 			beepTimes;
 extern	u32			beepdelayon;
 extern	u32			beepdelayoff;
-extern	u8  			ADDRESS1[TX_ADR_WIDTH];
-extern	u8  			ADDRESS2[RX_ADR_WIDTH];
+extern	u8  		ADDRESS1[TX_ADR_WIDTH];
+extern	u8  		ADDRESS2[RX_ADR_WIDTH];
 extern	u8			flag_BH;
 extern 	u8			flag_YS_isno;
-extern 	u16				nrf_sleeptime 	;
-extern 	u16				nrf_worktime	;
-extern 	u16				led_ontime		;
-extern 	u16				led_offtime		;
+extern 	u16			nrf_sleeptime 	;
+extern 	u16			nrf_worktime	;
+extern 	u16			led_ontime		;
+extern 	u16			led_offtime		;
+extern	u16 		YS_CGdat ;
+extern 	u32 		systime;
+extern	JugeCStr 	clearCGYS ;
+extern	u8			flag_FLCheckState ;				//fl检测开始还是停止
+extern	u8			flag_FL_SHUT;
+extern	u8 			flag_1	;						// 进行YS检查的时候置一
 
 // 清除DM
 void ClearDM();
@@ -478,6 +484,20 @@ void ChangeNRFCmd(u8* buf)
 		  		debug("WAKE_UP~~~\r\n");
 		}
     break;    
+	    case CMD_CG:
+			if(flag_1) 
+			{
+				YS_CGdat = *(u16*)buf;
+				debug("------>YS_CGdat = %d\r\n",YS_CGdat);
+			}
+			if(flag_FLCheckState) 
+			{
+				flag_FL_SHUT = buf[2];
+				debug("------>CMD_FL : %d,%d\r\n",flag_FL_SHUT,buf[2]);
+			}
+			
+    break;   
+	
   }
 }
 
@@ -503,7 +523,7 @@ INTERRUPT_HANDLER(EXTIB_G_IRQHandler,6)
 		}else
 		if(GPIO_READ(GPIO_Y30) == RESET)
 		{
-			Y30_Risingtime =systime;
+			Y30_Risingtime = systime;
 			debug("Y30_Risingtime = %lu\r\n",Y30_Risingtime);
 			key_val = KEY_VAL_Y30;
 		}

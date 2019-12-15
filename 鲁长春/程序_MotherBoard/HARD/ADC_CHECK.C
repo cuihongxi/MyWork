@@ -5,9 +5,10 @@
 JugeCStr 	jugeYS_No 	= {0};			// 无雨水，AM打开时计时开窗
 JugeCStr 	jugeYS 		= {0};			// YS信号超警戒,启动计时器，超过4S，触发	
 float 		YSdat 		= 0;			// ys-u
+u16 		YS_CGdat 		= 0;		// YS遥控传感器的值
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
 u16			ys_timer30 	= 0;			// YS不响应计时
-
+u8 flag_1	= 0;						// 进行YS检查的时候置一
 extern 		TaskLinkStr* 	tasklink;		// 任务列表
 extern 		WindowState	windowstate;
 extern		TaskStr* 	taskYS;			// YS测量任务
@@ -31,9 +32,9 @@ float YSGetAD(u16 ad)
 //YS,FL,Battery的GPIO初始化
 void GPIO_ADC_Init()
 {
-    	GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
+    GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
 	GPIO_Init(BatControl_GPIO,GPIO_Mode_Out_PP_High_Slow);
-    	GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
+    GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
 	GPIO_Init(CHARGE_PRO_PIN,GPIO_Mode_In_FL_No_IT); 		//充电保护，高电平需要保护
 	GPIO_Init(YSD_GPIO,GPIO_Mode_Out_PP_Low_Slow);
 }
@@ -59,10 +60,6 @@ uint16_t Get_ADC_Dat(hardChannel hard_channel)
     
 }
 
-void ADC_PowerOn()
-{
-	GPIO_SET(YSD_GPIO);
-}
 //YS检测任务
 void YS_Function()
 {
@@ -72,6 +69,8 @@ void YS_Function()
 		GPIO_SET(YSD_GPIO);
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		GPIO_RESET(YSD_GPIO);
+		YSdat = (YSdat > YSGetAD(YS_CGdat))?YSdat:YSGetAD(YS_CGdat);
+		YS_CGdat = 0;
 		//debug(".\r\n");
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
 		{
@@ -110,7 +109,7 @@ bool JugeYS()
 void YS_Control()
 {
 	static u8 flag_0 = 0;
-	static u8 flag_1	= 0;
+
 	if(taskYS->state == Stop)
 	{
 		if(((windowstate == SHUTDOWN  && key_AM.val == off)|| YS_30.start \

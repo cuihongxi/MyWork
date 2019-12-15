@@ -114,6 +114,8 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		MES_WAKE_UP		0X13
 #define		MES_WAKE_SLEEP	0X14
 
+#define		CMD_CG		0X20
+
 #endif
 
 //	debug("sys clk souce: %d\r\n frq: %lu\r\n",CLK_GetSYSCLKSource(),CLK_GetClockFreq());

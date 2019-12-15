@@ -7,7 +7,7 @@
 #endif
 u8 RF_CH_HZ =111;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1};         // DM地址
-u8  ADDRESS2[RX_ADR_WIDTH]={0x46,0xbd,0x31,0x52,0x08};         // DM成功后通讯地址 
+u8  ADDRESS2[RX_ADR_WIDTH]={0x80,0x06,0x01,0x1A,0x01};         // DM成功后通讯地址 
 u8  ADDRESS3[5]={0};                            //保存本地地址
 u8* address = ADDRESS1;
 extern 
@@ -50,7 +50,7 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[0] = *(__IO u8 *)(0X4926); 
 	ChipID[1] = *(__IO u8 *)(0X4927); 
 	ChipID[2] = *(__IO u8 *)(0X4928);
-    	ChipID[3] = *(__IO u8 *)(0X4929);
+    ChipID[3] = *(__IO u8 *)(0X4929);
 	ChipID[4] = *(__IO u8 *)(0X492A); 
 	ChipID[5] = *(__IO u8 *)(0X492B); 
 	ChipID[6] = *(__IO u8 *)(0X492C);
@@ -161,7 +161,7 @@ void NRF24L01_EnabelDPL(u8 pipNum)
 //初始化配置
 //初始化配置
 //初始化配置
-u8 Init_NRF24L01(u8 pip,u8 rf_ch)
+u8 Init_NRF24L01(u8 rf_ch)
 {
     u8 i = 10;
     NRF24L01_GPIO_Init();

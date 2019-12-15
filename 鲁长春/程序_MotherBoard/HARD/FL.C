@@ -27,7 +27,7 @@ void BH_FL_GPIO_Init()
 	disableInterrupts();
 	EXTI_SetPinSensitivity(EXTI_Pin_6,EXTI_Trigger_Falling);
 	EXTI_SetPinSensitivity(EXTI_Pin_7,EXTI_Trigger_Falling);
-    	enableInterrupts();					// 使能中断
+    enableInterrupts();					// 使能中断
 }
 
 void FL_CheckStart()
@@ -39,7 +39,7 @@ void FL_CheckStart()
 
 void FL_CheckStop()
 {
-    	flag_FLCheckState = 0;
+    flag_FLCheckState = 0;
 	GPIO_Init(GPIO_FLU,GPIO_Mode_Out_PP_Low_Slow);  
 	debug("FL_CheckStop-->\r\n");
 	
@@ -49,7 +49,7 @@ void FL_Control()
 {
     if(flag_FLCheckState == 0 && windowstate != SHUTDOWN && motorStruct.dir == STOP &&  flag_no30 == 0)
     {
-	FL_CheckStart();		
+		FL_CheckStart();		
     }
 }
 

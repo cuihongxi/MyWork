@@ -18,6 +18,7 @@ JugeCStr 		NRFpowon 	= {0};
 JugeCStr 		NRFpowoff 	= {0};
 JugeCStr 		NRFsleep 	= {0};
 
+
 u32 			systime 	= 0;				// 保存系统时间，ms
 u8 			ledSharpTimes 	= 0;				// 控制LED闪烁次数
 bool			is_suc 		= (bool)FALSE;			// 设置是否成功
@@ -160,6 +161,8 @@ void FunInSleap()
 	{
 		LEN_GREEN_Close();
 	}
+
+
 #if	USE_NRF > 0	
 	if(Juge_counter(&NRFpowon,nrf_sleeptime)) 				//nrf间隔打开电源,ms
 	{
@@ -223,7 +226,7 @@ void main()
 		FunInSleap();
 
 		OS_Task_Run(tasklink);				// 执行任务链表中的任务
-			
+		
 		if(jugeBHLED.start && GPIO_READ(GPIO_BH)){jugeBHLED.start = 0;LEN_GREEN_Close();} 
 		if(jugeWindows.start && (motorStruct.dir == STOP||motorStruct.dir == NULL))
 		{

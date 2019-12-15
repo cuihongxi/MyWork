@@ -16,7 +16,7 @@
 #define         EEPROM_ADDRESS3     	0x1050  
 #define         EEPROM_ADDRESS4     	0x1060  
 #define         EEPROM_BK           	0x1070 
-#define		EEPROM_FLASH_INIT	0x1080	// 保存FLASH初始化的标志值
+#define			EEPROM_FLASH_INIT	0x1080	// 保存FLASH初始化的标志值
 
 
 void FlashData_Init();

@@ -156,7 +156,7 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	ptx->hasrxlen = 0;
 	ptx->txaddr = addr;
 	Init_NRF24L01(ptx->pip,ptx->rf_ch);
-    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0,ptx->txaddr,TX_ADR_WIDTH); 	//如果需要接收方应答，则需要写本地收地址
+    NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0+ptx->pip,ptx->txaddr,TX_ADR_WIDTH); 	//如果需要接收方应答，则需要写本地收地址
 	NRF24L01_GPIO_IRQ();
 	NRF24L01_EnabelDPL(ptx->pip);					//使能通道自动应答，动态长度 , 发射模式也要加上这个
 	ptx->IRQCallBack = Default_IRQCallBack_PTX;

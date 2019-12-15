@@ -146,13 +146,27 @@ void ClearDM()
     FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
     FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS1[3]);
     FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
+	
+	FLASH_ProgramByte(EEPROM_CGADDRESS0,ADDRESS1[0]);
+    FLASH_ProgramByte(EEPROM_CGADDRESS1,ADDRESS1[1]);
+    FLASH_ProgramByte(EEPROM_CGADDRESS2,ADDRESS1[2]);
+    FLASH_ProgramByte(EEPROM_CGADDRESS3,ADDRESS1[3]);
+    FLASH_ProgramByte(EEPROM_CGADDRESS4,ADDRESS1[4]);
+	
     ADDRESS2[0] = ADDRESS1[0];
     ADDRESS2[1] = ADDRESS1[1];
     ADDRESS2[2] = ADDRESS1[2];
     ADDRESS2[3] = ADDRESS1[3];
     ADDRESS2[4] = ADDRESS1[4];
+	
+	ADDRESS4[0] = ADDRESS1[0];
+    ADDRESS4[1] = ADDRESS1[1];
+    ADDRESS4[2] = ADDRESS1[2];
+    ADDRESS4[3] = ADDRESS1[3];
+    ADDRESS4[4] = ADDRESS1[4];
+	
     InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//配置接收模式
-
+	InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS4);	//配置接收模式
 }
 void NRF_DM()
 {
@@ -220,10 +234,7 @@ INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 		
 	if(GPIO_READ(NRF24L01_IRQ_PIN) == 0) 
 	{	
-     // if(flag_duima == 0)	
 		RXprx.IRQCallBack(&RXprx);
-     // else
-     //   TXptx.IRQCallBack(&TXptx);
 	}
    	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 }

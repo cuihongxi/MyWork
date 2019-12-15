@@ -159,7 +159,7 @@ extern u8  ADDRESS3[5]; //保存本地地址
 extern u8* address;
 /*函数*/
 void NRF24L01_GPIO_Init(void);					//初始化
-u8 Init_NRF24L01(u8 pip,u8 rf_ch);                            //初始化
+u8 Init_NRF24L01(u8 rf_ch);                            //初始化
 void NRF24L01_RX_Mode(u8 pip);					//配置为接收模式
 void NRF24L01_TX_Mode(u8* addr);					//配置为发送模式
 u8 NRF24L01_Write_Buf(u8 reg, u8 *pBuf, u8 u8s);                //写数据区

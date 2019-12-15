@@ -60,6 +60,7 @@
 #define			GZ_WORK_TIME		20		//ms,NRF工作工作时间
 
 #define			SHOW_STATE_TIME		1000	//ms,查询状态LED显示时间
+#define			TIM_CLEARCGYS		10000	// ms,定时清理YS无线数据
 
 #endif
 

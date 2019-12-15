@@ -11,10 +11,18 @@
 #define			REUSE_TIMES			40			// 发送模式，发送不成功时重发的次数,40*60ms
 #define			DELAY_TIME			2000		// ms,长按延时
 
-#define         VALVE_FLSPEED           200     // 每分钟200转为FL转速阀值
-#define         TIM__FL_D              	4000    // ms，FL传感器的滤波间隔
-#define			TIM_FL_FILTER		20	// ms, FL滤波时间
+#define         VALVE_FLSPEED       200     	// 每分钟200转为FL转速阀值
+#define         TIM__FL_D           4000    	// ms，FL传感器的滤波间隔
+#define			TIM_FL_FILTER		20			// ms, FL滤波时间
 
 #define         IRQ_PERIOD      	500
 
+#define			TIM_YS_ADC			2000		// ms,YS检查周期 
+#define         VALVE_YS_D          2     		// V，雨水传感器的感应电压阀值
+#define         TIM__YS_D           3000    	// ms，雨水传感器的滤波间隔
 #endif
+
+
+
+
+
