@@ -47,7 +47,7 @@ void FL_CheckStop()
 
 void FL_Control()
 {
-    if(flag_FLCheckState == 0 && windowstate != SHUTDOWN && motorStruct.dir == STOP &&  flag_no30 == 0)
+    if(flag_FLCheckState == 0 && windowstate != SHUTDOWN && motorStruct.dir == STOP &&  flag_no30 == 0 && flag_FL_SHUT == 0)
     {
 		FL_CheckStart();		
     }

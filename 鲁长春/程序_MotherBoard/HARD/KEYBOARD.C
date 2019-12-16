@@ -56,7 +56,7 @@ extern	JugeCStr 	clearCGYS ;
 extern	u8			flag_FLCheckState ;				//fl检测开始还是停止
 extern	u8			flag_FL_SHUT;
 extern	u8 			flag_1	;						// 进行YS检查的时候置一
-
+void FL_CheckStop();
 // 清除DM
 void ClearDM();
 
@@ -493,6 +493,7 @@ void ChangeNRFCmd(u8* buf)
 			if(flag_FLCheckState) 
 			{
 				flag_FL_SHUT = buf[2];
+				if(flag_FL_SHUT) FL_CheckStop();
 				debug("------>CMD_FL : %d,%d\r\n",flag_FL_SHUT,buf[2]);
 			}
 			

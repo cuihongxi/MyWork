@@ -1,7 +1,10 @@
 #include "stmflash.h"
 #include "stm8l15x_flash.h"
 #include "24l01.h"
+/*
+	stm8l051从0x1000开始，最多256字节
 
+*/
 extern	u8		is_DM;
 
 //初始化表头的数据

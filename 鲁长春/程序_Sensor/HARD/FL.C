@@ -2,7 +2,7 @@
 
 u32 	GetSysTime();
 u32 	fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
-u8		flag_FL_SHUT 	= 0;
+u8		flag_FL_SHUT 	= 1;
 u8		flag_FLCheckState = 0;				//fl检测开始还是停止
 void FL_GPIO_Init()
 {

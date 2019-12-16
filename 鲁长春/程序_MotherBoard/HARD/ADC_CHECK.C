@@ -9,7 +9,7 @@ u16 		YS_CGdat 		= 0;		// YS遥控传感器的值
 JugeCStr 	YS_30 		= {0};			// YS供电标志位，当按下按键30分钟不响应YS信号
 u16			ys_timer30 	= 0;			// YS不响应计时
 u8 flag_1	= 0;						// 进行YS检查的时候置一
-extern 		TaskLinkStr* 	tasklink;		// 任务列表
+extern 		TaskLinkStr* 	tasklink;	// 任务列表
 extern 		WindowState	windowstate;
 extern		TaskStr* 	taskYS;			// YS测量任务
 extern		u8 		flag_flag_YS_SHUT;

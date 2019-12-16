@@ -544,11 +544,18 @@ void MotorControl()
 				debug("FL达到阀值，关窗\r\n");
 				flag_FL_SHUT = 0;
 				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);// 执行关窗
-				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,JugeBTStop);// 刹车
-				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
+//				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,JugeBTStop);// 刹车
+//				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务				
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列			
 
+//					debug("FL达到阀值，关窗\r\n");
+//				flag_FL_SHUT = 0;
+//				OS_AddJudegeFunction(taskMotor,ShutDownWindow,MOTOR_F_SAFE,FL_MotorProtect);// 执行关窗
+//				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectZ);	// 正转1秒
+//				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+//				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务				
+//				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
 			}
 			else
 			if(jugeYS_No.switchon)								//无YS,FL开窗
@@ -559,11 +566,19 @@ void MotorControl()
 				flag_bat2BC1 = 0;
 				flag_YS_isno = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
-				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,JugeBTStop);// 刹车
-				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
+				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,MotorSysProtectY);// 刹车
+//				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
 				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
+
+	
+//				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_MOTOR_Z, MotorSysProtectY);	// 正转1秒
+//				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_MOTO_HOLD,MotorProtectHold);
+//				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
+//				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
+//				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列
+				
 			}
 			else if(bat.state == BAT_STATE_38BC1 && flag_bat2BC1 == 0)
 			{

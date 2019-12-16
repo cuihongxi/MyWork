@@ -28,7 +28,7 @@ u32 	DM_time = 0;
 u8		flag_duima = 0;
 u8      DM_num = 0;
 u8		flag_exti = 0;
-u16 	YS_CGdat  = 0;
+u16 	YS_CGdat  = 10000;
 u8		CGDAT[4] = {0};
 
 JugeCStr 		jugeYSADC 	= {0};	// YS ADC检查 
@@ -139,7 +139,7 @@ void main()
     ptx.rxbuf = TXrxbuf;
 	ptx.txbuf = TXtxbuf;
 	debug("当前的通讯地址：");
-	u8 i = 0;
+	u16 i = 0;
 	for(i =0;i<5;i++)
 	{
 		debug("%X	",ptx.txaddr[i]);
@@ -150,28 +150,19 @@ void main()
 	jugeYSADC.start = 1;
 	
 	FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
-	for(i = 0;i<255;i++)
-	{
-		 FLASH_ProgramByte(0x1000+i,i);
-	}
-	debug("FLASH_ProgramByte end\r\n---------------------------\r\n");
-	for(i = 0;i<255;i++)
-	{
-		 debug("[%d] = %d	",i,FLASH_ReadByte(0x1000+i));
-	}
-	debug("FLASH_ReadByte end\r\n---------------------------\r\n");
+
     while(1)
     {    
-//      halt();	
-//	   if(flag_duima == 0)			// 非对码状态
-//	   {
-//		 	  //按键检测
-//	   		if(flag_exti) Key_ScanLeave();
-//			else Key_Scan();
-////			delay_ms(4000);
-////			*(u16*)CGDAT = YS_CGdat;
-////			CGDAT[2] = 1;
-////			NRF_SendCMD(&ptx,CGDAT,CMD_CG,CMD_CG);
+      halt();	
+	   if(flag_duima == 0)			// 非对码状态
+	   {
+		 	  //按键检测
+	   		if(flag_exti) Key_ScanLeave();
+			else Key_Scan();
+			delay_ms(4000);
+
+	  		LoadingNRFData(CGDAT,YS_CGdat,flag_FL_SHUT);
+			NRF_SendCMD(&ptx,CGDAT,CMD_CG,CMD_CG);
 //			if(Juge_counter(&jugeYSADC,TIM_YS_ADC)) 
 //			{
 //			  	GPIO_SET(YSD_GPIO);
@@ -193,17 +184,17 @@ void main()
 //					
 //				debug("\r\n");
 //			}
-//	   }else
-//	   {
-//			debug("DM 模式\r\n");
-//			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);			  	
-//			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);			
-//			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS2);
-//			flag_duima = 0;
-//			LEN_RED_Close();
-//	   }
-//
-//        
+	   }else
+	   {
+			debug("DM 模式\r\n");
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);			  	
+			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);			
+			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS2);
+			flag_duima = 0;
+			LEN_RED_Close();
+	   }
+
+        
 	}   
     
 }
