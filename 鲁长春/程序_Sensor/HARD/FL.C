@@ -1,6 +1,7 @@
 #include "FL.H"
+#include "CUI_RTOS.H"
+extern 	TimerLinkStr 		timer2;
 
-u32 	GetSysTime();
 u32 	fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u8		flag_FL_SHUT 	= 1;
 u8		flag_FLCheckState = 0;				//fl检测开始还是停止
@@ -37,7 +38,7 @@ void FL_Check()
 	if(flag_FLCheckState && GPIO_READ(GPIO_FLU) == RESET )
 	{
 		debug("GPIO_FLU = 0\r\n");
-		u32 counter = GetSysTime();
+		u32 counter = GetSysTime(&timer2);
 		if(counter < counter_FL && counter > counter_filter) 		//超过阀值，转速有效，等待维持4s
 		{
 			if(flag == 0)		

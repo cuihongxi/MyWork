@@ -3,7 +3,8 @@
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
 {
-	return (0.0026*ad);//(0.0024175824175*ad);
+debug("ad = %d\r\n",ad);
+	return (0.000075532*ad);
 }
 //根据AD值计算YS端电压
 float YSGetAD(u16 ad)
@@ -15,7 +16,7 @@ float YSGetAD(u16 ad)
 void GPIO_ADC_Init()
 {
     GPIO_Init(Battery_GPIO,GPIO_Mode_In_FL_No_IT);
-	GPIO_Init(BatControl_GPIO,GPIO_Mode_Out_PP_High_Slow);
+	GPIO_Init(BatControl_GPIO,GPIO_Mode_Out_OD_HiZ_Fast);
     GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
 	GPIO_Init(YSD_GPIO,GPIO_Mode_Out_PP_Low_Slow);
 

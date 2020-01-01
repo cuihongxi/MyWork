@@ -15,14 +15,15 @@
 
 #define         Battery_GPIO            GPIOA,GPIO_Pin_5  
 #define         BatControl_GPIO         GPIOA,GPIO_Pin_6  //控制端
-#define         YS_GPIO                 GPIOD,GPIO_Pin_0                
-#define         YSD_GPIO                GPIOC,GPIO_Pin_6 	//给YS传感器供电
+
+#define         YS_GPIO                 GPIOB,GPIO_Pin_5                
+#define         YSD_GPIO                GPIOB,GPIO_Pin_3 	//给YS传感器供电
 
 
 typedef enum 
 {
-    Battery_Channel     = ADC_Channel_16,  
-	YS_Channel 			= ADC_Channel_22,
+    Battery_Channel     = ADC_Channel_1,  
+	YS_Channel 			= ADC_Channel_13,
 }hardChannel;
 
 

@@ -15,7 +15,7 @@
 #include "FL.H"
 #include "LED_SHOW.H"
 #include "stm8l15x_flash.h"
-
+#include "CUI_RTOS.H"
 
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
 
@@ -29,22 +29,19 @@ u8		flag_duima = 0;
 u8      DM_num = 0;
 u8		flag_exti = 0;
 u16 	YS_CGdat  = 10000;
-u8		CGDAT[4] = {0};
-
-JugeCStr 		jugeYSADC 	= {0};	// YS ADC检查 
+u8		CGDAT[5] = {0};
 
 extern u8		flag_FL_SHUT;	// FL关窗标志
 	  
-#if  DEBUG_LEVEL > 0
-#define			KEY_DM				GPIOB,GPIO_Pin_2
-#else
-#define			KEY_DM				GPIOC,GPIO_Pin_5
-#endif
 
-u32 	GetSysTime()
-{
-	return systime;
-}
+#define			KEY_DM				GPIOB,GPIO_Pin_2
+
+TaskStr* 		taskBatControl 	= {0};	
+TaskStr* 		taskYS		= {0};				    // YS测量任务
+TaskLinkStr		task_link 	= {0};
+TimerLinkStr 		timer2 		= {0};				// 任务的定时器
+TaskLinkStr* 	tasklink 	= &task_link;			// 任务列表
+BATStr 			bat = {0};					        // 电池结构体
 //让系统休眠
 void Make_SysSleep()
 {
@@ -121,11 +118,12 @@ void Key_Scan()
 	} 
 }
 
-// 装载NRF发射数据
-void LoadingNRFData(u8* pBuf,u16 YSadc,u8 FLflag)
+// 装载NRF发射数据，前两位装载YS的AD值，再装载FL关闭标志，再装载电池电量标志
+void LoadingNRFData(u8* pBuf,u16 YSadc,u8 FLflag,u8 batState)
 {
 	*(u16*)pBuf = YSadc;
 	pBuf[2] = FLflag;
+	pBuf[3] = batState;
 }
 
 void main()
@@ -146,14 +144,27 @@ void main()
 	}
 	debug("\r\n");
     NRF24L01_GPIO_Lowpower();
+	
+	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
+	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
+
+	//检测一次电池电压
+	GPIO_ADC_Init();
+GPIO_RESET(BatControl_GPIO);
+	bat.flag= 1;
+	BatControl(&bat,tasklink,taskBatControl);
+	
 	Make_SysSleep();
-	jugeYSADC.start = 1;
 	
 	FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
 
     while(1)
     {    
       halt();	
+	  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
+	  if(systime >= bat.threshold) bat.flag = 1;		// 电池电量检测间隔
+	  BatControl(&bat,tasklink,taskBatControl);
+	  OS_Task_Run(tasklink);				// 执行任务链表中的任务
 	   if(flag_duima == 0)			// 非对码状态
 	   {
 		 	  //按键检测
@@ -204,7 +215,7 @@ void main()
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
-    systime += IRQ_PERIOD;
+   // systime += IRQ_PERIOD;
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 

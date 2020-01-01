@@ -13,7 +13,7 @@
 #include "UDATA.H"
 
 
-   
+#define         IRQ_PERIOD      	500   
 #define DEBUG_LEVEL 1		//调试接口
 
 #define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC3
@@ -113,7 +113,8 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		MES_WAKE_UP		0X13
 #define		MES_WAKE_SLEEP	0X14
 
-#define		CMD_CG		0X20
+#define		CMD_CG_BAT		0X20	// 电池电量不足
+
 
 
 #endif

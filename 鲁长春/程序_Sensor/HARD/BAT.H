@@ -13,14 +13,13 @@
 #include "UHEAD.H"
 #include "stm8l15x_adc.h"
 #include "ADC_CHECK.H"
+#include "CUI_RTOS.H"
 
-#define		BAT_STATE_GREEN				1
-#define		BAT_STATE_GREENSHARP3			2
+#define		BAT_STATE_RED				1
+#define		BAT_STATE_NODO				2
 #define		BAT_STATE_REDSHARP3			3
-#define		BAT_STATE_38BC1				4
-#define		BAT_STATE_NoBACK			5
-#define		BAT_STATE_CHARGE_H			6	//充满电
-#define		BAT_STATE_CHARGE_L			7	//充电
+#define		BAT_STATE_REDSHARP5			4
+
 
 typedef struct{
 	float val;
@@ -35,7 +34,7 @@ extern u8 flag_checkBat;
 
 
 //电源管理
-void BatControl();
+void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl);
 void ReSetLedCheck();
 uint16_t Get_BAT_ADC_Dat(hardChannel hard_channel);
 #endif

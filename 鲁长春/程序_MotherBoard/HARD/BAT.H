@@ -16,7 +16,7 @@
 #include "ADC_CHECK.H"
 
 #define		BAT_STATE_GREEN				1
-#define		BAT_STATE_GREENSHARP3			2
+#define		BAT_STATE_GREENSHARP3		2
 #define		BAT_STATE_REDSHARP3			3
 #define		BAT_STATE_38BC1				4
 #define		BAT_STATE_NoBACK			5
