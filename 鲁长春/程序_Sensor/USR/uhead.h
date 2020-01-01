@@ -16,7 +16,7 @@
    
 #define DEBUG_LEVEL 1		//调试接口
 
-#define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC5
+#define SWAPPER_UART 0		// 定义串口发射TX脚 1 -->PA2 ；0 -->PC3
 
 #if 	SWAPPER_UART > 0 
 #define	SWAPPER_UART_PA2_PC3()		SYSCFG_REMAPPinConfig(REMAP_Pin_USART1TxRxPortA,ENABLE);	//端口重映射，去掉注释之后USART1为PA2-TX、PA3-RX；注释之后USART1为TX-PC5、RX-PC6；复位之后USART会自动恢复至PC5、PC6

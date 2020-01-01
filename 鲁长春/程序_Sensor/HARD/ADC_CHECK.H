@@ -13,8 +13,8 @@
 #include "UHEAD.H"
 #include "stm8l15x_adc.h"
 
-#define         Battery_GPIO            GPIOB,GPIO_Pin_2  
-#define         BatControl_GPIO         GPIOA,GPIO_Pin_2  //控制端
+#define         Battery_GPIO            GPIOA,GPIO_Pin_5  
+#define         BatControl_GPIO         GPIOA,GPIO_Pin_6  //控制端
 #define         YS_GPIO                 GPIOD,GPIO_Pin_0                
 #define         YSD_GPIO                GPIOC,GPIO_Pin_6 	//给YS传感器供电
 

@@ -211,7 +211,7 @@ void Key_ScanLeave()
 			StateSuccess();
 			debug("¶ÔÂë×´Ì¬\r\n");
 		}
-		else if((systime - DM_Risingtime) > TIM_DM_CLEARL && (systime - DM_Risingtime) < TIM_DM_CLEARH )
+		else if((systime - DM_Risingtime) > TIM_DM_CLEARL)
 		{
 			flag_duima_clear = 1;	//Çå³ý¶ÔÂë
 			StateFalse();

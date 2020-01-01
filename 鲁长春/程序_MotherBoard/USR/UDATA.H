@@ -37,7 +37,7 @@
 #define			TIM_DML					1000	// ms, 大于这个值，并小于TIM_DMH 内抬起DM，进入NRF对码
 #define			TIM_DMH					3000	// ms, 小于这个值，并大于TIM_DML 内抬起DM，进入NRF对码
 #define			TIM_DM_CLEARL			8000	// ms, 清除对码值下限
-#define			TIM_DM_CLEARH			12000	// ms, 清除对码值上限
+//#define			TIM_DM_CLEARH			12000	// ms, 清除对码值上限
 #define			TIM_BH_FILTER			50	// ms, BH滤波时间
 #define			TIM_FL_FILTER			20	// ms, FL滤波时间
 #define			TIM_LED_SHARP_ON		80	//ms，设置参数LED闪烁亮的时间

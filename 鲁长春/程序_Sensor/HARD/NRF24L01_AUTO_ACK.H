@@ -54,7 +54,7 @@ typedef struct PRXStr{
  */
 #define		IRQ_EXTI_SET()	do{\
 								disableInterrupts();\
-								EXTI_SetPinSensitivity(EXTI_Pin_0,EXTI_Trigger_Falling);\
+								EXTI_SetPinSensitivity(EXTI_Pin_2,EXTI_Trigger_Falling);\
 								enableInterrupts();\
 							}while(0)
 

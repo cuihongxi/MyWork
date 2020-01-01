@@ -36,7 +36,7 @@ JugeCStr 		jugeYSADC 	= {0};	// YS ADC检查
 extern u8		flag_FL_SHUT;	// FL关窗标志
 	  
 #if  DEBUG_LEVEL > 0
-#define			KEY_DM				GPIOB,GPIO_Pin_1
+#define			KEY_DM				GPIOB,GPIO_Pin_2
 #else
 #define			KEY_DM				GPIOC,GPIO_Pin_5
 #endif
@@ -92,7 +92,7 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 
 void Key_GPIO_Init()
 {
-	GPIO_Init(KEY_DM,GPIO_Mode_Out_OD_HiZ_Slow);
+	GPIO_Init(KEY_DM,GPIO_Mode_In_PU_IT);
     flag_exti = 0;
 }
 
@@ -133,7 +133,7 @@ void main()
 	UART_INIT(115200);	
 	Key_GPIO_Init();
 	LED_GPIO_Init();
-	
+	debug("start:\r\n");
 	NRF_CreatNewAddr(ADDRESS2);
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
     ptx.rxbuf = TXrxbuf;
@@ -158,11 +158,12 @@ void main()
 	   {
 		 	  //按键检测
 	   		if(flag_exti) Key_ScanLeave();
-			else Key_Scan();
-			delay_ms(4000);
-
-	  		LoadingNRFData(CGDAT,YS_CGdat,flag_FL_SHUT);
-			NRF_SendCMD(&ptx,CGDAT,CMD_CG,CMD_CG);
+			
+//			delay_ms(4000);
+//
+//	  		LoadingNRFData(CGDAT,YS_CGdat,flag_FL_SHUT);
+//			NRF_SendCMD(&ptx,CGDAT,CMD_CG,CMD_CG);
+			
 //			if(Juge_counter(&jugeYSADC,TIM_YS_ADC)) 
 //			{
 //			  	GPIO_SET(YSD_GPIO);
@@ -208,11 +209,12 @@ INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 }
 
 //NRF24L01 IRQ 
-INTERRUPT_HANDLER(EXTI0_IRQHandler,8)
+INTERRUPT_HANDLER(EXTI0_IRQHandler,10)
 {
   if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
   {	
  		ptx.IRQCallBack(&ptx);
   }
-   EXTI_ClearITPendingBit (EXTI_IT_Pin0);
+	Key_Scan();
+   EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 } 

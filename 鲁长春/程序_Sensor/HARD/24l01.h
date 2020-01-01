@@ -116,12 +116,12 @@
 //#define DMA_SPI
 
 //模块版引脚定义
-#define NRF24L01_CE_PIN         GPIOB,GPIO_Pin_3        //RX/TX模式选择端
-#define NRF24L01_IRQ_PIN        GPIOB,GPIO_Pin_0        //可屏蔽中断端
-#define NRF24L01_CSN_PIN        GPIOB,GPIO_Pin_4        //SPI片选端
-#define MOSI_PIN                GPIOB,GPIO_Pin_6        //SPI主机输出从机输入端
-#define MISO_PIN                GPIOB,GPIO_Pin_7        //SPI主机输出从机输出端
-#define SCLK_PIN                GPIOB,GPIO_Pin_5        //SPI时钟端 
+#define NRF24L01_CE_PIN         GPIOD,GPIO_Pin_3        //RX/TX模式选择端
+#define NRF24L01_IRQ_PIN        GPIOD,GPIO_Pin_2        //可屏蔽中断端
+#define NRF24L01_CSN_PIN        GPIOC,GPIO_Pin_5        //SPI片选端
+#define MOSI_PIN                GPIOA,GPIO_Pin_3        //SPI主机输出从机输入端
+#define MISO_PIN                GPIOA,GPIO_Pin_2        //SPI主机输出从机输出端
+#define SCLK_PIN                GPIOC,GPIO_Pin_6        //SPI时钟端 
 
 
 

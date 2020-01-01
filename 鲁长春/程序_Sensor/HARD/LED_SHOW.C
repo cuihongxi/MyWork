@@ -3,12 +3,12 @@
 
 void LEN_RED_Open()
 {
-	GPIO_SET(LED_RED);
+	GPIO_RESET(LED_RED);
 }
 
 void LEN_RED_Close()
 {
-	GPIO_RESET(LED_RED);
+	GPIO_SET(LED_RED);
 }	
 void LEN_GREEN_Open()
 {
