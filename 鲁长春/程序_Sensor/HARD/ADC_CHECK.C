@@ -3,8 +3,7 @@
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
 {
-debug("ad = %d\r\n",ad);
-	return (0.000075532*ad);
+	return (0.0012*ad);
 }
 //根据AD值计算YS端电压
 float YSGetAD(u16 ad)

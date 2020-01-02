@@ -150,10 +150,9 @@ void main()
 
 	//检测一次电池电压
 	GPIO_ADC_Init();
-GPIO_RESET(BatControl_GPIO);
 	bat.flag= 1;
 	BatControl(&bat,tasklink,taskBatControl);
-	
+	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 	Make_SysSleep();
 	
 	FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
@@ -162,8 +161,9 @@ GPIO_RESET(BatControl_GPIO);
     {    
       halt();	
 	  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
-	  if(systime >= bat.threshold) bat.flag = 1;		// 电池电量检测间隔
+	  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔
 	  BatControl(&bat,tasklink,taskBatControl);
+	  
 	  OS_Task_Run(tasklink);				// 执行任务链表中的任务
 	   if(flag_duima == 0)			// 非对码状态
 	   {

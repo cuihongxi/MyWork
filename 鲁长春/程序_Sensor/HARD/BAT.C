@@ -15,9 +15,9 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);//Í¨¹ýNRFÏòÖ÷°å·
 uint16_t Get_BAT_ADC_Dat(hardChannel hard_channel)
 {
 	uint16_t dat = 0;
-	//GPIO_RESET(BatControl_GPIO);
+	GPIO_RESET(BatControl_GPIO);
 	dat = Get_ADC_Dat( hard_channel);
-	//GPIO_SET(BatControl_GPIO);
+	GPIO_SET(BatControl_GPIO);
 	return dat;
 }
 
@@ -34,18 +34,18 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 	{
 		bat->flag = 0;
 		bat->val = BatteryGetAD(Get_BAT_ADC_Dat(Battery_Channel));	
-		debug("bat = %d.%d\r\n",(u8)bat->val,(u8)(bat->val*10)-(u8)bat->val*10);
+
 		if(bat->val >= 3.3) 
 			bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_6H;	// ¼ÆËã¼ì²â¼ä¸ô
 		else if(bat->val >= 3.0) 
 		{
 			bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_2H;
-			//NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// µç³ØµçÁ¿²»×ã
+			NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// µç³ØµçÁ¿²»×ã
 		}
 		else 
 		{
 			bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_0_5H;
-			//NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// µç³ØµçÁ¿²»×ã
+			NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// µç³ØµçÁ¿²»×ã
 		}
 		if(flag_start)
 		{
