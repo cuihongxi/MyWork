@@ -26,11 +26,12 @@ typedef enum
 	YS_Channel 			= ADC_Channel_13,
 }hardChannel;
 
+typedef	enum{
+	none,
+	Rainy,
+	Sunny,
+}enumWeather;
 
-extern JugeCStr 	jugeYS ;				//YS信号产生后计时
-extern JugeCStr 	jugeYS_No;
-extern JugeCStr 	YS_30;
-extern u16			ys_timer30;
 
 //函数
 
@@ -38,6 +39,5 @@ void GPIO_ADC_Init();   //YS,Battery的GPIO初始化
 uint16_t Get_ADC_Dat(hardChannel hard_channel);
 float BatteryGetAD(u16 ad);	// 根据AD值计算电池端电压
 float YSGetAD(u16 ad);		// 根据AD值计算YS端电压
-void YS_Control();			// YS控制
-
+void YS_Function();
 #endif

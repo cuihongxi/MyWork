@@ -114,7 +114,9 @@ bool Juge_counter(JugeCStr* juge, u32 swdat);
 #define		MES_WAKE_UP		0X13
 #define		MES_WAKE_SLEEP	0X14
 
-#define		CMD_CG		0X20
+#define		CMD_CG_BAT		0X20	// 电池电量不足
+#define		CMD_CG_YS		0X21	// 无线YS信息
+#define		CMD_CG_FL		0X22	// 无线FL信息
 
 #endif
 

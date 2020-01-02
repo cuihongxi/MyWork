@@ -16,12 +16,17 @@
 #define			TIM_FL_FILTER		20			// ms, FL滤波时间
 
 #define			TIM_YS_ADC			2000		// ms,YS检查周期 
-#define         VALVE_YS_D          2     		// V，雨水传感器的感应电压阀值
+#define         VALVE_YS_D          2     		// V，雨天雨水传感器的感应电压阀值
+
+
 #define         TIM__YS_D           3000    	// ms，雨水传感器的滤波间隔
+#define         TIM_YS_30M        	1800000     // ms,YS持续超过20分钟，每30分钟发送一次
 
 #define			TIM_BAT_6H			10000//21600000	// ms, 6H间隔
 #define			TIM_BAT_2H			8000//7200000		// ms, 2H间隔
 #define			TIM_BAT_0_5H		6000//1800000		// ms, 0.5H间隔
+#define         TIM__YS_D              	3000    // ms，雨水传感器的滤波间隔
+#define         TIM_CHECKEYS          	2000    // ms,YS检测时间
 
 #endif
 

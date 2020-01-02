@@ -484,21 +484,27 @@ void ChangeNRFCmd(u8* buf)
 		  		debug("WAKE_UP~~~\r\n");
 		}
     break;    
-	    case CMD_CG:
+  		case CMD_CG_BAT:
+		// flag_CG_BAT = 1;
+		debug("------>CG_BAT µç³ØÃ»µç\r\n");
+		
+	break;
+  		case CMD_CG_YS:
 			if(flag_1) 
 			{
 				YS_CGdat = *(u16*)buf;
 				debug("------>YS_CGdat = %d\r\n",YS_CGdat);
 			}
+	break;
+		case CMD_CG_FL:
 			if(flag_FLCheckState) 
 			{
 				flag_FL_SHUT = buf[2];
 				if(flag_FL_SHUT) FL_CheckStop();
-				debug("------>CMD_FL : %d,%d\r\n",flag_FL_SHUT,buf[2]);
+				debug("------>CMD_FL : %d\r\n",flag_FL_SHUT);
 			}
-			
-    break;   
-	
+		
+	break;
   }
 }
 

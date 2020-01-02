@@ -14,7 +14,7 @@
 #include "BAT.H"
 #include "FL.H"
 #include "LED_SHOW.H"
-#include "stm8l15x_flash.h"
+//#include "stm8l15x_flash.h"
 #include "CUI_RTOS.H"
 
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
@@ -31,15 +31,14 @@ u8		flag_exti = 0;
 u16 	YS_CGdat  = 10000;
 u8		CGDAT[5] = {0};
 
-extern u8		flag_FL_SHUT;	// FL关窗标志
-	  
+extern 	u8			flag_FL_SHUT;	// FL关窗标志  
 
 #define			KEY_DM				GPIOB,GPIO_Pin_2
 
 TaskStr* 		taskBatControl 	= {0};	
 TaskStr* 		taskYS		= {0};				    // YS测量任务
 TaskLinkStr		task_link 	= {0};
-TimerLinkStr 		timer2 		= {0};				// 任务的定时器
+TimerLinkStr 	timer2 		= {0};					// 任务的定时器
 TaskLinkStr* 	tasklink 	= &task_link;			// 任务列表
 BATStr 			bat = {0};					        // 电池结构体
 //让系统休眠
@@ -98,10 +97,11 @@ void Key_ScanLeave()
 {
     if(GPIO_READ(KEY_DM)) //无按键按下
     {       
-	   LEN_RED_Close();
-		if((systime - DM_time) > 1000)
+	   
+		if((systime - DM_time) > 500)
 		{
-				flag_duima = 1;
+		  	LEN_GREEN_Open();
+			flag_duima = 1;
 		}
 		DM_time = 0;
 		flag_exti = 0;
@@ -114,7 +114,7 @@ void Key_Scan()
 	{
 		DM_time = systime;
 		flag_exti = 1;
-		LEN_RED_Open();
+		
 	} 
 }
 
@@ -125,7 +125,6 @@ void LoadingNRFData(u8* pBuf,u16 YSadc,u8 FLflag,u8 batState)
 	pBuf[2] = FLflag;
 	pBuf[3] = batState;
 }
-
 void main()
 {    	
 	UART_INIT(115200);	
@@ -147,7 +146,9 @@ void main()
 	
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
-
+	OS_AddFunction(taskYS,YS_Function,TIM_CHECKEYS);
+	OS_AddTask(tasklink,taskYS);								// 添加YS检测任务
+	
 	//检测一次电池电压
 	GPIO_ADC_Init();
 	bat.flag= 1;
@@ -155,13 +156,13 @@ void main()
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 	Make_SysSleep();
 	
-	FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
+//	FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
 
     while(1)
     {    
       halt();	
 	  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
-	  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔
+	  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
 	  BatControl(&bat,tasklink,taskBatControl);
 	  
 	  OS_Task_Run(tasklink);				// 执行任务链表中的任务
@@ -203,7 +204,7 @@ void main()
 			NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);			
 			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS2);
 			flag_duima = 0;
-			LEN_RED_Close();
+			LEN_GREEN_Close();
 	   }
 
         

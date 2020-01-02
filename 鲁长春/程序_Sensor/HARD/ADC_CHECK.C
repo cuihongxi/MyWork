@@ -1,5 +1,14 @@
 #include "ADC_CHECK.H"
-	
+#include "24l01.h"
+#include "NRF24L01_AUTO_ACK.H"
+
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);//通过NRF向主板发送命令函数
+
+extern	u16 	YS_CGdat ;
+extern	u32 	systime;
+extern	Nrf24l01_PTXStr 	ptx ;
+extern	u8		CGDAT[5];
+
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
 {
@@ -41,4 +50,104 @@ uint16_t Get_ADC_Dat(hardChannel hard_channel)
     return dat;
     
 }
+
+//YS检测任务
+void YS_Function()
+{
+  	static enumWeather	weather = none;
+	static u32 time = 0;
+	static u32 time30 = 0;	// 30分钟计时
+	static u8 flag_sw = 0;
+	
+	float YSdat = 0;
+	GPIO_SET(YSD_GPIO);
+	YS_CGdat = Get_ADC_Dat(YS_Channel);
+	YSdat = YSGetAD(YS_CGdat);
+	GPIO_RESET(YSD_GPIO);
+	debug("YSdat = %d.%d,systime = %lu\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10,systime);
+	if(weather == none)
+	{
+	  
+		time = systime;
+		if(YSdat >= VALVE_YS_D )	//雨天
+		{
+			weather = Rainy;
+			debug("雨天\r\n");
+		}
+		else{						//晴天
+			
+		  weather = Sunny;	
+		  debug("晴天\r\n");
+		}
+		  	
+	}else
+	{
+		if(YSdat >= VALVE_YS_D )	//雨天
+		{	
+			if(weather == Sunny)
+			{
+				time = systime;
+				weather = Rainy;
+				flag_sw = 0;
+				debug("雨天\r\n");
+			}else
+			{
+				if((systime - time) >= TIM__YS_D && flag_sw == 0) 					// 滤波4S
+				{
+				  	flag_sw = 1;
+					*(u16*)CGDAT = YS_CGdat;
+					time30 = 0;
+					debug("发送YS信息\r\n");
+					NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息
+				}
+				else
+				{
+				  	time30 += TIM_CHECKEYS;
+					if(time30 > TIM_YS_30M)			// 持续超过30分钟
+					{
+					  	time30 = 0;
+						debug("雨天 YS_CGdat = %d\r\n",YS_CGdat);
+						*(u16*)CGDAT = YS_CGdat;
+						NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息				  	
+					}					
+				}
+
+			}
+		}else						// 晴天
+		{
+			if(weather == Rainy )
+			{
+				time = systime;
+				weather = Sunny;
+				flag_sw = 0;
+				debug("晴天\r\n");
+			}else
+			{
+				if((systime - time) >= TIM__YS_D && flag_sw == 0) 					// 滤波4S
+				{
+				  	flag_sw = 1;
+					time30 = 0;
+					*(u16*)CGDAT = YS_CGdat;
+					NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息
+					debug("发送YS信息\r\n");
+				}
+				else
+				{
+					time30 += TIM_CHECKEYS;
+					if(time30 > TIM_YS_30M)			// 持续超过30分钟
+					{
+					  	time30 = 0;
+						debug("晴天 YS_CGdat = %d\r\n",YS_CGdat);
+						*(u16*)CGDAT = YS_CGdat;
+						NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息				  	
+					}					
+				}
+	
+			}			
+		}
+	}
+	
+
+}
+
 

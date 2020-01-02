@@ -75,11 +75,11 @@
         <option>
           <name>GenLibOutFormatter</name>
           <version>0</version>
-          <state>7</state>
+          <state>0</state>
         </option>
         <option>
           <name>GenLibOutFormatterDescription</name>
-          <state>No specifier a or A, no specifier n, no float, no flags.</state>
+          <state>Automatic choice of formatter.</state>
         </option>
         <option>
           <name>GenStackSize</name>
@@ -1600,7 +1600,7 @@
       <name>$PROJ_DIR$\..\USR\UDATA.H</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\USR\uhead.h</name>
+      <name>$PROJ_DIR$\..\USR\UHEAD.H</name>
     </file>
   </group>
   <group>
