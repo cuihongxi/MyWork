@@ -67,8 +67,8 @@ void FL_Check()
 }
 
 
-INTERRUPT_HANDLER(EXTI3_IRQHandler,11)
+INTERRUPT_HANDLER(EXTI4_IRQHandler,12)
 {
 	FL_Check();	
-    EXTI_ClearITPendingBit (EXTI_IT_Pin3);
+    EXTI_ClearITPendingBit (EXTI_IT_Pin4);
 }

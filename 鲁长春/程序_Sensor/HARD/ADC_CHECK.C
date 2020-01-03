@@ -64,7 +64,7 @@ void YS_Function()
 	YS_CGdat = Get_ADC_Dat(YS_Channel);
 	YSdat = YSGetAD(YS_CGdat);
 	GPIO_RESET(YSD_GPIO);
-	debug("YSdat = %d.%d,systime = %lu\r\n",(u8)YSdat,(u8)(YSdat*10)-(u8)YSdat*10,systime);
+	debug("YS_CGdat = %d\r\n",YS_CGdat);
 	if(weather == none)
 	{
 	  

@@ -12,7 +12,7 @@
 
 #include "UHEAD.H"
 
-#define		GPIO_FLU		GPIOA,GPIO_Pin_3		// FL-U风力检测,下降沿中断
+#define		GPIO_FLU		GPIOB,GPIO_Pin_4		// FL-U风力检测,下降沿中断
 
 
 void FL_GPIO_Init();

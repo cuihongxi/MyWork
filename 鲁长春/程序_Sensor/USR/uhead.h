@@ -58,7 +58,7 @@
 #define	GPIO_SET(pin)		GPIO_SetBits(pin)
 #define	GPIO_RESET(pin)		GPIO_ResetBits(pin)
 #define	GPIO_READ(pin)		GPIO_ReadInputDataBit(pin)
-
+#define	GPIO_Toggle(pin)	GPIO_ToggleBits(pin)
 
 //定时判断数据类型
 typedef struct{

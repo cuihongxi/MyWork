@@ -26,7 +26,7 @@
 #define NOP             0xFF  //空操作,可以用来读状态寄存器	 
 //SPI(NRF24L01)寄存器地址
 #define CONFIG          0x00  //配置寄存器地址;bit0:1接收模式,0发射模式;bit1:电选择;bit2:CRC模式;bit3:CRC使能;
-                              //bit4:中断MAX_RT(达到最大重发次数中断)为1使能;bit5:中断TX_DS为1使能;bit6:中断RX_DR为1使能
+                              //bit4:中断MAX_RT(达到最大重发次数中断)为1不使能;bit5:中断TX_DS为1不使能;bit6:中断RX_DR为1不使能
 #define EN_AA           0x01  //使能自动应答功能  bit0~5,对应通道0~5
 #define EN_RXADDR       0x02  //接收地址允许,bit0~5,对应通道0~5
 

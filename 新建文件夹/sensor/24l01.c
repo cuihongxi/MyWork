@@ -265,6 +265,20 @@ u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
 #endif
 	return 0;//其他原因发送失败
 }
+
+//无应答发送
+u8 NRF24L01_TxPacketNoACK(u8 *txbuf,u8 size)
+{  	
+    SCLK_OUT_0 ;
+	CE_OUT_0;                               //StandBy I模式	
+  	NRF24L01_Write_Buf(W_TX_PAYLOAD_NOACK,txbuf,size);
+ 	CE_OUT_1;                               //启动发送 置高CE激发数据发送 
+#ifdef DMA_SPI
+	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
+#endif
+	return 0;//其他原因发送失败
+}
+
 //启动NRF24L01发送一次数据
 //txbuf:待发送数据首地址
 //返回值:0，接收完成；其他，错误代码

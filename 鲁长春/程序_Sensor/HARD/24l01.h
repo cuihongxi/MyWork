@@ -20,10 +20,20 @@
 #define FLUSH_TX        0xE1  //清除TX FIFO寄存器.发射模式下用
 #define FLUSH_RX        0xE2  //清除RX FIFO寄存器.接收模式下用
 #define REUSE_TX_PL     0xE3  //重新使用上一包数据,CE为高,数据包被不断发送.
+#define	W_TX_PAYLOAD_NOACK	0xB0	// 无应答发射
 #define NOP             0xFF  //空操作,可以用来读状态寄存器	 
 //SPI(NRF24L01)寄存器地址
 #define CONFIG          0x00  //配置寄存器地址;bit0:1接收模式,0发射模式;bit1:电选择;bit2:CRC模式;bit3:CRC使能;
-                              //bit4:中断MAX_RT(达到最大重发次数中断)为1使能;bit5:中断TX_DS为1使能;bit6:中断RX_DR为1使能
+                              //bit4:中断MAX_RT(达到最大重发次数中断)为1不使能;bit5:中断TX_DS为1不使能;bit6:中断RX_DR为1不使能
+	#define	CONFIG_BIT_TXMOD	0
+	#define	CONFIG_BIT_RXMOD	1
+	#define	CONFIG_BIT_POWON	0X02
+	#define	CONFIG_BIT_CRCO_2BYTE	0X04
+	#define	CONFIG_BIT_CRCEN	0X08
+	#define	CONFIG_BIT_OFF_MAX_RT	0X10
+	#define	CONFIG_BIT_OFF_TX_DS	0X20
+	#define	CONFIG_BIT_OFF_RX_DR	0X40
+	
 #define EN_AA           0x01  //使能自动应答功能  bit0~5,对应通道0~5
 #define EN_RXADDR       0x02  //接收地址允许,bit0~5,对应通道0~5
 
@@ -203,6 +213,8 @@ void NRF24L01_ClearRXFIFO(void);
 /********************2019年12月14日增加函数*********************************/
 u8 NRD24L01_GetPip(u8 status);//获取接收到数据的通道号，输入STATUS值,返回值为0~5，如果为7则RXFIFO为空
 void NRF24L01_EnabelDPL(u8 pipNum);//使能DPL动态长度
+
+u8 NRF24L01_TxPacketNoACK(u8 *txbuf,u8 size);//无应答发送
 #endif
 
 

@@ -32,15 +32,21 @@ void NRF_Function()
         {
           if(flag_duima == 0)
           {
-            InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//配置接收模式
-			debug("当前的通讯地址：");
+			debug("本地地址：");
 			u8 i = 0;
+			for(i =0;i<5;i++)
+			{
+				debug("%X	",ADDRESS3[i]);
+			}
+			debug("\r\n");	
+			
+            InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//配置接收模式		
+			debug("当前的通讯地址：");
 			for(i =0;i<5;i++)
 			{
 				debug("%X	",ADDRESS2[i]);
 			}
 			debug("\r\n");
-			 //NRF24L01_RX_Mode(BIT_PIP1,ADDRESS4);                //配置接收模式 
 			 InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP1,RF_CH_HZ,ADDRESS4);	//配置接收模式
 			debug("传感器通讯地址：");
 			for(i =0;i<5;i++)
@@ -49,6 +55,9 @@ void NRF_Function()
 			}
 			debug("\r\n");
             RXprx.rxbuf = RXrxbuf;
+//			u8 j[6] = {0,1,2,3,4,5};
+//			NRF24L01_RX_AtuoACKPip(j,6,0);	//填充应答信号
+//			NRF24L01_RX_AtuoACKPip(j,6,1);	//填充应答信号
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
             RXprx.RXDCallBack = RXD_CallBack;
@@ -66,7 +75,8 @@ void NRF_Function()
 			  RXprx.txbuf[4] = ADDRESS3[4];
 			  RXprx.txbuf[5] = 'D';
 			  RXprx.txbuf[6] = 'M';
-      		  NRF24L01_RX_AtuoACKPip(RXprx.txbuf,7,0);	//填充应答信号
+      		  NRF24L01_RX_AtuoACKPip(RXprx.txbuf,7,BIT_PIP0);	//填充应答信号
+			  //NRF24L01_RX_AtuoACKPip(i,6,0);	//填充应答信号
               RXprx.RXDCallBack =  DMRXD_CallBack;
 			  RXprx.rxbuf = RXrxbuf;
 			  
@@ -97,6 +107,8 @@ void NRFReceived()
 		NRFsleep.counter = 0;
 		ChangeNRFCmd(RXprx.rxbuf);
 		RXprx.hasrxlen = 0;
+//		u8 i[6] = {0,1,2,3,4,5};
+//		NRF24L01_RX_AtuoACKPip(i,6,1);	//填充应答信号
 	}
 }
 
@@ -123,11 +135,11 @@ void SaveFlashAddr(u8* buf)
 
 void SaveFlashCGAddr(u8* buf)
 {
-  ADDRESS4[0] = buf[0];
-  ADDRESS4[1] = buf[1];
-  ADDRESS4[2] = buf[2];
-  ADDRESS4[3] = buf[3];
-  ADDRESS4[4] = buf[4];
+  ADDRESS4[0] = buf[0] + ADDRESS3[0];
+  ADDRESS4[1] = buf[1] + ADDRESS3[1];
+  ADDRESS4[2] = buf[2] + ADDRESS3[2];
+  ADDRESS4[3] = buf[3] + ADDRESS3[3];
+  ADDRESS4[4] = buf[4] + ADDRESS3[4];
 
   FLASH_ProgramByte(EEPROM_CGADDRESS0,ADDRESS4[0]);
   FLASH_ProgramByte(EEPROM_CGADDRESS1,ADDRESS4[1]);
@@ -185,19 +197,20 @@ bool JugeDM()
 //接收模式自动接收完成回调函数
 void RXD_CallBack(Nrf24l01_PRXStr* prx) 
 {
-        prx->txbuf[0] = prx->rxbuf[0];
-        prx->txbuf[1] = prx->rxbuf[1];
-        prx->txbuf[2] = prx->rxbuf[2];
-        prx->txbuf[3] = prx->rxbuf[3];
-        prx->txbuf[4] = prx->rxbuf[4];
-        prx->txbuf[5] = 'O';
-        prx->txbuf[6] = 'K';
-        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,NRD24L01_GetPip(RXprx.status));//填充应答信号	
+//        prx->txbuf[0] = prx->rxbuf[0];
+//        prx->txbuf[1] = prx->rxbuf[1];
+//        prx->txbuf[2] = prx->rxbuf[2];
+//        prx->txbuf[3] = prx->rxbuf[3];
+//        prx->txbuf[4] = prx->rxbuf[4];
+//        prx->txbuf[5] = 'O';
+//        prx->txbuf[6] = 'K';
+//        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,NRD24L01_GetPip(RXprx.status));//填充应答信号	
         prx->rxlen = NRF24L01_GetRXLen();
         NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//读取数据
         prx->hasrxlen += prx->rxlen;		
         NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
 		debug("-->RX_OK ,pip:%d\r\n",NRD24L01_GetPip(prx->status));
+		
 }
 
 

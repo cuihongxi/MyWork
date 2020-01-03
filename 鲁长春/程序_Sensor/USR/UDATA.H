@@ -20,7 +20,7 @@
 
 
 #define         TIM__YS_D           3000    	// ms，雨水传感器的滤波间隔
-#define         TIM_YS_30M        	1800000     // ms,YS持续超过20分钟，每30分钟发送一次
+#define         TIM_YS_30M        	20000//1800000     // ms,YS持续超过20分钟，每30分钟发送一次
 
 #define			TIM_BAT_6H			10000//21600000	// ms, 6H间隔
 #define			TIM_BAT_2H			8000//7200000		// ms, 2H间隔

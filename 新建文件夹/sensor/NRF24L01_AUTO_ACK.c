@@ -1,8 +1,13 @@
 
 #include "NRF24L01_AUTO_ACK.H"
 #include "stm8l15x_exti.h"
-void LEN_RED_Close();
+#include "stmflash.h"
 
+void LEN_GREEN_Close();
+void LEN_GREEN_Open();
+void ReturnADDRESS2();
+extern u8		flag_duima;
+extern addrNRFStr		addrNRF;
 //初始化24L01的IRQ IO口
 void NRF24L01_GPIO_IRQ(void)
 {
@@ -57,14 +62,27 @@ void NRF24L01_RESUSE(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
 	ptx->hastxlen += ptx->txlen;	
 }
 
+// 无应答，重发
+void NRF24L01_RESUSENOACK(Nrf24l01_PTXStr* ptx, u8 *txbuf,u8 size)
+{
+  	ptx->txbuf = txbuf;
+	ptx->txlen = size;
+	ptx->hastxlen = 0;
+	ptx->hasrxlen = 0;
+	ptx->flag_sendfinish  = FALSE;
+	NRF24L01_TxPacketNoACK(ptx->txbuf,ptx->txlen);
+	ptx->hastxlen += ptx->txlen;	
+}
+
+
 //达到最大发射次数默认回调函数
 void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	debug("ERROR! MAX_TX!! ");
+	debug("ERROR! MAX_TX!! \r\n");
 
 	NRF24L01_Write_Reg(FLUSH_TX,0x00); //清除tx fifo寄存器	//********重要*********
 	NRF24L01_PTXInMainReset(ptx);	
-	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除R中断标志
+	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RPTX)); 	// 清除中断标志
 	if(ptx->reuse_times)
 	{
 		ptx->reuse_times --;
@@ -72,49 +90,65 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	}
 	else 
 	{
-	  LEN_RED_Close();
+	  	LEN_GREEN_Close();
 		NRF24L01_PWR(0);
 	}
 }
 
+// LED闪烁
+void SharpLed()
+{
+	u8 i = 0;
+	for(i = 0;i<3;i++)
+	{
+		LEN_GREEN_Open();
+		delay_ms(100);
+		LEN_GREEN_Close();
+		delay_ms(100);
+	}
+}
 //发射模式自动接收完成回调函数
 void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	    debug(" RX_OK ");	
+	    debug(" RX_OK \r\n");	
 		ptx->rxlen = NRF24L01_GetRXLen();
 		NRF24L01_Read_Buf(RD_RX_PLOAD,ptx->rxbuf + ptx->hasrxlen,ptx->rxlen);	//读取数据
-		ptx->hasrxlen += ptx->rxlen;
-	//	debug("rxlen = %d :\r\n",ptx->rxlen);		
-//		for(u8 i=0;i<ptx->rxlen;i++)
-//			  {
-//				debug(" %d ",ptx->rxbuf[i]);
-//			  }   
+		debug("rxlen = %d :\r\n",ptx->rxlen);		
+		for(u8 i=0;i<ptx->rxlen;i++)
+			  {
+				debug(" %X ",ptx->rxbuf[i]);
+			  }   
 		NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1 << STATUS_BIT_IRT_RXD)); 	// 清除RX_DS中断标志
-		LEN_RED_Close();
+
+		if(flag_duima)
+		{
+			flag_duima = 0;
+			u8 newaddr[5];
+			newaddr[0] = ADDRESS2[0] + ptx->rxbuf[0]; 
+			newaddr[1] = ADDRESS2[1] + ptx->rxbuf[1];
+			newaddr[2] = ADDRESS2[2] + ptx->rxbuf[2];
+			newaddr[3] = ADDRESS2[3] + ptx->rxbuf[3];
+			newaddr[4] = ADDRESS2[4] + ptx->rxbuf[4];
+			FlashSaveNrfAddr(addrNRF,newaddr);	// 保存
+			SharpLed();
+			ReturnADDRESS2();
+		}
+		LEN_GREEN_Close();
 		NRF24L01_PWR(0);
 }
 
 //发射模式自动发射完成回调函数
 void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 {
-	debug(" TX_OK  ");
+  	debug(" TX_OK \r\n");
+
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1<<STATUS_BIT_IRT_TXD)); 	// 清除TX_DS中断标志
-	if(ptx->hastxlen < ptx->txlen)
+	if(flag_duima == 0)
 	{
-		if((ptx->txlen - ptx->hastxlen) > 32 ) {
-			NRF24L01_TxPacket(ptx->txbuf + ptx->hastxlen,32)	;
-			ptx->hastxlen += 32;
-		}else 		
-		{
-			NRF24L01_TxPacket(ptx->txbuf + ptx->hastxlen,(ptx->txlen - ptx->hastxlen));
-			ptx->hastxlen = ptx->txlen ;
-		}
-	}else
-	{
-		ptx->flag_sendfinish = TRUE;
+		LEN_GREEN_Close();
+		NRF24L01_PWR(0);	
 	}
-	LEN_RED_Close();
-	NRF24L01_PWR(0);
+
 }
 
 //发射中断回调函数
@@ -136,7 +170,7 @@ void Default_IRQCallBack_PTX(Nrf24l01_PTXStr* ptx)
 		  ptx->RXDCallBack(ptx);
 		}
 
-		debug("\r\n");
+	//	debug("\r\n");
 	}
 }
 
@@ -152,6 +186,7 @@ void InitNRF_AutoAck_PTX(Nrf24l01_PTXStr* ptx,u8* rxbuf,u8 rxlen,u8 pip,u8 rf_ch
 	ptx->hasrxlen = 0;
 	ptx->txaddr = addr;
 	Init_NRF24L01(ptx->rf_ch);
+	
     NRF24L01_Write_Buf(NRF_WRITE_REG+RX_ADDR_P0+pip,ptx->txaddr,TX_ADR_WIDTH); 	//如果需要接收方应答，则需要写本地收地址
 	NRF24L01_GPIO_IRQ();
 	NRF24L01_EnabelDPL(ptx->pip);					//使能通道自动应答，动态长度 , 发射模式也要加上这个

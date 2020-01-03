@@ -8,30 +8,74 @@
 extern	u8		is_DM;
 
 //初始化表头的数据
-void FlashData_Init()
+void FlashData_Init(addrNRFStr* buf)
 {
-	FLASH_Unlock(FLASH_MemType_Data); 					// 解锁EEPROM
-#if  DEBUG_LEVEL == 0
-	if(FLASH_ReadByte(EEPROM_FLASH_INIT) != FLASH_INIT_DATA)		//如果没有被初始化就初始化FLASH
-	{
-		FLASH_ProgramByte(EEPROM_FLASH_INIT,FLASH_INIT_DATA);	
-		FLASH_ProgramByte(ADDR_DM,NO_DM);				//默认关闭，AM
-                FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS1[0]);
-                FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS1[1]);
-                FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
-                FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS1[3]);
-                FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS1[4]);
-                
-	}
-#endif
-        ADDRESS2[0] = FLASH_ReadByte(EEPROM_ADDRESS0);
-        ADDRESS2[1] = FLASH_ReadByte(EEPROM_ADDRESS1);
-        ADDRESS2[2] = FLASH_ReadByte(EEPROM_ADDRESS2);
-        ADDRESS2[3] = FLASH_ReadByte(EEPROM_ADDRESS3);
-        ADDRESS2[4] = FLASH_ReadByte(EEPROM_ADDRESS4);
+	FLASH_Unlock(FLASH_MemType_Data); 						// 解锁EEPROM
 
-        
+	if(FLASH_ReadByte(ADDR_FLASH_INIT) != FLASH_INIT_DATA)	//如果没有被初始化就初始化FLASH
+	{
+		FLASH_ProgramByte(ADDR_FLASH_INIT,FLASH_INIT_DATA);	
+		FLASH_ProgramByte(ADDR_INDEX,0);					//索引归零       
+	}
+	
+	buf->index = FLASH_ReadByte(ADDR_INDEX);
+	u8 i = 0;
+	for(i=0;i<8;i++)
+	{
+		if(buf->index&(1<<i))
+		{	  	
+			buf->addr[i][0] = FLASH_ReadByte(ADDR_BASE + i*5);
+			buf->addr[i][2] = FLASH_ReadByte(ADDR_BASE + i*5+1);
+			buf->addr[i][3] = FLASH_ReadByte(ADDR_BASE + i*5+2);
+			buf->addr[i][4] = FLASH_ReadByte(ADDR_BASE + i*5+3);
+			buf->addr[i][5] = FLASH_ReadByte(ADDR_BASE + i*5+4);			
+		}
+		else break;
+	}
 }
 
+// 遍历buf中有没有相同的地址，如果有返回0
+u8 TraverseBuf(addrNRFStr* buf,u8* addr)
+{
+	u8 i = 0;
+	for(i=0;i<8;i++)
+	{
+		if(buf->index&(1<<i))
+		{	  	
+			if(((*(u32*)&(buf->addr[i][0]))^(*(u32*)addr) | (buf->addr[i][5]^addr[5])) == 0) return 0;		
+		}
+		else return 1;
+	}
+	return 1;
+}
+// 保存新的配对信息
+void FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
+{
+	if(buf->index < 0xff && TraverseBuf(buf,addr))
+	{
+		
+		u8 i = 0;
+		u8 j = 0;
+		for(i=0;i<8;i++)
+		{
+			if(buf->index&(1<<i))j ++;
+			else break;
+		}		
+		for(i=0;i<5;i++)
+		{
+			buf->addr[j][i] = addr[i];
+	  		FLASH_ProgramByte(ADDR_BASE + j*5 + i,addr[i]);
+		}
+		
+		buf->index = (buf->index >> 1) + 1;
+		FLASH_ProgramByte(ADDR_INDEX,buf->index);
+	}
+}
 
+// 清除配对信息
+void FlashClearDM(addrNRFStr* buf)
+{
+	buf->index = 0;
+	FLASH_ProgramByte(ADDR_INDEX,buf->index);
+}
 
