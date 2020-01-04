@@ -25,10 +25,10 @@ void FlashData_Init(addrNRFStr* buf)
 		if(buf->index&(1<<i))
 		{	  	
 			buf->addr[i][0] = FLASH_ReadByte(ADDR_BASE + i*5);
-			buf->addr[i][2] = FLASH_ReadByte(ADDR_BASE + i*5+1);
-			buf->addr[i][3] = FLASH_ReadByte(ADDR_BASE + i*5+2);
-			buf->addr[i][4] = FLASH_ReadByte(ADDR_BASE + i*5+3);
-			buf->addr[i][5] = FLASH_ReadByte(ADDR_BASE + i*5+4);			
+			buf->addr[i][1] = FLASH_ReadByte(ADDR_BASE + i*5+1);
+			buf->addr[i][2] = FLASH_ReadByte(ADDR_BASE + i*5+2);
+			buf->addr[i][3] = FLASH_ReadByte(ADDR_BASE + i*5+3);
+			buf->addr[i][4] = FLASH_ReadByte(ADDR_BASE + i*5+4);			
 		}
 		else break;
 	}
@@ -42,14 +42,14 @@ u8 TraverseBuf(addrNRFStr* buf,u8* addr)
 	{
 		if(buf->index&(1<<i))
 		{	  	
-			if(((*(u32*)&(buf->addr[i][0]))^(*(u32*)addr) | (buf->addr[i][5]^addr[5])) == 0) return 0;		
+			if(((*(u32*)&(buf->addr[i][0]))^(*(u32*)addr) | (buf->addr[i][4]^addr[4])) == 0) return 0;		
 		}
 		else return 1;
 	}
 	return 1;
 }
-// 保存新的配对信息
-void FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
+// 保存新的配对信息,失败返回0，成功返回index
+u8 FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
 {
 	if(buf->index < 0xff && TraverseBuf(buf,addr))
 	{
@@ -67,9 +67,10 @@ void FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
 	  		FLASH_ProgramByte(ADDR_BASE + j*5 + i,addr[i]);
 		}
 		
-		buf->index = (buf->index >> 1) + 1;
+		buf->index = (buf->index << 1) + 1;
 		FLASH_ProgramByte(ADDR_INDEX,buf->index);
-	}
+		return buf->index;
+	}else return 0;
 }
 
 // 清除配对信息

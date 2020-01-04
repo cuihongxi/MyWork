@@ -17,6 +17,6 @@ typedef struct{
 void FlashData_Init(addrNRFStr* buf);
 
 void FlashClearDM(addrNRFStr* buf);// 清除配对信息
-void FlashSaveNrfAddr(addrNRFStr* buf,u8* addr);// 保存新的配对信息
+u8  FlashSaveNrfAddr(addrNRFStr* buf,u8* addr);// 保存新的配对信息
 
 #endif

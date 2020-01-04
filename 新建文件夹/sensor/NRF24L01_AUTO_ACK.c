@@ -6,8 +6,12 @@
 void LEN_GREEN_Close();
 void LEN_GREEN_Open();
 void ReturnADDRESS2();
+
+
 extern u8		flag_duima;
 extern addrNRFStr		addrNRF;
+extern	u8      TXrxbuf[7];
+
 //初始化24L01的IRQ IO口
 void NRF24L01_GPIO_IRQ(void)
 {
@@ -90,8 +94,18 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	}
 	else 
 	{
-	  	LEN_GREEN_Close();
-		NRF24L01_PWR(0);
+	  	if(ptx->index > 0) 
+		{
+		  
+			ptx->index --;
+			InitNRF_AutoAck_PTX(ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,addrNRF.addr[ptx->index]);
+			NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
+		}else
+		{
+			LEN_GREEN_Close();
+			NRF24L01_PWR(0);		
+		}
+
 	}
 }
 
@@ -129,8 +143,18 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 			newaddr[2] = ADDRESS2[2] + ptx->rxbuf[2];
 			newaddr[3] = ADDRESS2[3] + ptx->rxbuf[3];
 			newaddr[4] = ADDRESS2[4] + ptx->rxbuf[4];
-			FlashSaveNrfAddr(addrNRF,newaddr);	// 保存
-			SharpLed();
+			if(FlashSaveNrfAddr(&addrNRF,newaddr))	// 保存
+			{
+				debug("配对索引值：%d ,保存新地址：\r\n",addrNRF.index);		
+				for(u8 i=0;i<5;i++)
+					  {
+						debug(" %X ",newaddr[i]);
+					  }  
+				SharpLed();
+			}else 
+			{
+				debug("失败：已有地址或者配对地址已满\r\n");
+			}
 			ReturnADDRESS2();
 		}
 		LEN_GREEN_Close();
@@ -145,8 +169,17 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 	NRF24L01_Write_Reg(NRF_WRITE_REG+STATUS,(1<<STATUS_BIT_IRT_TXD)); 	// 清除TX_DS中断标志
 	if(flag_duima == 0)
 	{
-		LEN_GREEN_Close();
-		NRF24L01_PWR(0);	
+	  	if(ptx->index > 0) 
+		{
+		  
+			ptx->index --;
+			InitNRF_AutoAck_PTX(ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,addrNRF.addr[ptx->index]);
+			NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
+		}else
+		{
+			LEN_GREEN_Close();
+			NRF24L01_PWR(0);		
+		}
 	}
 
 }

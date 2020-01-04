@@ -324,6 +324,7 @@ void NRF24L01_TX_Mode(u8* addr)
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 }
 
+
 void NRF24L01_ClearTXFIFO(void)
 {	
         CE_OUT_0; 
@@ -421,4 +422,11 @@ void NRF24L01_RESUSE_TX()
 u8 NRD24L01_GetPip(u8 status)
 {
 	return (status&0x0e)>>1;
+}
+
+// 切换发送地址
+void ChangeTxAddr(u8* addr)
+{
+  	CE_OUT_0; 
+	NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,addr,TX_ADR_WIDTH);     //写本地地址
 }

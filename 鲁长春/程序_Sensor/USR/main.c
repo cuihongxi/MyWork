@@ -62,7 +62,7 @@ void Make_SysSleep()
 }
 
 //通过NRF向主板发送命令函数
-void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
+void NRF_SendDMCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
     NRF24L01_PWR(1);
 	NRF24L01_ClearTXFIFO();
@@ -74,8 +74,8 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
     ptx->txbuf[5] = cmd;
     ptx->txbuf[6] = mes;
 	LEN_GREEN_Open();
-	
-	debug("数据：");
+	ptx->index = 0;
+	debug("本地地址：");
 	u8 i = 0;
 	for(i =0;i<5;i++)
 	{
@@ -84,6 +84,51 @@ void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 	debug("\r\n");
 	
     NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
+  
+}
+
+//通过NRF向主板发送命令函数
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
+{
+    NRF24L01_PWR(1);
+	NRF24L01_ClearTXFIFO();
+    ptx->txbuf[0] = addr[0];
+    ptx->txbuf[1] = addr[1];
+    ptx->txbuf[2] = addr[2];
+    ptx->txbuf[3] = addr[3];
+    ptx->txbuf[4] = addr[4];
+    ptx->txbuf[5] = cmd;
+    ptx->txbuf[6] = mes;
+	
+	debug("数据：");
+	u8 i = 0;
+	for(i =0;i<5;i++)
+	{
+		debug("%X	",ptx->txbuf[i]);
+	}
+	debug("\r\n");
+
+	for(i=0;i<8;i++)
+	{
+		if(addrNRF.index&(1<<i))ptx->index ++;
+		else break;
+	}
+	debug("addrNRF.index = %d, 总共配对数：%d\r\n",addrNRF.index,ptx->index);
+	if(ptx->index > 0) 
+	{
+	  	LEN_GREEN_Open();
+	  	ptx->index --;
+		for(i =0;i<5;i++)
+		{
+			debug("%X	",addrNRF.addr[ptx->index][i]);
+		}
+		debug("\r\n");	
+		
+		//NRF24L01_TX_Mode(addrNRF.addr[ptx->index]);
+		InitNRF_AutoAck_PTX(ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,addrNRF.addr[ptx->index]);
+		NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
+	}
+    
   
 }
 
@@ -101,6 +146,7 @@ void Key_ScanLeave()
 	   	if((systime - DM_time) > 8000)	
 		{
 			debug("清除DM信息\r\n");
+			FlashClearDM(&addrNRF);
 		}else
 		if((systime - DM_time) > 500)
 		{
@@ -108,6 +154,7 @@ void Key_ScanLeave()
 			flag_duima = 1;
 			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);	
 		}
+		LEN_GREEN_Close();
 		DM_time = 0;
 		flag_exti = 0;
     }
@@ -119,7 +166,7 @@ void Key_Scan()
 	{
 		DM_time = systime;
 		flag_exti = 1;
-		
+		LEN_GREEN_Open();
 	} 
 }
 
@@ -133,7 +180,28 @@ void LoadingNRFData(u8* pBuf,u16 YSadc,u8 FLflag,u8 batState)
 
 void ReturnADDRESS2()
 {
+  //NRF24L01_TX_Mode(ADDRESS2);
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
+}
+
+// 显示全部已保存的地址
+void ShowAllAddr(addrNRFStr* buf)
+{
+  	u8 i;
+	for(i=0;i<8;i++)
+	{
+		if(buf->index&(1<<i))
+		{
+			debug("配对号 %d : ",i);	
+			u8 j = 0;
+			for(j =0;j<5;j++)
+			{
+				debug("%X	",buf->addr[i][j]);
+			}
+			debug("\r\n");
+		}
+		else break;
+	}	
 }
 void main()
 {    	
@@ -141,19 +209,20 @@ void main()
 	Key_GPIO_Init();
 	LED_GPIO_Init();
 	debug("start:\r\n");
-	FlashData_Init(addrNRF);
-	
+	FlashData_Init(&addrNRF);
+	ShowAllAddr(&addrNRF);
 	NRF_CreatNewAddr(ADDRESS2);
 	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
     ptx.rxbuf = TXrxbuf;
 	ptx.txbuf = TXtxbuf;
-	debug("当前的通讯地址：");
+	debug("本地地址：");
 	u16 i = 0;
 	for(i =0;i<5;i++)
 	{
 		debug("%X	",ptx.txaddr[i]);
 	}
 	debug("\r\n");
+	
     NRF24L01_GPIO_Lowpower();
 	
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
@@ -174,23 +243,22 @@ void main()
     while(1)
     {    
       halt();	
-	  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
-	  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
-	  BatControl(&bat,tasklink,taskBatControl);
-	  
-	  OS_Task_Run(tasklink);				// 执行任务链表中的任务
+
 	   if(flag_duima == 0)			// 非对码状态
 	   {
 		 	  //按键检测
 	   		if(flag_exti) Key_ScanLeave();
-			
+				  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
+			  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
+			  BatControl(&bat,tasklink,taskBatControl);
+			  OS_Task_Run(tasklink);				// 执行任务链表中的任务
 	   }else
 	   {
 		// debug("DM 模式\r\n");
 		 static u8 time = 0;
 		 if((time & 0x0f) == 0)
 		 {
-		 	NRF_SendCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);	
+		 	NRF_SendDMCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);	
 		 }
 		 time ++;
 			

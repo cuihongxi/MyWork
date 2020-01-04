@@ -215,6 +215,7 @@ u8 NRD24L01_GetPip(u8 status);//获取接收到数据的通道号，输入STATUS值,返回值为0~5
 void NRF24L01_EnabelDPL(u8 pipNum);//使能DPL动态长度
 
 u8 NRF24L01_TxPacketNoACK(u8 *txbuf,u8 size);//无应答发送
+void ChangeTxAddr(u8* addr);				// 切换发送地址
 #endif
 
 

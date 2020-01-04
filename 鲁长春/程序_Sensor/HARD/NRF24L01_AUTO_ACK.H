@@ -24,7 +24,7 @@ typedef struct PTXStr{
 	u8 flag_sendfinish;					// 发送完成标志
 	u8 reuse_times;						// 发送不成功时重发的次数
 	u8* txaddr;							// 发射地址
-	
+	u8 index;							// 保存的索引
 	void(*IRQCallBack)(struct PTXStr*);	// 回调函数，放在IRQ中断中
 	void(*RXDCallBack)(struct PTXStr*);	// 接收完成回调函数
 	void(*TXDCallBack)(struct PTXStr*);	// 发送完成回调函数
