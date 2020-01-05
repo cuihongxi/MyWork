@@ -218,12 +218,10 @@ void Key_ScanLeave()
 		if(keyval == KEY_VAL_DUIMA)
 		{
 		  // debug(" (systime - DM_time) = %lu",(systime - DM_time));
-			if((systime - DM_time)< 2000)
+			if((systime - DM_time)> 500 && (systime - DM_time) < 8000)
 			{
 			  		flag_duima = 1;
 					//debug("DM ģʽ\r\n");
-					
-
 			}
 //			if((systime - DM_time) > 6000)
 //				{

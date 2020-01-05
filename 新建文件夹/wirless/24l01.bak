@@ -1,13 +1,12 @@
 
 #include "24l01.h"
-
 //#define DMA_SPI
 #ifdef DMA_SPI
 #include "stm8l15x_spi.h"
 #endif
 u8 RF_CH_HZ =111;                                  //频率0~125
 u8  ADDRESS1[TX_ADR_WIDTH]={1,1,1,1,1};         // DM地址
-u8  ADDRESS2[RX_ADR_WIDTH]={0x80,0x06,0x01,0x1A,0x01};         // DM成功后通讯地址 
+u8  ADDRESS2[RX_ADR_WIDTH]={1,1,1,1,1};         // DM成功后通讯地址 
 u8  ADDRESS3[5]={0};                            //保存本地地址
 u8* address = ADDRESS1;
 extern 
@@ -50,7 +49,7 @@ void Get_ChipID(u8 *ChipID)
 	ChipID[0] = *(__IO u8 *)(0X4926); 
 	ChipID[1] = *(__IO u8 *)(0X4927); 
 	ChipID[2] = *(__IO u8 *)(0X4928);
-    ChipID[3] = *(__IO u8 *)(0X4929);
+    	ChipID[3] = *(__IO u8 *)(0X4929);
 	ChipID[4] = *(__IO u8 *)(0X492A); 
 	ChipID[5] = *(__IO u8 *)(0X492B); 
 	ChipID[6] = *(__IO u8 *)(0X492C);
@@ -265,20 +264,6 @@ u8 NRF24L01_TxPacket(u8 *txbuf,u8 size)
 #endif
 	return 0;//其他原因发送失败
 }
-
-//无应答发送
-u8 NRF24L01_TxPacketNoACK(u8 *txbuf,u8 size)
-{  	
-    SCLK_OUT_0 ;
-	CE_OUT_0;                               //StandBy I模式	
-  	NRF24L01_Write_Buf(W_TX_PAYLOAD_NOACK,txbuf,size);
- 	CE_OUT_1;                               //启动发送 置高CE激发数据发送 
-#ifdef DMA_SPI
-	CLK_PeripheralClockConfig(CLK_Peripheral_SPI1,DISABLE);
-#endif
-	return 0;//其他原因发送失败
-}
-
 //启动NRF24L01发送一次数据
 //txbuf:待发送数据首地址
 //返回值:0，接收完成；其他，错误代码
@@ -311,7 +296,7 @@ void NRF24L01_RX_Mode(u8 pip)
 		NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG, 0x0f);//IRQ引脚不显示中断 上电 接收模式   1~16CRC校验   
 }					 
-//该函数初始化NRF24L01到TX模式,addr发射地址
+//该函数初始化NRF24L01到TX模式，addr发射地址
 void NRF24L01_TX_Mode(u8* addr)
 {	
     debug("TX_Mode\r\n");
@@ -323,7 +308,6 @@ void NRF24L01_TX_Mode(u8* addr)
         NRF24L01_Write_Reg(FLUSH_TX,0x00);	        //清除TX_FIFO寄存器 
         NRF24L01_Write_Reg(NRF_WRITE_REG + CONFIG,0x0e);    //IRQ引脚不显示TX,MAX中断,显示RX中断 上电 发射模式  1~16CRC校验
 }
-
 
 void NRF24L01_ClearTXFIFO(void)
 {	
@@ -422,11 +406,4 @@ void NRF24L01_RESUSE_TX()
 u8 NRD24L01_GetPip(u8 status)
 {
 	return (status&0x0e)>>1;
-}
-
-// 切换发送地址
-void ChangeTxAddr(u8* addr)
-{
-  	CE_OUT_0; 
-	NRF24L01_Write_Buf(NRF_WRITE_REG+TX_ADDR,addr,TX_ADR_WIDTH);     //写本地地址
 }

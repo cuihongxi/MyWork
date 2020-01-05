@@ -34,8 +34,8 @@
 #define			TIM_Y30_OFF				500	// ms,Y30无效时对应的LED指示点亮时间
 #define			TIM_OPEN				5000    // ms,无YS计时开窗
 #define			TIM_Y30_DELAY			1500	// ms,Y30长按3S取消功能
-#define			TIM_DML					1000	// ms, 大于这个值，并小于TIM_DMH 内抬起DM，进入NRF对码
-#define			TIM_DMH					3000	// ms, 小于这个值，并大于TIM_DML 内抬起DM，进入NRF对码
+#define			TIM_DML					500	// ms, 大于这个值，并小于TIM_DMH 内抬起DM，进入NRF对码
+#define			TIM_DMH					8000	// ms, 小于这个值，并大于TIM_DML 内抬起DM，进入NRF对码
 #define			TIM_DM_CLEARL			8000	// ms, 清除对码值下限
 //#define			TIM_DM_CLEARH			12000	// ms, 清除对码值上限
 #define			TIM_BH_FILTER			50	// ms, BH滤波时间
