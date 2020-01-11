@@ -16,6 +16,7 @@
 #include "LED_SHOW.H"
 #include "stmflash.h"
 #include "CUI_RTOS.H"
+#include "stm8l15x_wwdg.h"
 
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
 
@@ -31,9 +32,10 @@ u8      DM_num = 0;
 u8		flag_exti = 0;
 u16 	YS_CGdat  = 10000;
 u8		CGDAT[5] = {0};
+u8		flag_open = 0;
 
-extern 	u8			flag_FL_SHUT;	// FL关窗标志  
-
+extern 	u8		flag_FL_SHUT;	// FL关窗标志  
+extern 	u8		flag_FLCheckState;
 #define			KEY_DM				GPIOB,GPIO_Pin_2
 
 TaskStr* 		taskBatControl 	= {0};	
@@ -138,15 +140,37 @@ void Key_GPIO_Init()
     flag_exti = 0;
 }
 
+void Key_Open()
+{
+    if(GPIO_READ(KEY_DM)) //无按键按下
+    {       
+		if((systime - DM_time) > TIM_CLOSE)
+		{
+			debug("开机\r\n");
+			flag_open = 1;
+			
+		}
+	//	debug("systime = %lu,DM_time = %lu\r\n",systime,DM_time);
+		LEN_RED_Close();
+		DM_time = 0;
+		flag_exti = 0;
+    }
+}
 //松手程序
 void Key_ScanLeave()
 {
     if(GPIO_READ(KEY_DM)) //无按键按下
     {       
-	   	if((systime - DM_time) > 8000)	
+	   	if((systime - DM_time) > TIM_CLEARDM)	
 		{
 			debug("清除DM信息\r\n");
 			FlashClearDM(&addrNRF);
+		}else
+		if((systime - DM_time) > TIM_CLOSE)
+		{
+			debug("关机\r\n");
+			flag_open = 0;
+			WWDG_SWReset();	// 复位
 		}else
 		if((systime - DM_time) > 500)
 		{
@@ -155,6 +179,7 @@ void Key_ScanLeave()
 			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);	
 		}
 		LEN_GREEN_Close();
+
 		DM_time = 0;
 		flag_exti = 0;
     }
@@ -164,9 +189,13 @@ void Key_Scan()
 {
 	if(GPIO_READ(KEY_DM) == 0)
 	{
+	  debug("systime = %lu\r\n",systime);
 		DM_time = systime;
 		flag_exti = 1;
-		LEN_GREEN_Open();
+		if(flag_open)
+			LEN_GREEN_Open();
+		else LEN_RED_Open();
+		  
 	} 
 }
 
@@ -224,7 +253,12 @@ void main()
 	debug("\r\n");
 	
     NRF24L01_GPIO_Lowpower();
-	
+	Make_SysSleep();
+	while(flag_open == 0)
+	{
+	  	halt();	
+		if(flag_exti) Key_Open();
+	}
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
 	OS_AddFunction(taskYS,YS_Function,TIM_CHECKEYS);
@@ -236,10 +270,7 @@ void main()
 	BatControl(&bat,tasklink,taskBatControl);
 	debug("bat = %d.%d\r\n",(u8)bat.val,(u8)(bat.val*10)-(u8)bat.val*10);
 	FL_GPIO_Init();
-	Make_SysSleep();
-	
-	
-	
+
     while(1)
     {    
       halt();	
@@ -252,16 +283,32 @@ void main()
 			  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
 			  BatControl(&bat,tasklink,taskBatControl);
 			  OS_Task_Run(tasklink);				// 执行任务链表中的任务
+			 if(flag_FLCheckState == 0)
+			 {
+			 	static u32 t = 0;
+				t += IRQ_PERIOD;
+				if(t > TIM_FL)
+				{
+					t = 0;
+					FL_CheckStart();
+				}
+			 }
 	   }else
 	   {
 		// debug("DM 模式\r\n");
 		 static u8 time = 0;
-		 if((time & 0x0f) == 0)
+		 if((time & 0x0f) == 0 )
 		 {
 		 	NRF_SendDMCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);	
 		 }
 		 time ++;
-			
+		 if(time>250)
+		 {
+		 	flag_duima = 0;
+			time = 0;
+			LEN_GREEN_Close();
+			NRF24L01_PWR(0);
+		 } 
 	   }
 
         
@@ -273,6 +320,7 @@ void main()
 //自动唤醒
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
+  if(flag_open == 0)systime += IRQ_PERIOD;
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 

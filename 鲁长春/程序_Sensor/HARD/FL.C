@@ -1,6 +1,12 @@
 #include "FL.H"
 #include "CUI_RTOS.H"
+#include "24l01.h"
+#include "NRF24L01_AUTO_ACK.H"
+
 extern 	TimerLinkStr 		timer2;
+extern	Nrf24l01_PTXStr 	ptx ;
+extern	u8		CGDAT[5];
+void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);//通过NRF向主板发送命令函数
 
 u32 	fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
 u8		flag_FL_SHUT 	= 1;
@@ -53,6 +59,7 @@ void FL_Check()
 				    debug("in it 	FL:持续时间到，关窗\r\n");
 					flag_FL_SHUT = 1;			// 持续时间到，关窗
 					FL_CheckStop();
+					NRF_SendCMD(&ptx,CGDAT,CMD_CG_FL,CMD_CG_FL);	// 发送YS信息
 				}	
 			}
 			

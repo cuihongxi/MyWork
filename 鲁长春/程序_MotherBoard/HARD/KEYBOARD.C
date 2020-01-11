@@ -499,8 +499,8 @@ void ChangeNRFCmd(u8* buf)
 		case CMD_CG_FL:
 			if(flag_FLCheckState) 
 			{
-				flag_FL_SHUT = buf[2];
-				if(flag_FL_SHUT) FL_CheckStop();
+				flag_FL_SHUT = 1;
+				FL_CheckStop();
 				debug("------>CMD_FL : %d\r\n",flag_FL_SHUT);
 			}
 		

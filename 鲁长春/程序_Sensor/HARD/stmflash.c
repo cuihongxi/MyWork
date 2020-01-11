@@ -32,6 +32,7 @@ void FlashData_Init(addrNRFStr* buf)
 		}
 		else break;
 	}
+	FLASH_Lock(FLASH_MemType_Data); 
 }
 
 // 遍历buf中有没有相同的地址，如果有返回0
@@ -61,6 +62,7 @@ u8 FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
 			if(buf->index&(1<<i))j ++;
 			else break;
 		}		
+		FLASH_Unlock(FLASH_MemType_Data); 
 		for(i=0;i<5;i++)
 		{
 			buf->addr[j][i] = addr[i];
@@ -69,6 +71,7 @@ u8 FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
 		
 		buf->index = (buf->index << 1) + 1;
 		FLASH_ProgramByte(ADDR_INDEX,buf->index);
+		FLASH_Lock(FLASH_MemType_Data); 
 		return buf->index;
 	}else return 0;
 }
@@ -77,6 +80,8 @@ u8 FlashSaveNrfAddr(addrNRFStr* buf,u8* addr)
 void FlashClearDM(addrNRFStr* buf)
 {
 	buf->index = 0;
+	FLASH_Unlock(FLASH_MemType_Data); 
 	FLASH_ProgramByte(ADDR_INDEX,buf->index);
+	FLASH_Lock(FLASH_MemType_Data); 
 }
 

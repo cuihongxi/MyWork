@@ -21,12 +21,16 @@
 
 #define         TIM__YS_D           3000    	// ms，雨水传感器的滤波间隔
 #define         TIM_YS_30M        	40000//1800000     // ms,YS持续超过20分钟，每30分钟发送一次
+#define         TIM_FL        		40000//1800000     // ms,如果FL超限，的检测间隔每30分钟发送一次
 
 #define			TIM_BAT_6H			10000//21600000	// ms, 6H间隔
 #define			TIM_BAT_2H			8000//7200000		// ms, 2H间隔
 #define			TIM_BAT_0_5H		6000//1800000		// ms, 0.5H间隔
 #define         TIM__YS_D              	3000    // ms，雨水传感器的滤波间隔
 #define         TIM_CHECKEYS          	2000    // ms,YS检测时间
+
+#define			TIM_CLEARDM			16000	//清除DM的延时
+#define			TIM_CLOSE			4000	//开关机的延时
 
 #endif
 

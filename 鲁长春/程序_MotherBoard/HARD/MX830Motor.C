@@ -533,7 +533,7 @@ void MotorControl()
 					OS_AddTask(tasklink,taskMotor);							// 添加到任务队列
 					if(key_AM.val == on)
 					{
-					    	flag_shut_time = 1;
+					    flag_shut_time = 1;
 						shut_time = motorStruct.hasrun;	// AM下自动记录关窗时间	
 						debug("\r\nshut_time = %d\r\n",shut_time);
 					}					

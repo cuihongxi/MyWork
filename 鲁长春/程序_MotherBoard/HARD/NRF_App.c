@@ -55,9 +55,7 @@ void NRF_Function()
 			}
 			debug("\r\n");
             RXprx.rxbuf = RXrxbuf;
-//			u8 j[6] = {0,1,2,3,4,5};
-//			NRF24L01_RX_AtuoACKPip(j,6,0);	//Ìî³äÓ¦´ðÐÅºÅ
-//			NRF24L01_RX_AtuoACKPip(j,6,1);	//Ìî³äÓ¦´ðÐÅºÅ
+
             NRFpowon.start = 1;
             NRF24L01_PWR(0);
             RXprx.RXDCallBack = RXD_CallBack;
@@ -125,12 +123,13 @@ void SaveFlashAddr(u8* buf)
   ADDRESS2[2] = buf[2];
   ADDRESS2[3] = buf[3];
   ADDRESS2[4] = buf[4];
+  FLASH_Unlock(FLASH_MemType_Data); 
   FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS2[0]);
   FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS2[1]);
   FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS2[2]);
   FLASH_ProgramByte(EEPROM_ADDRESS3,ADDRESS2[3]);
   FLASH_ProgramByte(EEPROM_ADDRESS4,ADDRESS2[4]);
-
+  FLASH_Lock(FLASH_MemType_Data); 
 }
 
 void SaveFlashCGAddr(u8* buf)
@@ -140,19 +139,20 @@ void SaveFlashCGAddr(u8* buf)
   ADDRESS4[2] = buf[2] + ADDRESS3[2];
   ADDRESS4[3] = buf[3] + ADDRESS3[3];
   ADDRESS4[4] = buf[4] + ADDRESS3[4];
-
+	FLASH_Unlock(FLASH_MemType_Data); 
   FLASH_ProgramByte(EEPROM_CGADDRESS0,ADDRESS4[0]);
   FLASH_ProgramByte(EEPROM_CGADDRESS1,ADDRESS4[1]);
   FLASH_ProgramByte(EEPROM_CGADDRESS2,ADDRESS4[2]);
   FLASH_ProgramByte(EEPROM_CGADDRESS3,ADDRESS4[3]);
   FLASH_ProgramByte(EEPROM_CGADDRESS4,ADDRESS4[4]);
-
+FLASH_Lock(FLASH_MemType_Data); 
 }
 
 // Çå³ýDM
 void ClearDM()
 {
      // debug("clear DM \r\n");
+  FLASH_Unlock(FLASH_MemType_Data);
     FLASH_ProgramByte(EEPROM_ADDRESS0,ADDRESS1[0]);
     FLASH_ProgramByte(EEPROM_ADDRESS1,ADDRESS1[1]);
     FLASH_ProgramByte(EEPROM_ADDRESS2,ADDRESS1[2]);
@@ -164,7 +164,7 @@ void ClearDM()
     FLASH_ProgramByte(EEPROM_CGADDRESS2,ADDRESS1[2]);
     FLASH_ProgramByte(EEPROM_CGADDRESS3,ADDRESS1[3]);
     FLASH_ProgramByte(EEPROM_CGADDRESS4,ADDRESS1[4]);
-	
+	FLASH_Lock(FLASH_MemType_Data); 
     ADDRESS2[0] = ADDRESS1[0];
     ADDRESS2[1] = ADDRESS1[1];
     ADDRESS2[2] = ADDRESS1[2];

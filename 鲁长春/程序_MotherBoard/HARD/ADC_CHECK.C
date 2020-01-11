@@ -66,10 +66,12 @@ void YS_Function()
   
 	if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
 	{
+	  	float ysdat = 0;
 		GPIO_SET(YSD_GPIO);
 		YSdat = YSGetAD(Get_ADC_Dat(YS_Channel));
 		GPIO_RESET(YSD_GPIO);
-		YSdat = (YSdat > YSGetAD(YS_CGdat))?YSdat:YSGetAD(YS_CGdat);
+		ysdat = YSGetAD(YS_CGdat);
+		YSdat = (YSdat >= ysdat)?YSdat:ysdat;
 		YS_CGdat = 0;
 		//debug(".\r\n");
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//超过报警阀值
@@ -77,7 +79,8 @@ void YS_Function()
 			if(jugeYS.switchon == 0 && windowstate != SHUTDOWN)
 			{
 				debug(" YSdat = %f\r\n",YSdat);
-				jugeYS.start = 1;	//开着窗
+				if(ysdat > VALVE_YS_D && YSdat == ysdat)jugeYS.switchon = 1;
+				else jugeYS.start = 1;	//开着窗
 			}
 			if(key_AM.val == on && windowstate == SHUTDOWN)						//关着窗
 			{

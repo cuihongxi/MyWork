@@ -32,7 +32,7 @@ void FlashData_Init()
 	ADDRESS4[3] = FLASH_ReadByte(EEPROM_CGADDRESS3);
 	ADDRESS4[4] = FLASH_ReadByte(EEPROM_CGADDRESS4);
 	
-	
+	FLASH_Lock(FLASH_MemType_Data);
 }
 
 

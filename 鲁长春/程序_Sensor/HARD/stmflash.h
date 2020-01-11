@@ -3,7 +3,7 @@
 #include "UHEAD.h"
 
 
-#define		FLASH_INIT_DATA		0x24			// 初始化值
+#define		FLASH_INIT_DATA		0x22			// 初始化值
 
 #define			ADDR_FLASH_INIT		0x1000		// 保存FLASH初始化的标志值
 #define			ADDR_INDEX			0x1001		// 保存索引的地址
