@@ -81,7 +81,7 @@ void Make_SysSleep()
 	RTC_WakeUpClockConfig(RTC_WakeUpClock_RTCCLK_Div2);   		// 19K时钟频率
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           // 开启中断
 	RTC_WakeUpCmd(DISABLE);
-	RTC_SetWakeUpCounter(2375);                     		// 唤醒间隔	250mS
+	RTC_SetWakeUpCounter(2375);                     		// 唤醒间隔	125mS
 //	RTC_SetWakeUpCounter(9500);                     		// 唤醒间隔	500mS
 	RTC_ITConfig(RTC_IT_WUT, ENABLE);                           	// 唤醒定时器中断使能
 	RTC_WakeUpCmd(ENABLE);                                      	// RTC唤醒使能  

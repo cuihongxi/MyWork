@@ -38,7 +38,7 @@
 #define debug(...)   
 #endif
 
-#define         IRQ_PERIOD      500  
+#define         IRQ_PERIOD      125  
 #define delay_ms(x)     LSI_delayms(x/8)
 #define delay_us(x)     LSI_delayus(x/8)
 //定时判断数据类型

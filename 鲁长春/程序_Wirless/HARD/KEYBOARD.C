@@ -25,7 +25,8 @@ extern 		u32					sendtime;
 extern 		u8 					db ;
 
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);// 通过NRF向主板发送命令函数
-
+void LEN_RED_Open();
+void LEN_RED_Close();
 //按键GIPO横向IO模式设定
 void GPIO_Heng_MOED_SET(GPIO_Mode_TypeDef GPIO_MODE)
 {
@@ -143,20 +144,23 @@ u8  Keyscan()
     return(KEY_VAL_NULL);
     
 }
-//?????????ì??
 void Key_TouchtLeave()
 {
 
-//	if(GPIO_READ(TOUCH_IO))
-//	{
-//		flag_touch = 0;
-//		NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_SLEEP);
-//	}else
-  	if((systime - sendtime)>=1000)
+	if(GPIO_READ(TOUCH_IO))	// 离开
+	{
+	  //  if((systime - sendtime)>=1000)
+		{
+		  GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
+		  flag_touch = 0;
+		  LEN_RED_Close();
+		}
+	}else				
+  	if((systime - sendtime) >= 8000)			// 还在按着
 	{
 	  GPIO_Init(TOUCH_IO,GPIO_MODE_TOUCH);
-	  flag_touch = 0;
-		//NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_UP);
+	 // flag_touch = 0;
+		NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_UP);
 	}	  
 	  
 }
@@ -307,6 +311,7 @@ INTERRUPT_HANDLER(EXTI5_IRQHandler,13)
 			 NRF_SendCMD(&ptx,ADDRESS2,CMD_WAKE, MES_WAKE_UP);
 			 
 			 GPIO_Init(TOUCH_IO,GPIO_Mode_In_PU_No_IT);
+			 LEN_RED_Open();
 		}
    } 
  	EXTI_ClearITPendingBit (EXTI_IT_Pin5);
