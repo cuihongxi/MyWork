@@ -323,7 +323,9 @@ void KeyFun()
 				if(key_DM.val == six)	//对话马达转向
 				{
 						flag_DM = ~flag_DM;
+						FLASH_Unlock(FLASH_MemType_Data); 							// 解锁EEPROM
 						FLASH_ProgramByte(ADDR_DM,flag_DM);
+						FLASH_Lock(FLASH_MemType_Data); 							// 解锁EEPROM
 						key_DM.val = off;
 						debug("马达对换引脚\r\n");
 						ledSharpTimes = 12;

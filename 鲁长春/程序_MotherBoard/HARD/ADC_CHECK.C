@@ -72,7 +72,7 @@ void YS_Function()
 		GPIO_RESET(YSD_GPIO);
 		ysdat = YSGetAD(YS_CGdat);
 		YSdat = (YSdat >= ysdat)?YSdat:ysdat;
-		YS_CGdat = 0;
+		// YS_CGdat = 0;
 		//debug(".\r\n");
 		if(YSdat > VALVE_YS_D && YS_30.start == 0)	//³¬¹ý±¨¾¯·§Öµ
 		{
