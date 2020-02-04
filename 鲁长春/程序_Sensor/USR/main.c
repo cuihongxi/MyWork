@@ -320,17 +320,17 @@ void main()
 //×Ô¶¯»½ÐÑ
 INTERRUPT_HANDLER(RTC_CSSLSE_IRQHandler,4)
 {
-  if(flag_open == 0)systime += IRQ_PERIOD;
+    if(flag_open == 0)systime += IRQ_PERIOD;
    	RTC_ClearITPendingBit(RTC_IT_WUT);  
 }
 
 //NRF24L01 IRQ 
 INTERRUPT_HANDLER(EXTI2_IRQHandler,10)
 {
-  if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
-  {	
- 		ptx.IRQCallBack(&ptx);
-  }
+	if(GPIO_READ(NRF24L01_IRQ_PIN)== RESET)
+	{	
+		ptx.IRQCallBack(&ptx);
+	}
 	Key_Scan();
-   EXTI_ClearITPendingBit (EXTI_IT_Pin2);
+	EXTI_ClearITPendingBit (EXTI_IT_Pin2);
 } 

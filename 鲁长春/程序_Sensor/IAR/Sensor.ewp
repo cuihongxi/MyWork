@@ -57,7 +57,7 @@
         </option>
         <option>
           <name>GenRTDescription</name>
-          <state>Use the normal configuration of the C/EC++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
+          <state>To be used with the normal configuration of the C/EC++ runtime library.</state>
         </option>
         <option>
           <name>GenRTConfigPath</name>
@@ -494,7 +494,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>&#x4F20;&#x611F;&#x5668;-1.11-4-FLASH&#x4FDD;&#x62A4;.hex</state>
+          <state>&#x4F20;&#x611F;&#x5668;-1.13-4&#x65e0;YS&#x4e0D;&#x53D1;&#x5C04;.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -665,7 +665,7 @@
         </option>
         <option>
           <name>IlinkAdditionalLibs</name>
-          <state></state>
+          <state>$PROJ_DIR$\..\library\libcui.a</state>
         </option>
         <option>
           <name>IlinkOverrideProgramEntryLabel</name>
@@ -791,7 +791,7 @@
         </option>
         <option>
           <name>IarchiveOutput</name>
-          <state>D:\MyWork\MyWork\&#x9C81;&#x957F;&#x6625;\&#x7A0B;&#x5e8F;_Wirless\IAR\Debug\Exe\libcui.a</state>
+          <state>D:\MyWork\MyWork\&#x9C81;&#x957F;&#x6625;\&#x7A0B;&#x5e8F;_Sensor\IAR\Debug\Exe\libcui.a</state>
         </option>
       </data>
     </settings>
@@ -1622,30 +1622,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARD\stmflash.c</name>
-    </file>
-  </group>
-  <group>
-    <name>L</name>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\24l01.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\CUI_MALLOC0.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\CUI_MALLOC1.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\CUI_RTOS.C</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\NRF24L01_AUTO_ACK.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\SingleCycList.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\&#x65B0;&#x5eFA;&#x6587;&#x4eF6;&#x5939;\sensor\SingleList.c</name>
     </file>
   </group>
   <group>
