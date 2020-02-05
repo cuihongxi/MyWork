@@ -121,11 +121,9 @@ void SingleList_MoveEndNode(SingleList* list, SingleListNode* node)
 		debug("i = %d\r\n",i);
         if( ((SingleListNodeStr*)(current->next))->node == node )
         	{
-        		
         		break;
         	}
         current = current->next;
-
     }
 	 if(current->next == 0)return;
 	if(((SingleListNodeStr*)(current->next))->next)

@@ -11,7 +11,6 @@ leafStr* NewHufmanNode(u8  value,u8	power)
     ls->pow.power = power;
     ls->pow.bs = NewBinaryTreeNode();                       // 新建一个二叉树叶子节点,free时需要释放
     ls->value = value;
-    ls->code = 0;
     return ls;
 }
 
@@ -97,7 +96,7 @@ leafStr* GetMinData(u32* array,u32 length)
     debug("权重链表从小到大的顺序：\r\n");
     while(SingleList_Iterator(&bk))
     {
-        debug(" %d",SingeListGetnode(powStr,bk)->power);
+        debug("  [%d] = %d,",SingeListGetnode(leafStr,bk)->value,SingeListGetnode(leafStr,bk)->pow.power);
     }
     debug("\r\n");
     return list;
@@ -149,3 +148,61 @@ leafStr* GetMinData(u32* array,u32 length)
       }
 	  return newpowNode;
  }
+
+// 以字符串形式保存哈夫曼映射表
+void TabHufmanSave(leafStr* leaf,mapTabStr* map)
+{
+
+}
+
+// 字符串拷贝
+void Strcopy(u8* sorce,u8* obj)
+{
+    u8 i = 0;
+    for(;sorce[i];i++)
+    {
+        obj[i] = sorce[i];
+    }
+    obj[i] = 0;
+}
+
+// 往字符串末尾插入一个ascii码
+void Strinsert(u8* str,const char dat)
+{
+    u8 i = 0;
+    for(;str[i];i++);
+    str[i] = dat;
+    i++;
+    str[i] = 0;
+}
+ /**
+  *     解析哈夫曼树，先序遍历保存映射表
+  **/
+void TabHufmanCreat(powStr* hufmanTree,mapTabStr* map,u8* str)
+{
+    if (hufmanTree)
+    {
+        if(hufmanTree->bs->left == 0 && hufmanTree->bs->right == 0)
+        {
+            debug("%s\r\n",str);
+            map->tab[((leafStr*)hufmanTree)->value] = ((leafStr*)hufmanTree)->pow.power;
+        }else
+        {
+            u8 str0[40] = {0};
+            if(hufmanTree->bs->left)
+            {
+                Strcopy(str,str0);
+                Strinsert(str0,'0');
+                TabHufmanCreat(hufmanTree->bs->left,map,str0);
+            }
+            if(hufmanTree->bs->right)
+            {
+                Strcopy(str,str0);
+                Strinsert(str0,'1');
+                TabHufmanCreat(hufmanTree->bs->right,map,str0);
+            }          
+        }
+        
+
+    }
+}

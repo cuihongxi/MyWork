@@ -19,5 +19,6 @@ typedef struct{
 
 btreeStr* NewBinaryTreeNode(void);              // 新建一个二叉树叶子节点
 void FreeBinaryNode(btreeStr* bs);
+void BinaryPerTravers(btreeStr* bt);
 
 #endif
