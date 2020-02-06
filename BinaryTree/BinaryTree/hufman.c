@@ -1,6 +1,40 @@
 #include "hufman.h"
 #include "SingleList.h"
 
+u8 tabhufmanstaticbuff = 0;             // 一个已经定义好的全局变量，不能修改
+
+// 字符串拷贝
+void Strcopy(u8* sorce,u8* obj)
+{
+    u8 i = 0;
+    for(;sorce[i];i++)
+    {
+        obj[i] = sorce[i];
+    }
+    obj[i] = 0;
+}
+
+// 字符串拷贝之后在末尾添加字符
+void StrCopyInsertChar(u8* sorce,u8* obj,const char dat)
+{
+    u8 i = 0;
+    for(;sorce[i];i++)
+    {
+        obj[i] = sorce[i];
+    }
+    
+    obj[i] = dat;  
+    i++;
+    obj[i] = 0; 
+}
+
+// 获得字符串长度,不包含休止符
+u32 StrGetLength(u8* str)
+{
+    u32 i = 0;
+    while(str[i]) i++;
+    return i;
+}
 
 /**
  * 新建一个hufman树叶子节点
@@ -102,8 +136,10 @@ leafStr* GetMinData(u32* array,u32 length)
     return list;
  }
 
- // 挑选出链表的最小两个节点，组成一个二叉树
- // 将这两个节点从链表中摘下，并用形成的二叉树节点在链表中重新排序
+/**
+ *  创建hufman树
+ * 
+ */
  powStr* BulidHufmanTree(u32* array)
  {
       SingleList* bk;
@@ -117,7 +153,6 @@ leafStr* GetMinData(u32* array,u32 length)
       {
         right = SingeListGetnode(powStr,bk);        // 获得一个节点，并从链表中摘下来，作为右子树
         SingleList_DeleteNodeNoFree(minList,right); // 从排序链表中摘下     
-
         SingleList_Iterator(&bk); 
         left = SingeListGetnode(powStr,bk);
         while(((SingleListNodeStr*)bk)->next != 0 && (left->power == right->power))
@@ -149,40 +184,58 @@ leafStr* GetMinData(u32* array,u32 length)
 	  return newpowNode;
  }
 
-// 以字符串形式保存哈夫曼映射表
-void TabHufmanSave(leafStr* leaf,mapTabStr* map)
+/**
+ *  释放hufman树叶子节点 
+ */
+u8 FreeHufmanTree(powStr* hufmanTree)
 {
-
-}
-
-// 字符串拷贝
-void Strcopy(u8* sorce,u8* obj)
-{
-    u8 i = 0;
-    for(;sorce[i];i++)
+    if (hufmanTree)
     {
-        obj[i] = sorce[i];
-    }
-    obj[i] = 0;
+        if(hufmanTree->bs->left == 0 && hufmanTree->bs->right == 0)
+        {
+            FreePowerTreeNode(hufmanTree);
+            return 0;
+        }else
+        {
+            if(hufmanTree->bs->left)
+            {
+                 if(((powStr*)(hufmanTree->bs->left))->bs->left == 0 && ((powStr*)(hufmanTree->bs->left))->bs->right == 0)
+                 {
+                    FreePowerTreeNode(hufmanTree->bs->left);
+                    hufmanTree->bs->left = 0;                    
+                 }
+            }
+
+            if(hufmanTree->bs->right)
+            {
+                if(((powStr*)(hufmanTree->bs->right))->bs->left == 0 && ((powStr*)(hufmanTree->bs->right))->bs->right == 0) 
+                {         
+                    FreePowerTreeNode(hufmanTree->bs->right);
+                    hufmanTree->bs->right = 0;
+                }                  
+            }
+            
+            if(hufmanTree->bs->left)
+            {
+                FreeHufmanTree(hufmanTree->bs->left);
+            }
+            if(hufmanTree->bs->right)
+            {
+                FreeHufmanTree(hufmanTree->bs->right);
+            }
+            return 1;
+        }
+    } 
+    return 0;   
+}
+/**
+ *  释放hufman树，及叶子节点 
+ */
+void Free_HufmanTree(powStr* hufmanTree)
+{
+    while(FreeHufmanTree(hufmanTree));
 }
 
-// 往字符串末尾插入一个ascii码
-void Strinsert(u8* str,const char dat)
-{
-    u8 i = 0;
-    for(;str[i];i++);
-    str[i] = dat;
-    i++;
-    str[i] = 0;
-}
-
-// 获得字符串长度,不包含休止符
-u32 StrGetLength(u8* str)
-{
-    u32 i = 0;
-    while(str[i]) i++;
-    return i;
-}
  /**
   *     解析哈夫曼树，先序遍历保存映射表
   **/
@@ -195,24 +248,146 @@ void TabHufmanCreat(powStr* hufmanTree,mapTabStr* map,u8* str)
             u8* strend =  (u8*)malloc(StrGetLength(str) + 1);
             Strcopy(str,strend);
             map->tab[((leafStr*)hufmanTree)->value] = strend;
-            debug("%s\r\n",str);
+            debug("%c   ,%s\r\n",((leafStr*)hufmanTree)->value,str);
         }else
         {
-            //u8 str0[40] = {0};
             u8* str0 = (u8*)malloc(StrGetLength(str) + 2);
             if(hufmanTree->bs->left)
             {
-                Strcopy(str,str0);
-                Strinsert(str0,'0');
+                StrCopyInsertChar(str,str0,'0');
                 TabHufmanCreat(hufmanTree->bs->left,map,str0);
             }
             if(hufmanTree->bs->right)
             {
-                Strcopy(str,str0);
-                Strinsert(str0,'1');
+                StrCopyInsertChar(str,str0,'1');
                 TabHufmanCreat(hufmanTree->bs->right,map,str0);
             }
             free(str0);          
         }
+    }
+}
+
+// 一次性读完，建立哈夫曼树
+powStr* BulidHufmanTreeOneTime(u8* file,u32 length)
+{
+    u32 array[256] = {0};
+    SortData(array,file,length);    
+    return BulidHufmanTree(array);
+}
+
+
+//一次性读完字符串str，建立映射表
+mapTabStr* BulidHufmanTabForStr(u8* str,u32 length) 
+ {
+    mapTabStr* map;
+    u32 i = 0;
+    u32 array[256] = {0};
+    SortData(array,str,length);
+    map = (mapTabStr*)malloc(sizeof(mapTabStr));
+    for(i=0;i<256;i++)
+    {
+        map->tab[i] = 0;
+    }
+    map->hafmanTree = BulidHufmanTree(array);
+    _TabHufmanCreat(map->hafmanTree,map); // 解析树，保存映射表
+    return map;
+ }
+
+
+// 在字节中插入‘0’或‘1’
+void CopressFile_AddBit(u8* buf,u32 buf_byte,u8 buf_bit,const char dat)
+{
+    u8 d = dat - 0x30; 
+    if(d) buf[buf_byte] |= 0x80 >> buf_bit;
+    else buf[buf_byte] &= ~(0x80 >> buf_bit);
+}
+ /**
+  *  霍夫曼压缩
+  *  压缩后的数据保存在datbuf中，返回霍夫曼信息map
+  */
+
+mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* datbuf)
+{
+    mapTabStr* map =  BulidHufmanTabForStr(file,length);
+    u32 i = 0;
+    u32 datbuf_byte = 0;        // 记录偏移到datbuf哪个字节
+    u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
+    map->length = length;
+
+    for(i= 0;i<length;i++)    
+    {   
+        u32 ip = 0;
+        u8* pstr = map->tab[file[i]];   // 获得该字符的压缩码
+        for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
+        {
+              CopressFile_AddBit(datbuf,datbuf_byte,datbuf_bit,pstr[ip]);
+              datbuf_bit ++;
+              if(datbuf_bit > 7)
+              {
+                  datbuf_bit = 0;
+                  datbuf_byte ++;
+              }
+        }
+    }
+    return map;
+}
+
+// 解压，返回原来的字节
+u8 UncopressByte( mapTabStr* map,u8* hufmanfile,u32* datbuf_byte,u8* datbuf_bit)
+{
+    SingleList* list = NewSingleList();
+    SingleList* bk = list;
+    u32 i = 0;
+    u32 j = 0;
+
+    for(i=0;i<256;i++)
+    {
+        if(map->tab[i] == 0) continue;
+        if(((map->tab[i])[0] - 0x30) == ((hufmanfile[*datbuf_byte]  >> (7-*datbuf_bit)) & 0x01))   // 将匹配的添加到链表中
+            SingleList_InsertEnd(list,&(map->tab[i]));
+    }
+    //在链表中继续寻找符合条件的    
+    while(1)
+    {
+        j ++;
+        (*datbuf_bit) ++;
+        if(*datbuf_bit > 7)
+        {
+            *datbuf_bit = 0;
+            (*datbuf_byte) ++;
+        }        
+        while (SingleList_Iterator(&bk))
+        {
+            if((*SingeListGetnode(u8*,bk))[j] == 0)
+            {
+                
+                debug("zhao dao le !  code= %d\r\n",(u8)((u32)SingeListGetnode(u8*,bk) - (u32)map->tab)/sizeof(u8*));
+                //删掉链表
+               // FreeSingList(list);
+                return (u8)(((u32)SingeListGetnode(u8*,bk) - (u32)map->tab)/sizeof(u8*));    
+            }
+            if(((hufmanfile[*datbuf_byte]  >> (7-*datbuf_bit)) & 0x01) != ((*SingeListGetnode(u8*,bk))[j] - 0x30))
+            {
+                SingleList_DeleteNode(list,SingeListGetnode(u8*,bk));
+            }
+
+        }
+        bk = list;
+        
+    }
+
+    return 0;
+}
+/**
+ *  霍夫曼解码 
+ */
+void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf)
+{
+    u32 i = 0;
+    u32 datbuf_byte = 0;        // 记录偏移到datbuf哪个字节
+    u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
+    for(i=0;i<map->length;i++)
+    {
+        datbuf[i] = UncopressByte(map,hufmanfile,&datbuf_byte,&datbuf_bit);
     }
 }
