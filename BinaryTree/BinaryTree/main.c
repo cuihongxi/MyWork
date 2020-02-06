@@ -19,11 +19,11 @@ int main(void)
 	// }
 	//  printf("right end\r\n");
 	TabHufmanCreat(ps,&map,str); // ½âÎöÊ÷£¬±£´æÓ³Éä±í
-	// printf(" map[1] =  %d\r\n",map.tab[49]);
-	// printf(" map[2] =  %d\r\n",map.tab[50]);
-	// printf(" map[3] =  %d\r\n",map.tab[51]);
-	// printf(" map[4] =  %d\r\n",map.tab[52]);
-	// printf(" map[7] =  %d\r\n",map.tab[59]);
+	 printf(" map[1] =  %s\r\n",map.tab[54]);
+	 printf(" map[2] =  %s\r\n",map.tab[52]);
+	 printf(" map[3] =  %s\r\n",map.tab[53]);
+	 printf(" map[4] =  %s\r\n",map.tab[51]);
+	 printf(" map[7] =  %s\r\n",map.tab[50]);
 	return 0;
 
 }

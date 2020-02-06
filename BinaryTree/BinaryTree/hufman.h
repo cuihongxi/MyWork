@@ -30,7 +30,7 @@ typedef struct{
 //¹ş·òÂüÓ³Éä±í
 typedef struct 
 {
-    u8 tab[256];       // ±£´æ×Ö·û´®µØÖ· 
+    u8* tab[256];       // ±£´æ×Ö·û´®µØÖ· 
 }mapTabStr;
 
 

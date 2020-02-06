@@ -175,6 +175,14 @@ void Strinsert(u8* str,const char dat)
     i++;
     str[i] = 0;
 }
+
+// »ñµÃ×Ö·û´®³¤¶È,²»°üº¬ÐÝÖ¹·û
+u32 StrGetLength(u8* str)
+{
+    u32 i = 0;
+    while(str[i]) i++;
+    return i;
+}
  /**
   *     ½âÎö¹þ·òÂüÊ÷£¬ÏÈÐò±éÀú±£´æÓ³Éä±í
   **/
@@ -183,12 +191,15 @@ void TabHufmanCreat(powStr* hufmanTree,mapTabStr* map,u8* str)
     if (hufmanTree)
     {
         if(hufmanTree->bs->left == 0 && hufmanTree->bs->right == 0)
-        {
+        {          
+            u8* strend =  (u8*)malloc(StrGetLength(str) + 1);
+            Strcopy(str,strend);
+            map->tab[((leafStr*)hufmanTree)->value] = strend;
             debug("%s\r\n",str);
-            map->tab[((leafStr*)hufmanTree)->value] = ((leafStr*)hufmanTree)->pow.power;
         }else
         {
-            u8 str0[40] = {0};
+            //u8 str0[40] = {0};
+            u8* str0 = (u8*)malloc(StrGetLength(str) + 2);
             if(hufmanTree->bs->left)
             {
                 Strcopy(str,str0);
@@ -200,9 +211,8 @@ void TabHufmanCreat(powStr* hufmanTree,mapTabStr* map,u8* str)
                 Strcopy(str,str0);
                 Strinsert(str0,'1');
                 TabHufmanCreat(hufmanTree->bs->right,map,str0);
-            }          
+            }
+            free(str0);          
         }
-        
-
     }
 }
