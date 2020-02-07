@@ -13,6 +13,14 @@
  * ¢Ù    µ÷ÓÃ½âÑ¹Ëõº¯Êı£º void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf);
  *              ×¢£ºÊ¹ÓÃÏàÓ¦µÄ¹ş·òÂüÓ³Éä±ímap £¬½âÑ¹Ñ¹ËõÎÄ¼şhufmanfile£¬½âÑ¹ËõÖ®ºóµÄÊı¾İ±£´æµ½datbufÖĞ
  *              Àı×Ó£ºHufmanUncompressFile(hufmanfile,map,encodefile);
+ * Ë¼Â·Á÷³Ì£º
+ *  * Ñ¹Ëõ²½Öè£º
+ * ¢Ù    ´´½¨Ò»¸öÈ«¾Ö±äÁ¿Êı×é u32 array[256] = {0},¸ÃÊı×é±£´æÒªÑ¹ËõÎÄ¼şµÄÈ¨ÖØ¡£
+ * ¢Ú    ·´¸´µ÷ÓÃ SortData(u32* array, u8* file,u32 length) ½«ÎÄ¼şfile¶ÁÍê¡£×îÖÕarray±£´æÁËÒªÑ¹ËõÎÄ¼şµÄ¸÷¸ö×Ö½ÚÈ¨ÖØ¡£
+ * ¢Û    µ÷ÓÃ powStr* BulidHufmanTree(u32* array) ´´½¨Ò»¿Å¹ş·òÂüÊ÷£¬·µ»ØÕâ¿ÃÊ÷µÄÈ¨ÖØ½ÚµãÖ¸Õë
+ * ¢Ü    ½âÎöÊ÷£¬´´½¨Ó³Éä±í £º
+ *          ½¨Êı×é  mapTabStr map; µ÷ÓÃ_TabHufmanCreat(hufmanTree,map)ºê½øĞĞ½âÎö¡£¸ÃºêÒşÄäÁËÒ»¸öÈ«¾Ö±äÁ¿tabhufmanstaticbuff
+
  *          
  */
 
@@ -25,7 +33,7 @@
 // È¨ÖØ½Úµã
 typedef struct{
     btreeStr*  bs;
-	u8	power;           // È¨ÖØ£¬ Èç¹ûÒÔ×Ö½ÚÎªµ¥Î»¶ÔÊı¾İ½øĞĞÑ¹Ëõ£¬Ã¿¸öÒ¶×Ó½ÚµãµÄÊı¾İÈ¨ÖØÎªunsigned charÀàĞÍ
+	u32	power;           // È¨ÖØ£¬ Èç¹ûÒÔ×Ö½ÚÎªµ¥Î»¶ÔÊı¾İ½øĞĞÑ¹Ëõ
 }powStr;
 
 //Ò¶×Ó½Úµã
@@ -57,6 +65,11 @@ mapTabStr* BulidHufmanTabForStr(u8* str,u32 length) ;              //Ò»´ÎĞÔ¶ÁÍê×
 
 mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* hufmanfile);      // Ñ¹Ëõ
 void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf);// ½âÑ¹
+
+
+/********************************************Windows CÓïÑÔÎÄ¼ş²Ù×÷***************************************************/
+mapTabStr* HufmanCompress_CFile(u8* filename,u8* hufmanfile);      // Ñ¹Ëõ
+
 
 u32 StrGetLength(u8* str);
 

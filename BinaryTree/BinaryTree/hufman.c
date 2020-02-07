@@ -39,7 +39,7 @@ u32 StrGetLength(u8* str)
 /**
  * 新建一个hufman树叶子节点
  */
-leafStr* NewHufmanNode(u8  value,u8	power)
+leafStr* NewHufmanNode(u8  value,u32 power)
 {
     leafStr* ls = (leafStr*)malloc(sizeof(leafStr));
     ls->pow.power = power;
@@ -92,21 +92,21 @@ void SortData(u32* array, u8* file,u32 length)
 // 排序返回数组最小值，并将该位置0xff
 leafStr* GetMinData(u32* array,u32 length)
 {
-    leafStr* min = NewHufmanNode(0,0xff); // 创建一个叶子节点保存数据，需要free
+    leafStr* min = NewHufmanNode(0,0xffffffff); // 创建一个叶子节点保存数据，需要free
     u32 i = 0;
     for(i=0;i<length;i++)
     {
-        if(array[i] && array[i] < min->pow.power){
+        if(array[i] && (array[i] < min->pow.power)){
             min->pow.power = array[i];
             min->value = i;
         } 
     }
     // 返回记录，并将最小值的数组0xff
-    array[min->value] = 0xff;
+    array[min->value] = 0xffffffff;
     return min;
 }
 
- // 用一个链表保存对非0xff数组的从小到大的排序
+ // 用一个链表保存对非0xffffffff数组的从小到大的排序
  // u32 array[256]
  SingleList* SaveSinglist(u32* array)
  {
@@ -115,10 +115,10 @@ leafStr* GetMinData(u32* array,u32 length)
     SingleList* list = NewSingleList();
     leafStr* val = GetMinData(array,256);
     SingleList_InsertEnd(list,val);
-    while(val->pow.power != 0xff)
+    while(val->pow.power != 0xffffffff)
     {
          val = GetMinData(array,256);
-         if(val->pow.power != 0xff) SingleList_InsertEnd(list,val);
+         if(val->pow.power != 0xffffffff) SingleList_InsertEnd(list,val);
          else
          {
              FreeHufmanNode(val);
@@ -130,7 +130,7 @@ leafStr* GetMinData(u32* array,u32 length)
     debug("权重链表从小到大的顺序：\r\n");
     while(SingleList_Iterator(&bk))
     {
-        debug("  [%d] = %d,",SingeListGetnode(leafStr,bk)->value,SingeListGetnode(leafStr,bk)->pow.power);
+        debug("[%X]:    %d  ",SingeListGetnode(leafStr,bk)->value,SingeListGetnode(leafStr,bk)->pow.power);
     }
     debug("\r\n");
     return list;
@@ -152,7 +152,7 @@ leafStr* GetMinData(u32* array,u32 length)
       while(((SingleListNodeStr*)SingleList_Iterator(&bk))->next)
       {
         right = SingeListGetnode(powStr,bk);        // 获得一个节点，并从链表中摘下来，作为右子树
-        SingleList_DeleteNode(minList,right); // 从排序链表中摘下     
+        SingleList_DeleteNode(minList,right);       // 从排序链表中摘下     
         SingleList_Iterator(&bk); 
         left = SingeListGetnode(powStr,bk);
         while(((SingleListNodeStr*)bk)->next != 0 && (left->power == right->power))
@@ -172,7 +172,7 @@ leafStr* GetMinData(u32* array,u32 length)
         } 
         while(SingleList_Iterator(&bk))
         {
-            if(newpowNode->power < SingeListGetnode(powStr,bk)->power)
+            if(newpowNode->power < SingeListGetnode(powStr,bk)->power)  
             {
                 SingleList_InsertBefore(minList,bk,newpowNode);
                 break;
@@ -248,7 +248,7 @@ void TabHufmanCreat(powStr* hufmanTree,mapTabStr* map,u8* str)
             u8* strend =  (u8*)malloc(StrGetLength(str) + 1);
             Strcopy(str,strend);
             map->tab[((leafStr*)hufmanTree)->value] = strend;
-            debug("%c   ,%s\r\n",((leafStr*)hufmanTree)->value,str);
+            debug("[%X]:    %s\r\n",((leafStr*)hufmanTree)->value,str);
         }else
         {
             u8* str0 = (u8*)malloc(StrGetLength(str) + 2);
@@ -294,12 +294,36 @@ mapTabStr* BulidHufmanTabForStr(u8* str,u32 length)
  }
 
 
+
 // 在字节中插入‘0’或‘1’
 void CopressFile_AddBit(u8* buf,u32 buf_byte,u8 buf_bit,const char dat)
 {
     u8 d = dat - 0x30; 
-    if(d) buf[buf_byte] |= 0x80 >> buf_bit;
-    else buf[buf_byte] &= ~(0x80 >> buf_bit);
+    if(d) buf[buf_byte] |= (u8)(0x80 >> buf_bit);
+    else buf[buf_byte] &= (u8)(~(0x80 >> buf_bit));
+}
+
+// 依据map压缩,map已知文件长度
+void HufmanCompressFile_map(mapTabStr* map,u8* file,u8* hufmanfile)
+{
+    u32 datbuf_byte = 0;        // 记录偏移到datbuf哪个字节
+    u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
+    u32 i = 0;
+    for(i= 0;i<map->length;i++)    
+    {   
+        u32 ip = 0;
+        u8* pstr = map->tab[file[i]];       // 获得该字符的压缩码
+        for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
+        {
+              CopressFile_AddBit(hufmanfile,datbuf_byte,datbuf_bit,pstr[ip]);
+              datbuf_bit ++;
+              if(datbuf_bit > 7)
+              {
+                  datbuf_bit = 0;
+                  datbuf_byte ++;
+              }
+        }
+    }
 }
  /**
   *  霍夫曼压缩
@@ -314,21 +338,22 @@ mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* hufmanfile)
     u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
     map->length = length;
 
-    for(i= 0;i<length;i++)    
-    {   
-        u32 ip = 0;
-        u8* pstr = map->tab[file[i]];   // 获得该字符的压缩码
-        for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
-        {
-              CopressFile_AddBit(hufmanfile,datbuf_byte,datbuf_bit,pstr[ip]);
-              datbuf_bit ++;
-              if(datbuf_bit > 7)
-              {
-                  datbuf_bit = 0;
-                  datbuf_byte ++;
-              }
-        }
-    }
+    // for(i= 0;i<length;i++)    
+    // {   
+    //     u32 ip = 0;
+    //     u8* pstr = map->tab[file[i]];   // 获得该字符的压缩码
+    //     for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
+    //     {
+    //           CopressFile_AddBit(hufmanfile,datbuf_byte,datbuf_bit,pstr[ip]);
+    //           datbuf_bit ++;
+    //           if(datbuf_bit > 7)
+    //           {
+    //               datbuf_bit = 0;
+    //               datbuf_byte ++;
+    //           }
+    //     }
+    // }
+    HufmanCompressFile_map( map,file,hufmanfile);
     return map;
 }
 
@@ -389,4 +414,69 @@ void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf)
     {
         datbuf[i] = UncopressByte(map,hufmanfile,&datbuf_byte,&datbuf_bit);
     }
+}
+
+/********************************************Windows C语言文件操作***************************************************/
+mapTabStr* HufmanCompress_CFile(u8* filename,u8* hufmanfile)      // 压缩
+{
+    mapTabStr* map;
+    u32 i = 0;
+    u32 array[1024] = {0};
+    u32 datbuf_byte = 0;        // 记录偏移到datbuf哪个字节
+    u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
+    FILE *fhufman;              // 压缩文件的句柄
+    u8* hufbuf = 0;
+    FILE * fd = fopen(filename,"rb");
+    int filedat = 0;
+    map = (mapTabStr*)malloc(sizeof(mapTabStr));
+    map->length = 0;
+    for(i=0;i<256;i++)
+    {
+        map->tab[i] = 0;
+    }
+    while(1)
+    {
+        filedat = fgetc(fd);        // 读一个字节
+        if(filedat == EOF) break;   // -1时文件结束
+        else
+        {
+            array[(u8)filedat] ++; 
+            map->length ++;
+        }  
+    }
+    fclose(fd);
+  //  debug("Read file finish\r\n");
+    
+
+    map->hafmanTree = BulidHufmanTree(array);
+    _TabHufmanCreat(map->hafmanTree,map); // 解析树，保存映射表
+  //  HufmanCompressFile_map( map,file,hufmanfile);
+    fd = fopen(filename,"rb");
+    fhufman =fopen(hufmanfile,"wb");
+    for(i= 0;i<map->length;i++)    
+    {   
+        u32 ip = 0;
+        u8* pstr = map->tab[fgetc(fd)];       // 获得该字符的压缩码
+        for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
+        {
+              CopressFile_AddBit((u8*)array,datbuf_byte,datbuf_bit,pstr[ip]);
+              datbuf_bit ++;
+              if(datbuf_bit > 7)
+              {
+                  datbuf_bit = 0;
+                  datbuf_byte ++;
+              }
+              if(datbuf_byte >= 4096)
+              {
+                datbuf_byte = 0;
+                fwrite (array,4096,1,fhufman); // 一次性写入
+              }
+        }
+    }
+    if(datbuf_bit) datbuf_byte ++;
+    fwrite ((u8*)array,1,datbuf_byte,fhufman);      // 剩余写入
+    fclose(fd);
+    fclose(fhufman);
+
+    return map;    
 }
