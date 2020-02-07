@@ -1,12 +1,18 @@
 /**
  * 2020Äê2ÔÂ4ÈÕ16:33:43
  * »ô·òÂüËã·¨Ñ¹Ëõ¼°½âÑ¹Ëõ³ÌĞò
+ * ±¸×¢£º   ³ÌĞòÊ¹ÓÃÁË¶¯Ì¬ÄÚ´æ·ÖÅäºÍµ¥Á´±íµÄÊı¾İ½á¹¹£¬ĞèÒªÏàÓ¦µÄÎÄ¼ş
  * Ñ¹Ëõ²½Öè£º
- * ¢Ù    ´´½¨Ò»¸öÈ«¾Ö±äÁ¿Êı×é u32 array[256] = {0},¸ÃÊı×é±£´æÒªÑ¹ËõÎÄ¼şµÄÈ¨ÖØ¡£
- * ¢Ú    ·´¸´µ÷ÓÃ SortData(u32* array, u8* file,u32 length) ½«ÎÄ¼şfile¶ÁÍê¡£×îÖÕarray±£´æÁËÒªÑ¹ËõÎÄ¼şµÄ¸÷¸ö×Ö½ÚÈ¨ÖØ¡£
- * ¢Û    µ÷ÓÃ powStr* BulidHufmanTree(u32* array) ´´½¨Ò»¿Å¹ş·òÂüÊ÷£¬·µ»ØÕâ¿ÃÊ÷µÄÈ¨ÖØ½ÚµãÖ¸Õë
- * ¢Ü    ½âÎöÊ÷£¬´´½¨Ó³Éä±í £º
- *          ½¨Êı×é  mapTabStr map; µ÷ÓÃ_TabHufmanCreat(hufmanTree,map)ºê½øĞĞ½âÎö¡£¸ÃºêÒşÄäÁËÒ»¸öÈ«¾Ö±äÁ¿tabhufmanstaticbuff
+ * ¢Ù    ´´½¨Ò»¸ö¹ş·òÂüÓ³Éä±í±äÁ¿£º    mapTabStr* map;
+ *              ×¢£º¸Ã±äÁ¿±£´æÁËÓ³Éä¹ØÏµ£¬¹ş·òÂüÊ÷µØÖ·£¬±»Ñ¹ËõÎÄ¼ş´óĞ¡¡£¹ş·òÂüÊ÷ÔÚÑ¹ËõÖ®ºóºÍ½âÑ¹Ê±Ã»ÓĞ±»µ÷ÓÃ£¬µ«ÈÔÈ»±»±£Áô£¬
+ *                Èç¹û²»±£Áô¿ÉÒÔµ÷ÓÃ Free_HufmanTree(powStr* hufmanTree);ÊÍ·Å¿Õ¼ä
+ * ¢Ú    µ÷ÓÃÑ¹ËõÎÄ¼şº¯Êı£º  mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* hufmanfile);
+ *              ×¢£º¶ÔfileÎÄ¼ş½øĞĞÑ¹Ëõ£¬Ñ¹ËõÖ®ºóµÄ±àÂë±£´æÔÚ hufmanfile ÖĞ¡£Í¬Ê±·µ»ØÓ³Éä±í±äÁ¿ÓÃmap½ÓÊÕ¡£
+ *              Àı×Ó£ºmap = HufmanCompressFile("111111222233344556",19,hufmanfile); 
+ * ½âÑ¹²½Öè£º
+ * ¢Ù    µ÷ÓÃ½âÑ¹Ëõº¯Êı£º void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf);
+ *              ×¢£ºÊ¹ÓÃÏàÓ¦µÄ¹ş·òÂüÓ³Éä±ímap £¬½âÑ¹Ñ¹ËõÎÄ¼şhufmanfile£¬½âÑ¹ËõÖ®ºóµÄÊı¾İ±£´æµ½datbufÖĞ
+ *              Àı×Ó£ºHufmanUncompressFile(hufmanfile,map,encodefile);
  *          
  */
 
@@ -49,10 +55,9 @@ powStr* BulidHufmanTreeOneTime(u8* file,u32 length);    // Ò»´ÎĞÔ¶ÁÍê£¬½¨Á¢¹ş·òÂ
 
 mapTabStr* BulidHufmanTabForStr(u8* str,u32 length) ;              //Ò»´ÎĞÔ¶ÁÍê×Ö·û´®str£¬½¨Á¢Ó³Éä±í
 
-mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* datbuf);      // Ñ¹Ëõ
+mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* hufmanfile);      // Ñ¹Ëõ
+void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf);// ½âÑ¹
 
-// ½âÑ¹£¬·µ»ØÔ­À´µÄ×Ö½Ú
-u8 UncopressByte( mapTabStr* map,u8* hufmanfile,u32* datbuf_byte,u8* datbuf_bit);
 u32 StrGetLength(u8* str);
 
 #endif // !__HUFMAN_H

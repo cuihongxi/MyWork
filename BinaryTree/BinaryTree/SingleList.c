@@ -27,6 +27,24 @@ unsigned int  SingleList_InsertEnd(SingleList* list, SingleListNode* node)
     }
 	current->next = newnode;     
     list->num ++;
+	//debug("newnode addr = %#X\r\n",(u32)newnode);
+    return (unsigned int)newnode;
+}
+
+unsigned int  SingleList_InsertEnd0(SingleList* list, SingleListNode* node)
+{ 
+    SingleList* current = list;
+
+    SingleListNodeStr* newnode = (SingleListNodeStr*)malloc(sizeof(SingleListNodeStr));
+	newnode->next = 0;
+	newnode->node = node;
+
+    for(; current->next != 0;)
+    {
+        current = current->next;
+    }
+	current->next = newnode;     
+    list->num ++;
 	debug("newnode addr = %#X\r\n",(u32)newnode);
     return (unsigned int)newnode;
 }
@@ -65,16 +83,13 @@ SingleListNode* SingleList_DeleteNode(SingleList* list, SingleListNode* node)
 	if(current->next == 0) return (SingleListNode*)current;
 	back =  current->next;
     current->next = ((SingleListNodeStr*)(current->next))->next;
-	debug("back addr = %#X\r\n",(u32)back);
-	free(back);
+	//debug("back addr = %#X\r\n",(u32)back);
+	//free(back);
 	list->num --;
     return (SingleListNode*)current;
 }
-
-//返回移除节点的上一个节点,不释放节点
-SingleListNode* SingleList_DeleteNodeNoFree(SingleList* list, SingleListNode* node)
+SingleListNode* SingleList_DeleteNode0(SingleList* list, SingleListNode* node)
 {
-
 	SingleList* current = list;
 	void* back;
     for(;current->next != 0; )
@@ -86,18 +101,16 @@ SingleListNode* SingleList_DeleteNodeNoFree(SingleList* list, SingleListNode* no
 	back =  current->next;
     current->next = ((SingleListNodeStr*)(current->next))->next;
 	debug("back addr = %#X\r\n",(u32)back);
-	free(back);
+	//free(back);
 	list->num --;
     return (SingleListNode*)current;
 }
-
 //迭代器
 //如果有下一个则返回下一个指针，否则返回 0
 SingleListNode* SingleList_Iterator(SingleListNode** node)
 {
 	if(*node) *node = ((SingleListNodeStr*)*node)->next;
 	return ((SingleListNodeStr*)*node);
-
 }
 
 // 释放链表

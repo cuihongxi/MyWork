@@ -152,7 +152,7 @@ leafStr* GetMinData(u32* array,u32 length)
       while(((SingleListNodeStr*)SingleList_Iterator(&bk))->next)
       {
         right = SingeListGetnode(powStr,bk);        // 获得一个节点，并从链表中摘下来，作为右子树
-        SingleList_DeleteNodeNoFree(minList,right); // 从排序链表中摘下     
+        SingleList_DeleteNode(minList,right); // 从排序链表中摘下     
         SingleList_Iterator(&bk); 
         left = SingeListGetnode(powStr,bk);
         while(((SingleListNodeStr*)bk)->next != 0 && (left->power == right->power))
@@ -160,7 +160,7 @@ leafStr* GetMinData(u32* array,u32 length)
             SingleList_Iterator(&bk); 
             left = SingeListGetnode(powStr,bk);
         }
-        SingleList_DeleteNodeNoFree(minList,left); // 从排序链表中摘下 
+        SingleList_DeleteNode(minList,left); // 从排序链表中摘下 
         newpowNode = PowerTreeAddLR(left,right);   // 建立新权重点
 
         // 安照权值从小到大的顺序将新节点插入到排序链表中
@@ -306,7 +306,7 @@ void CopressFile_AddBit(u8* buf,u32 buf_byte,u8 buf_bit,const char dat)
   *  压缩后的数据保存在datbuf中，返回霍夫曼信息map
   */
 
-mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* datbuf)
+mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* hufmanfile)
 {
     mapTabStr* map =  BulidHufmanTabForStr(file,length);
     u32 i = 0;
@@ -320,7 +320,7 @@ mapTabStr* HufmanCompressFile(u8* file,u32 length,u8* datbuf)
         u8* pstr = map->tab[file[i]];   // 获得该字符的压缩码
         for(;pstr[ip];ip++)                 // 遍历该压缩码，同时添加到datbuf
         {
-              CopressFile_AddBit(datbuf,datbuf_byte,datbuf_bit,pstr[ip]);
+              CopressFile_AddBit(hufmanfile,datbuf_byte,datbuf_bit,pstr[ip]);
               datbuf_bit ++;
               if(datbuf_bit > 7)
               {
@@ -360,10 +360,9 @@ u8 UncopressByte( mapTabStr* map,u8* hufmanfile,u32* datbuf_byte,u8* datbuf_bit)
         {
             if((*SingeListGetnode(u8*,bk))[j] == 0)
             {
-                
-                debug("zhao dao le !  code= %d\r\n",(u8)((u32)SingeListGetnode(u8*,bk) - (u32)map->tab)/sizeof(u8*));
+               // debug("zhao dao le !  code= %d\r\n",(u8)((u32)SingeListGetnode(u8*,bk) - (u32)map->tab)/sizeof(u8*));
                 //删掉链表
-               // FreeSingList(list);
+                FreeSingList(list);
                 return (u8)(((u32)SingeListGetnode(u8*,bk) - (u32)map->tab)/sizeof(u8*));    
             }
             if(((hufmanfile[*datbuf_byte]  >> (7-*datbuf_bit)) & 0x01) != ((*SingeListGetnode(u8*,bk))[j] - 0x30))
