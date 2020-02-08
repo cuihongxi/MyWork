@@ -444,14 +444,9 @@ mapTabStr* HufmanCompress_CFile(u8* filename,u8* hufmanfile)      // 压缩
             map->length ++;
         }  
     }
-    fclose(fd);
-  //  debug("Read file finish\r\n");
-    
-
+    fseek(fd,0,0);                  // 指针回位  
     map->hafmanTree = BulidHufmanTree(array);
     _TabHufmanCreat(map->hafmanTree,map); // 解析树，保存映射表
-  //  HufmanCompressFile_map( map,file,hufmanfile);
-    fd = fopen(filename,"rb");
     fhufman =fopen(hufmanfile,"wb");
     for(i= 0;i<map->length;i++)    
     {   
@@ -479,4 +474,48 @@ mapTabStr* HufmanCompress_CFile(u8* filename,u8* hufmanfile)      // 压缩
     fclose(fhufman);
 
     return map;    
+}
+
+void HufmanUnompress_CFile(mapTabStr* map,u8* hufmanfile, u8* filename)      // 解压缩
+{
+    
+    FILE * fr = fopen(hufmanfile,"rb");
+    FILE * fw = fopen(filename,"wb");
+    u32 i = 0;
+    u32 datbuf_byte = 0;        // 记录偏移到datbuf哪个字节
+    u8  datbuf_bit = 0;         // 记录偏移到datbuf字节中的哪个位
+    u8 warray[4096] = {0};      // 写缓存
+    u8* rarray = 0;      
+    int filedat = 0;
+    u32 size = 0;
+    u32 j = 0;
+
+    //计算要读文件的大小，申请一片内存保存
+    while(1)
+    {
+        filedat = fgetc(fr);        // 读一个字节
+        if(filedat == EOF) break;   // -1时文件结束
+        else size ++;
+    }
+    rarray = (u8*)malloc(size);
+    fseek(fr,0,0);                  // 指针回位
+    fread(rarray,1,size,fr);      // 一次性读出
+    for(i=0;i<map->length;i++)
+    {
+        warray[j] = UncopressByte(map,rarray,&datbuf_byte,&datbuf_bit);
+        j ++;
+        if(j==4096)
+        {
+            j = 0;
+            fwrite (warray,1,4096,fw); // 一次性写入
+            fflush(fw);
+        }
+    }
+    if (j)
+    {
+        fwrite (warray,1,j,fw); // 一次性写入
+        fflush(fw);
+    }
+    fclose(fw);
+    fclose(fr);    
 }

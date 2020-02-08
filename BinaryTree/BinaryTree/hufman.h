@@ -69,7 +69,7 @@ void HufmanUncompressFile(u8* hufmanfile,mapTabStr* map,u8* datbuf);// 解压
 
 /********************************************Windows C语言文件操作***************************************************/
 mapTabStr* HufmanCompress_CFile(u8* filename,u8* hufmanfile);      // 压缩
-
+void HufmanUnompress_CFile(mapTabStr* map,u8* hufmanfile, u8* filename);      // 解压缩
 
 u32 StrGetLength(u8* str);
 
