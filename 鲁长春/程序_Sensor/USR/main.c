@@ -147,21 +147,28 @@ void Key_Open()
 		if((systime - DM_time) > TIM_CLOSE)
 		{
 			debug("开机\r\n");
-			flag_open = 1;
-			
+			WWDG_SWReset();	// 复位
 		}
-	//	debug("systime = %lu,DM_time = %lu\r\n",systime,DM_time);
 		LEN_RED_Close();
 		DM_time = 0;
 		flag_exti = 0;
     }
 }
+
+void Sleep()
+{
+	LEN_RED_Close();
+	InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);
+	NRF24L01_GPIO_Lowpower();
+	FL_CheckStop();
+	
+}
 //松手程序
 void Key_ScanLeave()
 {
     if(GPIO_READ(KEY_DM)) //无按键按下
-    {       
-	   	if((systime - DM_time) > TIM_CLEARDM)	
+    {     
+		if((systime - DM_time) > TIM_CLEARDM)	
 		{
 			debug("清除DM信息\r\n");
 			FlashClearDM(&addrNRF);
@@ -169,17 +176,17 @@ void Key_ScanLeave()
 		if((systime - DM_time) > TIM_CLOSE)
 		{
 			debug("关机\r\n");
+			Sleep();
 			flag_open = 0;
-			WWDG_SWReset();	// 复位
+			
 		}else
 		if((systime - DM_time) > 500)
 		{
-		  	debug("DM\r\n");
+			debug("DM\r\n");
 			flag_duima = 1;
 			InitNRF_AutoAck_PTX(&ptx,TXrxbuf,sizeof(TXrxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS1);	
-		}
+		}		
 		LEN_GREEN_Close();
-
 		DM_time = 0;
 		flag_exti = 0;
     }
@@ -232,6 +239,8 @@ void ShowAllAddr(addrNRFStr* buf)
 		else break;
 	}	
 }
+
+
 void main()
 {    	
 	UART_INIT(115200);	
@@ -254,11 +263,7 @@ void main()
 	
     NRF24L01_GPIO_Lowpower();
 	Make_SysSleep();
-	while(flag_open == 0)
-	{
-	  	halt();	
-		if(flag_exti) Key_Open();
-	}
+	flag_open = 1;
 	taskBatControl = OS_CreatTask(&timer2);			// 创建电池电量检测任务
 	taskYS = OS_CreatTask(&timer2);					// 创建YS测量任务 ，每2秒检测一次
 	OS_AddFunction(taskYS,YS_Function,TIM_CHECKEYS);
@@ -273,43 +278,49 @@ void main()
 
     while(1)
     {    
-      halt();	
-
-	   if(flag_duima == 0)			// 非对码状态
-	   {
-		 	  //按键检测
-	   		if(flag_exti) Key_ScanLeave();
-				  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
-			  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
-			  BatControl(&bat,tasklink,taskBatControl);
-			  OS_Task_Run(tasklink);				// 执行任务链表中的任务
-			 if(flag_FLCheckState == 0)
+      halt();
+	  if(flag_open)
+	  {
+		   if(flag_duima == 0)			// 非对码状态
+		   {
+				  //按键检测
+				if(flag_exti) Key_ScanLeave();
+					  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
+				  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
+				  BatControl(&bat,tasklink,taskBatControl);
+				  OS_Task_Run(tasklink);				// 执行任务链表中的任务
+				 if(flag_FLCheckState == 0)
+				 {
+					static u32 t = 0;
+					t += IRQ_PERIOD;
+					if(t > TIM_FL)
+					{
+						t = 0;
+						FL_CheckStart();
+					}
+				 }
+		   }else
+		   {
+			// debug("DM 模式\r\n");
+			 static u8 time = 0;
+			 if((time & 0x0f) == 0 )
 			 {
-			 	static u32 t = 0;
-				t += IRQ_PERIOD;
-				if(t > TIM_FL)
-				{
-					t = 0;
-					FL_CheckStart();
-				}
+				NRF_SendDMCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);	
 			 }
-	   }else
-	   {
-		// debug("DM 模式\r\n");
-		 static u8 time = 0;
-		 if((time & 0x0f) == 0 )
-		 {
-		 	NRF_SendDMCMD(&ptx,ADDRESS2,CMD_DM,MES_DM);	
-		 }
-		 time ++;
-		 if(time>250)
-		 {
-		 	flag_duima = 0;
-			time = 0;
-			LEN_GREEN_Close();
-			NRF24L01_PWR(0);
-		 } 
-	   }
+			 time ++;
+			 if(time>250)
+			 {
+				flag_duima = 0;
+				time = 0;
+				LEN_GREEN_Close();
+				NRF24L01_PWR(0);
+			 } 
+		   }	  
+	  }else
+	  {
+	  	if(flag_exti) Key_Open();
+	  }
+
 
         
 	}   

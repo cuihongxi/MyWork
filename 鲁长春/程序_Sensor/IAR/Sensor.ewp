@@ -57,7 +57,7 @@
         </option>
         <option>
           <name>GenRTDescription</name>
-          <state>To be used with the normal configuration of the C/EC++ runtime library.</state>
+          <state>Use the normal configuration of the C/EC++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
         </option>
         <option>
           <name>GenRTConfigPath</name>
@@ -494,7 +494,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>&#x4F20;&#x611F;&#x5668;-1.13-4&#x65e0;YS&#x4e0D;&#x53D1;&#x5C04;.hex</state>
+          <state>&#x4F20;&#x611F;&#x5668;-2.24-&#x5F00;&#x673A;&#x76F4;&#x63A5;&#x8FD0;&#x884C;.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
