@@ -40,7 +40,10 @@ void BatControl(BATStr* bat,TaskLinkStr* tasklink,TaskStr* taskBatControl)
 		else if(bat->val >= 3.0) 
 		{
 			bat->threshold = GetSysTime(taskBatControl->timerlink) + TIM_BAT_2H;
-			NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// 电池电量不足
+			//NRF_SendCMD(&ptx,CGDAT,CMD_CG_BAT,CMD_CG_BAT);	// 电池电量不足
+			*(u16*)CGDAT = 4000;
+			//debug("电池电量不足\r\n");
+			NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息
 		}
 		else 
 		{

@@ -8,7 +8,7 @@ extern	Nrf24l01_PTXStr 	ptx ;
 extern	u8		CGDAT[5];
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes);//通过NRF向主板发送命令函数
 
-u32 	fl_speed_width 	= (60000/VALVE_FLSPEED);	// 根据转速阀值计算间隔,ms
+u32 	fl_speed_width 	= (60000/VALVE_FLSPEED_0);	// 根据转速阀值计算间隔,ms
 u8		flag_FL_SHUT 	= 1;
 u8		flag_FLCheckState = 0;				//fl检测开始还是停止
 void FL_GPIO_Init()

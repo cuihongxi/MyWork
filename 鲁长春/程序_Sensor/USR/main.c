@@ -176,6 +176,20 @@ void Key_ScanLeave()
 		if((systime - DM_time) > TIM_CLOSE)
 		{
 			debug("关机\r\n");
+			LEN_GREEN_Close();
+			LEN_RED_Close();
+			delay_ms(200);
+			LEN_RED_Open();
+			delay_ms(200);
+			LEN_RED_Close();
+			delay_ms(200);
+			LEN_RED_Open();
+			delay_ms(200);
+			LEN_RED_Close();
+//			delay_ms(200);
+//			LEN_RED_Open();
+//			delay_ms(200);
+//			LEN_RED_Close();
 			Sleep();
 			flag_open = 0;
 			
@@ -246,7 +260,7 @@ void main()
 	UART_INIT(115200);	
 	Key_GPIO_Init();
 	LED_GPIO_Init();
-	debug("start:\r\n");
+//	debug("start:\r\n");
 	FlashData_Init(&addrNRF);
 	ShowAllAddr(&addrNRF);
 	NRF_CreatNewAddr(ADDRESS2);
@@ -286,9 +300,9 @@ void main()
 				  //按键检测
 				if(flag_exti) Key_ScanLeave();
 					  systime = OS_TimerFunc(&timer2);			// OS定时器内函数，获得系统时间
-				  if(systime >= bat.threshold) bat.flag = 1;// 电池电量检测间隔	  
+				  if(systime >= bat.threshold) bat.flag = 1;	// 电池电量检测间隔	  
 				  BatControl(&bat,tasklink,taskBatControl);
-				  OS_Task_Run(tasklink);				// 执行任务链表中的任务
+				  OS_Task_Run(tasklink);						
 				 if(flag_FLCheckState == 0)
 				 {
 					static u32 t = 0;

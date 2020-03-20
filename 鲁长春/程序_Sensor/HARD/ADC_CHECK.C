@@ -8,6 +8,9 @@ extern	u16 	YS_CGdat ;
 extern	u32 	systime;
 extern	Nrf24l01_PTXStr 	ptx ;
 extern	u8		CGDAT[5];
+u32 	value_FLSPEED = VALVE_FLSPEED_0;
+extern	u32 	fl_speed_width;
+float value_YS_D = VALVE_YS_D_0;
 
 //根据AD值计算电池端电压
 float BatteryGetAD(u16 ad)
@@ -17,7 +20,7 @@ float BatteryGetAD(u16 ad)
 //根据AD值计算YS端电压
 float YSGetAD(u16 ad)
 {
-	return (0.0009*ad);//(0.0008058608058*ad);
+	return (0.0008*ad);//(0.0008058608058*ad);
 }
 
 //Battery的GPIO初始化
@@ -28,6 +31,16 @@ void GPIO_ADC_Init()
     GPIO_Init(YS_GPIO,GPIO_Mode_In_FL_No_IT);  				
 	GPIO_Init(YSD_GPIO,GPIO_Mode_Out_PP_Low_Slow);
 
+	GPIO_Init(YS_RT_GPIO,GPIO_Mode_In_FL_No_IT);  				
+	GPIO_Init(YS_RT_GND,GPIO_Mode_Out_PP_Low_Slow);
+	GPIO_Init(YS_RT_VCC,GPIO_Mode_Out_PP_Low_Slow);
+	
+	GPIO_Init(FL_RT_GPIO,GPIO_Mode_In_FL_No_IT);  				
+	GPIO_Init(FL_RT_GND,GPIO_Mode_Out_PP_Low_Slow);
+	GPIO_Init(FL_RT_VCC,GPIO_Mode_Out_PP_Low_Slow);
+	
+	
+	
 }
 
 //返回相应通道ADC值
@@ -57,9 +70,31 @@ void YS_Function()
   	static enumWeather	weather = none;
 	static u32 time = 0;
 	static u32 time30 = 0;	// 30分钟计时
-	static u8 flag_sw = 0;
-	
+	static u8 flag_sw = 0;	
 	float YSdat = 0;
+	
+  float FL_Set = 0;
+  float YS_Set = 0;
+  GPIO_SET(YS_RT_VCC);
+  YS_Set = YSGetAD(Get_ADC_Dat(YS_RT_Channel));
+  if(YS_Set <0.5)
+  	value_YS_D = VALVE_YS_D_0;
+  else  if(YS_Set <2.5)
+  	value_YS_D = VALVE_YS_D_1;
+  else value_YS_D = VALVE_YS_D_2;
+  GPIO_RESET(YS_RT_VCC);
+  
+  GPIO_SET(FL_RT_VCC);
+  FL_Set = YSGetAD(Get_ADC_Dat(FL_RT_Channel));
+  if(FL_Set < 0.5)
+  	value_FLSPEED = VALVE_FLSPEED_0;
+  else  if(FL_Set < 2.5)
+  	value_FLSPEED = VALVE_FLSPEED_1;
+  else value_FLSPEED = VALVE_FLSPEED_2;
+  GPIO_RESET(FL_RT_VCC);
+  fl_speed_width 	= (60000/value_FLSPEED);
+  
+  
 	GPIO_SET(YSD_GPIO);
 	YS_CGdat = Get_ADC_Dat(YS_Channel);
 	YSdat = YSGetAD(YS_CGdat);
@@ -69,7 +104,7 @@ void YS_Function()
 	{
 	  
 		time = systime;
-		if(YSdat >= VALVE_YS_D )	//雨天
+		if(YSdat >= value_YS_D )	//雨天
 		{
 			weather = Rainy;
 			debug("雨天\r\n");
@@ -82,7 +117,7 @@ void YS_Function()
 		  	
 	}else
 	{
-		if(YSdat >= VALVE_YS_D )	//雨天
+		if(YSdat >= value_YS_D )	//雨天
 		{	
 			if(weather == Sunny)
 			{
@@ -131,23 +166,27 @@ void YS_Function()
 					NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息
 					debug("发送YS信息\r\n");
 				}
-				else
-				{
-					time30 += TIM_CHECKEYS;
-					if(time30 > TIM_YS_30M)			// 持续超过30分钟
-					{
-					  	time30 = 0;
-						debug("晴天 YS_CGdat = %d\r\n",YS_CGdat);
-						*(u16*)CGDAT = YS_CGdat;
-						NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息				  	
-					}					
-				}
+//				else
+//				{
+//					time30 += TIM_CHECKEYS;
+//					if(time30 > TIM_YS_30M)			// 持续超过30分钟
+//					{
+//					  	time30 = 0;
+//						debug("晴天 YS_CGdat = %d\r\n",YS_CGdat);
+//						*(u16*)CGDAT = YS_CGdat;
+//						NRF_SendCMD(&ptx,CGDAT,CMD_CG_YS,CMD_CG_YS);	// 发送YS信息				  	
+//					}					
+//				}
 	
 			}			
 		}
 	}
-	
-
 }
 
 
+// 电位器设定任务
+void SetVal_Task(void)
+{
+
+  
+}

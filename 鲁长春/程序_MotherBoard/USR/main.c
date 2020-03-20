@@ -171,15 +171,23 @@ void FunInSleap()
 	}
 	if(Juge_counter(&NRFpowoff,nrf_worktime)) 
 	{
+	  
 		NRF24L01_PWR(0);
 		NRFpowon.start = 1;
 	}
 	
 	if(Juge_counter(&NRFsleep,10000)) 
 	{
-	  debug("SLEEP\r\n");
+	  if(motorStruct.dir == STOP || motorStruct.dir == MOTOR_NULL)
+	  {
+		debug("SLEEP\r\n");
 		nrf_sleeptime = DJ_SLEEP_TIME;
-		nrf_worktime = DJ_WORK_TIME;
+		nrf_worktime = DJ_WORK_TIME;	  
+	  }else
+	  {
+	  	NRFsleep.start = 1;
+	  }
+
 	}	
 #endif
 }
@@ -230,7 +238,7 @@ void main()
 		if(jugeBHLED.start && GPIO_READ(GPIO_BH)){jugeBHLED.start = 0;LEN_GREEN_Close();} 
 		if(jugeWindows.start && (motorStruct.dir == STOP||motorStruct.dir == NULL))
 		{
-		    	GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
+		    GPIO_Init(GPIO_38KHZ_BC1,GPIO_Mode_In_PU_No_IT);
 			GPIO_Init(GPIO_38KHZ_BC2,GPIO_Mode_In_PU_No_IT);
 			if(GPIO_READ(GPIO_38KHZ_BC1) == RESET||GPIO_READ(GPIO_38KHZ_BC2) == RESET)
 			{

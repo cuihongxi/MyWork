@@ -24,9 +24,18 @@ void LED_GPIO_Init()
 {
     GPIO_Init(LED_RED,GPIO_Mode_Out_PP_Low_Slow);
 	GPIO_Init(LED_GREEN,GPIO_Mode_Out_OD_HiZ_Slow);
-	LEN_GREEN_Open();
-	LEN_RED_Open();
-	delay_ms(1000);
 	LEN_RED_Close();
 	LEN_GREEN_Close();
+	delay_ms(200);
+	LEN_GREEN_Open();
+	delay_ms(200);
+	LEN_GREEN_Close();
+	delay_ms(200);
+	LEN_GREEN_Open();
+	delay_ms(200);
+	LEN_GREEN_Close();
+//	delay_ms(200);
+//	LEN_GREEN_Open();
+//	delay_ms(200);
+//	LEN_GREEN_Close();
 }
