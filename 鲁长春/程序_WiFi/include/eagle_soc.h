@@ -217,17 +217,23 @@
 #define SPI0_CLK_EQU_SYS_CLK            BIT8
 #define SPI1_CLK_EQU_SYS_CLK            BIT9
 #define PERIPHS_IO_MUX_MTDI_U           (PERIPHS_IO_MUX + 0x04)
+#define PERIPHS_IO_MUX_GPIO12_U           (PERIPHS_IO_MUX + 0x04)
 #define FUNC_GPIO12                     3
 #define PERIPHS_IO_MUX_MTCK_U           (PERIPHS_IO_MUX + 0x08)
+#define PERIPHS_IO_MUX_GPIO13_U           (PERIPHS_IO_MUX + 0x08)
 #define FUNC_GPIO13                     3
 #define PERIPHS_IO_MUX_MTMS_U           (PERIPHS_IO_MUX + 0x0C)
+#define PERIPHS_IO_MUX_GPIO14_U           (PERIPHS_IO_MUX + 0x0C)
 #define FUNC_GPIO14                     3
 #define PERIPHS_IO_MUX_MTDO_U           (PERIPHS_IO_MUX + 0x10)
+#define PERIPHS_IO_MUX_GPIO15_U           (PERIPHS_IO_MUX + 0x10)
 #define FUNC_GPIO15                     3
 #define FUNC_U0RTS                      4
 #define PERIPHS_IO_MUX_U0RXD_U          (PERIPHS_IO_MUX + 0x14)
+#define PERIPHS_IO_MUX_GPIO3_U          (PERIPHS_IO_MUX + 0x14)
 #define FUNC_GPIO3                      3
 #define PERIPHS_IO_MUX_U0TXD_U          (PERIPHS_IO_MUX + 0x18)
+#define PERIPHS_IO_MUX_GPIO1_U          (PERIPHS_IO_MUX + 0x18)
 #define FUNC_U0TXD                      0
 #define FUNC_GPIO1                      3
 #define PERIPHS_IO_MUX_SD_CLK_U         (PERIPHS_IO_MUX + 0x1c)

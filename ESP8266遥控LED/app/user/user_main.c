@@ -35,12 +35,12 @@
 #include "aliyunMQTT.h"
 
 /* 移植 */
-#define		CLIENTID		"led_ciwo"							// 客户端ID ， 自己定义一个ID号
+#define		CLIENTID		"led_silou"							// 客户端ID ， 自己定义一个ID号
 
 // 三元组
-#define		DEVICENAME		"d004"								// Devicename
-#define		DEVICESECRET	"XMivAnmCrMhYJRyszUo383oCOYFTpju3"	// Product Secret
-#define		PRODUCTKEY		"a1OKFgeque8"						// Product Key
+#define		DEVICENAME		"silou"								// Devicename
+#define		DEVICESECRET	"0dJ429AQ54P7ZlOW1Kk63WcdnPAiowoM"		// Product Secret
+#define		PRODUCTKEY		"a1OKFgeque8"							// Product Key
 
 SessionStr* ss = 0;
 /******************************************************************************

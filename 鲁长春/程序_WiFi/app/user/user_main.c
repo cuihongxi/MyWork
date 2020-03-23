@@ -33,14 +33,21 @@
 #include "AppCallBack.h"
 #include "myMQTT.h"
 #include "aliyunMQTT.h"
+#include "NRF24L01_AUTO_ACK.H"
+#include "gpio16.h"
+
+Nrf24l01_PRXStr 	RXprx 		= {0};				//
+u8 			RXtxbuf[7] 	= {0,0,0,0,0,'O','K'};		//
+u8 			RXrxbuf[7] 	= {0};				        //
+u8      DM_num = 0;
 
 /* 移植 */
-#define		CLIENTID		"led_ciwo"							// 客户端ID ， 自己定义一个ID号
+#define		CLIENTID		"led_silou"							// 客户端ID ， 自己定义一个ID号
 
 // 三元组
-#define		DEVICENAME		"d004"								// Devicename
-#define		DEVICESECRET	"XMivAnmCrMhYJRyszUo383oCOYFTpju3"	// Product Secret
-#define		PRODUCTKEY		"a1OKFgeque8"						// Product Key
+#define		DEVICENAME		"silou"								// Devicename
+#define		DEVICESECRET	"0dJ429AQ54P7ZlOW1Kk63WcdnPAiowoM"		// Product Secret
+#define		PRODUCTKEY		"a1OKFgeque8"							// Product Key
 
 SessionStr* ss = 0;
 /******************************************************************************
@@ -132,10 +139,12 @@ user_init(void)
 	uart_init(115200,115200);		//定义了两个串口的波特率和串口接收函数
 	RxSetCallBack(RxOverCallBack);	// 设置接收回调函数
     debug("SDK version:%s\n--->CuiHongXi\n", system_get_sdk_version());
-    _MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
-    _MYGPIO_SETMODE_OUTPUT(SWITCH);
+    MYGPIO_SETMODE_OUTPUT(WIFISTATE_LED);
+    MYGPIO_SETMODE_OUTPUT(SWITCH);
 
-    //Flash_Read(LED_STATE_ADDR, &ledState,1);
+
+    InitNRF_AutoAck_PRX(&RXprx,RXrxbuf,RXtxbuf,sizeof(RXtxbuf),BIT_PIP0,RF_CH_HZ,ADDRESS2);	//配置接收模式
+
     Switch_State(ledState);									// 开灯
     MYGPIO_RESET(WIFISTATE_LED);							//打开LED
     Mytimer_hw_timer_Init(OS_Timer_CB,2000000);				// 定时检测WIFI联网状态
