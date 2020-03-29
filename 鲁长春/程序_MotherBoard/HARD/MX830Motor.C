@@ -302,6 +302,7 @@ void WindowStateOpendown()
 
 void ResetBHErro()
 {
+  debug("ResetBHErro\r\n");
     counter_BH = 0;
 	motorStruct.erro &= ~ERROR_BH;
 }

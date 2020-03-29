@@ -248,6 +248,121 @@ void BH_Check()
 		counterFileter_BH = counter + TIM_BH_FILTER;
 			
 	}
+  
+//	if(GPIO_READ(GPIO_BH) == RESET)
+//	{
+//		
+//		//滤波		
+//		static u32 	counterFileter_BH = 0;
+//		u32 counter = GetSysTime(&timer2);
+//		if(counter > counterFileter_BH)
+//		{
+//			LEN_GREEN_Open();
+//			jugeBHLED.start = 1;
+//			jugeBHLED.counter = 0;
+//			jugeWindows.start = 1;
+//			jugeWindows.counter = 0;
+//			motor_BHdir = BH_GetDir();
+//			if(motor_BHdir == BH_Open) 
+//			{
+//				motorStruct.hasrun ++;
+//
+//				debug("++\r\n");
+//				if(flag_DM == 0)
+//				{
+//					if(windowstate == SHUTDOWN)	//检测手动开窗
+//					{
+//						static u8 i = 1;
+//						static int j = 0;
+//						if(i)
+//						{
+//							i = 0;
+//							j = motorStruct.hasrun;
+//						}
+//						if((motorStruct.hasrun - j)==0)
+//						{
+//							j = 0;i = 1;
+//							debug("开窗\r\n");
+//							flag_bat2BC1 = 0;
+//							windowstate = open;				    
+//						}
+//					}				
+//				}else
+//				{
+//					if(windowstate == OPENDOWN)	//检测手动关窗
+//					{
+//						static u8 i = 1;
+//						static int j = 0;
+//						if(i)
+//						{
+//							i = 0;
+//							j = motorStruct.hasrun;
+//						}
+//						if((j - motorStruct.hasrun)==0)
+//						{
+//							j = 0;i = 1;
+//							debug("关窗\r\n");
+//							windowstate = open;				    
+//						}
+//					}				
+//				}
+//	
+//				
+//
+//				}
+//			else 
+//			{
+//			   
+//				motorStruct.hasrun --;
+//				debug("--\r\n");
+//				if(flag_DM == 0)
+//				{
+//					if(windowstate == OPENDOWN)	//检测手动关窗
+//					{
+//						static u8 i = 1;
+//						static int j = 0;
+//						if(i)
+//						{
+//							i = 0;
+//							j = motorStruct.hasrun;
+//						}
+//						if((j - motorStruct.hasrun)==0)
+//						{
+//							j = 0;i = 1;
+//							debug("关窗\r\n");
+//							windowstate = open;				    
+//						}
+//					}				
+//				}else
+//				{
+//					if(windowstate == SHUTDOWN)	//检测手动开窗
+//						{
+//							static u8 i = 1;
+//							static int j = 0;
+//							if(i)
+//							{
+//								i = 0;
+//								j = motorStruct.hasrun;
+//							}
+//							if((motorStruct.hasrun - j)==0)
+//							{
+//								j = 0;i = 1;
+//								debug("开窗\r\n");
+//								flag_bat2BC1 = 0;
+//								windowstate = open;				    
+//							}
+//						}				
+//				}
+//
+//			}
+//			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
+//			if(motorStruct.erro & ERROR_BH) motorStruct.erro &= ~ERROR_BH;
+//			if(flag_BHProtectStep == 1 )flag_BHProtectStep = 0;	// 恢复故障
+//		}
+//		
+//		counterFileter_BH = counter + TIM_BH_FILTER;
+//			
+//	}
 }
 
 
