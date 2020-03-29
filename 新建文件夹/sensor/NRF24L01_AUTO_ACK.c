@@ -7,7 +7,7 @@ void LEN_GREEN_Close();
 void LEN_GREEN_Open();
 void ReturnADDRESS2();
 
-
+extern u8	flag_nrf;
 extern u8		flag_duima;
 extern addrNRFStr		addrNRF;
 extern	u8      TXrxbuf[7];
@@ -102,6 +102,7 @@ void MAXTX_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 			NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
 		}else
 		{
+		    flag_nrf = 0;
 			LEN_GREEN_Close();
 			NRF24L01_PWR(0);		
 		}
@@ -157,6 +158,7 @@ void RXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 			}
 			ReturnADDRESS2();
 		}
+		flag_nrf = 0;
 		LEN_GREEN_Close();
 		NRF24L01_PWR(0);
 }
@@ -177,6 +179,7 @@ void TXD_CallBack_PTX(Nrf24l01_PTXStr* ptx)
 			NRF_AutoAck_TxPacket(ptx,ptx->txbuf,7);
 		}else
 		{
+		  flag_nrf = 0;
 			LEN_GREEN_Close();
 			NRF24L01_PWR(0);		
 		}

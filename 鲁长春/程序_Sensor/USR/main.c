@@ -19,7 +19,7 @@
 #include "stm8l15x_wwdg.h"
 
 Nrf24l01_PTXStr 	ptx 		= {0};				// NRF发送结构体
-
+u8 flag_nrf = 0;			// 标记NRF是否工作
 u8      TXrxbuf[7] = {0};
 u8      TXtxbuf[7] = {0};
 addrNRFStr		addrNRF = {0};
@@ -92,6 +92,7 @@ void NRF_SendDMCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 //通过NRF向主板发送命令函数
 void NRF_SendCMD(Nrf24l01_PTXStr* ptx,u8* addr,u8 cmd , u8 mes)
 {
+  	flag_nrf = 1;
     NRF24L01_PWR(1);
 	NRF24L01_ClearTXFIFO();
     ptx->txbuf[0] = addr[0];
@@ -182,10 +183,10 @@ void Key_ScanLeave()
 			LEN_RED_Open();
 			delay_ms(200);
 			LEN_RED_Close();
-			delay_ms(200);
-			LEN_RED_Open();
-			delay_ms(200);
-			LEN_RED_Close();
+//			delay_ms(200);
+//			LEN_RED_Open();
+//			delay_ms(200);
+//			LEN_RED_Close();
 //			delay_ms(200);
 //			LEN_RED_Open();
 //			delay_ms(200);

@@ -232,9 +232,11 @@ void BH_Check()
 				{
 					if(motorStruct.hasrun > run) i = motorStruct.hasrun - run;
 					else i = run - motorStruct.hasrun;
+					debug("i = %d\n",i);
 				}
 				if(i > 1)
 				{
+				  	debug("BHπ ’œª÷∏¥\n");
 				  	run = 0;
 					motorStruct.erro &= ~ERROR_BH;
 					if(flag_BHProtectStep == 1 )flag_BHProtectStep = 0;	// ª÷∏¥π ’œ				

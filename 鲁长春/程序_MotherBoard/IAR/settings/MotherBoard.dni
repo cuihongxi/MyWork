@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=670667220
+Checksum=1757788779
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -47,6 +47,8 @@ Freq=16000000
 LogEnabled=0
 GraphEnabled=0
 ShowTimeLog=1
+[Breakpoints]
+Count=0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -54,8 +56,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Count=0
 [Aliases]
 A0=_ "C:\Users\Cui\Desktop\MyWork\鲁长春\程序_MotherBoard\LIB\src\stm8l15x_usart.c" ""
 A1=_ "E:\MyWork\MyWork\鲁长春\程序_MotherBoard\HARD\KEYBOARD.C" ""

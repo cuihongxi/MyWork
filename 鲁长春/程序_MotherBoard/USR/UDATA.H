@@ -25,7 +25,7 @@
 #define			TIM_KEY					800	// ms，连击间隔
 #define         TIM_CHECKEYS          	2000    // ms,YS检测时间
 #define         BH_SAFE                 3000    // ms, BH方波检测
-#define         TIM_BH0                 2000    // ms, BH反向运动时间
+#define         TIM_BH0                 5000    // ms, BH反向运动时间
 #define         TIM_30                  3	// 30分钟不响应
 #define         TIM_BAT                 50000    // ms ,检测BAT电压周期
 #define			TIM_AM_ON				3000	// ms,AM有效时对应的LED指示点亮时间
