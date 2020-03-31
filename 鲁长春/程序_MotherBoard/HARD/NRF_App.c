@@ -197,14 +197,6 @@ bool JugeDM()
 //接收模式自动接收完成回调函数
 void RXD_CallBack(Nrf24l01_PRXStr* prx) 
 {
-//        prx->txbuf[0] = prx->rxbuf[0];
-//        prx->txbuf[1] = prx->rxbuf[1];
-//        prx->txbuf[2] = prx->rxbuf[2];
-//        prx->txbuf[3] = prx->rxbuf[3];
-//        prx->txbuf[4] = prx->rxbuf[4];
-//        prx->txbuf[5] = 'O';
-//        prx->txbuf[6] = 'K';
-//        NRF24L01_RX_AtuoACKPip(prx->txbuf,prx->txlen,NRD24L01_GetPip(RXprx.status));//填充应答信号	
         prx->rxlen = NRF24L01_GetRXLen();
         NRF24L01_Read_Buf(RD_RX_PLOAD,prx->rxbuf + prx->hasrxlen,prx->rxlen);	//读取数据
         prx->hasrxlen += prx->rxlen;		

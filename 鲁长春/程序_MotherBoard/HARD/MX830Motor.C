@@ -34,6 +34,8 @@ extern	BATStr 		bat;			// 电池管理
 extern	u16		ys_timer30;		// YS不响应计时
 extern	JugeCStr 	YS_30;
 extern	TaskStr* 	taskAlarm; 
+
+void Motor_AutoRun();
 /**************************************
 *@brief
 *@note 
@@ -183,17 +185,22 @@ void Motor_RunFORWARD()
 
 void OpenWindow()
 {
-    if(flag_DM == 0)
-	Motor_Y();
-    else Motor_Z();
+    if(flag_DM == 0)motorStruct.needrun = motorStruct.hasrun + 1000;
+	//Motor_Y();
+    else motorStruct.needrun = motorStruct.hasrun - 1000;//Motor_Z();
+	Motor_AutoRun();
 }
 
 
 void ShutDownWindow()
 {
     if(flag_DM == 0)
-	Motor_Z();
-    else Motor_Y();
+	{
+	  motorStruct.needrun = motorStruct.hasrun - 1000;
+		//Motor_Z();
+	}
+    else motorStruct.needrun = motorStruct.hasrun + 1000;//Motor_Y();
+	 Motor_AutoRun();
 }
 
 
@@ -251,6 +258,7 @@ bool MotorProtectHold()		// 按键优先级保护: 电机转动保护，电压过低，BH方波保护,Z
 }
 void Motor_AutoRun()
 {
+  debug("motorStruct.hasrun = %d , motorStruct.needrun = %d",motorStruct.hasrun,motorStruct.needrun);
 	if(motorStruct.hasrun > motorStruct.needrun) Motor_Z();
 	else if(motorStruct.hasrun < motorStruct.needrun) Motor_Y();
 }
