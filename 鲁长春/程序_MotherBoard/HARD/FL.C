@@ -223,7 +223,7 @@ void BH_Check()
 
 			}
 			counter_BH = 0;					// 清零BH计时，否则被马达认为没有转动	
-			if(motorStruct.erro & ERROR_BH)
+			if(flag_BHProtectStep == 1)
 			{
 			  	static int	run = 0;
 				u8 i = 0;
@@ -239,7 +239,8 @@ void BH_Check()
 				  	debug("BH故障恢复\n");
 				  	run = 0;
 					motorStruct.erro &= ~ERROR_BH;
-					if(flag_BHProtectStep == 1 )flag_BHProtectStep = 0;	// 恢复故障				
+					//if(flag_BHProtectStep == 1 )
+					  flag_BHProtectStep = 0;	// 恢复故障				
 				}
 
 			} 

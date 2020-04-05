@@ -389,7 +389,7 @@ void MotorControl()
 				flag_BHProtectStep = 1;													//如果出现BH，则会在中断中清零
 				counter_BH = 0;
 				//按马达当前转向，反向旋转4S，再继续原来转向
-				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_BH0,MotorBHAppear);	// 反向旋转4S
+				OS_AddJudegeFunction(taskMotor,Motor_RunFORWARD,TIM_BH0,MotorBHAppear);	// 反向旋转2S
 				OS_AddJudegeFunction(taskMotor,Motor_RunBack,IRQ_PERIOD,MotorBHAppear);	//恢复原来的转向
 				OS_AddFunction(taskMotor,ResetBHErro,IRQ_PERIOD);	
 				OS_AddJudegeFunction(taskMotor,Motor_AutoRun,MOTOR_F_SAFE,MotorProtectKey);
@@ -576,7 +576,7 @@ void MotorControl()
 				flag_YS_isno = 0;
 				OS_AddJudegeFunction(taskMotor,OpenWindow,MOTOR_F_SAFE,MotorProtectAM);	// 执行开窗
 				OS_AddJudegeFunction(taskMotor,MotorHold,TIM_SHACHE,MotorSysProtectY);// 刹车
-//				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
+				OS_AddJudegeFunction(taskMotor,BTStop,TIM_MOTOR_F,MotorSysProtect0);	// 如果不是限位，脱扣
 				OS_AddFunction(taskMotor,Resetflag_YS,IRQ_PERIOD);
 				OS_AddFunction(taskMotor,MotorSTOP,0);					// 移除任务	
 				OS_AddTask(tasklink,taskMotor);						// 添加到任务队列

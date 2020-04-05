@@ -185,13 +185,14 @@ void Key_ScanLeave()
 	    if((systime - POW_CA_time) > DELAY_TIME)
 	    {
 			//flag_funPOW_CA= ~flag_funPOW_CA;
-			debug("POW_CA\r\n");
-			//NRF?????????®®?°ß
-
-			db ^= 6;
-			LEDtimes = 2*LEDPOWTIM;
-			NRF24L01_SetRF_SETUP(RF_DR_250K,db);
-			keyval = KEY_VAL_NULL;
+//			debug("POW_CA\r\n");
+//			//NRF?????????®®?°ß
+//
+//			db ^= 6;
+//			LEDtimes = 2*LEDPOWTIM;
+//			NRF24L01_SetRF_SETUP(RF_DR_250K,db);
+//			keyval = KEY_VAL_NULL;
+		  NRF_SendCMD(&ptx,ADDRESS2,CMD_AM, MES_AM);//NRF∑¢ÀÕAM√¸¡Ó
 	    }
 	}
 	
